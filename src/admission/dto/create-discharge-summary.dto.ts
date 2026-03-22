@@ -7,8 +7,14 @@ export class CreateDischargeSummaryDto {
   @ApiPropertyOptional() @IsOptional() @IsString() finalDiagnosis?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() hospitalCourse?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() proceduresPerformed?: string;
-  @ApiPropertyOptional() @IsOptional() @IsString() medicationsOnDischarge?: string;
-  @ApiPropertyOptional() @IsOptional() @IsString() dischargeInstructions?: string;
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  medicationsOnDischarge?: string;
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  dischargeInstructions?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() followUpDate?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() followUpDoctor?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() followUpNotes?: string;

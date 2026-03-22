@@ -14,7 +14,8 @@ export class ReportsService {
     @InjectRepository(Visit) private visitRepo: Repository<Visit>,
     @InjectRepository(Bill) private billRepo: Repository<Bill>,
     @InjectRepository(Equipment) private equipmentRepo: Repository<Equipment>,
-    @InjectRepository(EquipmentLease) private leaseRepo: Repository<EquipmentLease>,
+    @InjectRepository(EquipmentLease)
+    private leaseRepo: Repository<EquipmentLease>,
     @InjectRepository(Patient) private patientRepo: Repository<Patient>,
   ) {}
 
@@ -60,9 +61,18 @@ export class ReportsService {
       .andWhere('b.billDate BETWEEN :start AND :end', { start, end })
       .getMany();
 
-    const totalBilled = bills.reduce((s, b) => s + Number(b.totalAmount || 0), 0);
-    const totalCollected = bills.reduce((s, b) => s + Number(b.paidAmount || 0), 0);
-    const totalOutstanding = bills.reduce((s, b) => s + Number(b.dueAmount || 0), 0);
+    const totalBilled = bills.reduce(
+      (s, b) => s + Number(b.totalAmount || 0),
+      0,
+    );
+    const totalCollected = bills.reduce(
+      (s, b) => s + Number(b.paidAmount || 0),
+      0,
+    );
+    const totalOutstanding = bills.reduce(
+      (s, b) => s + Number(b.dueAmount || 0),
+      0,
+    );
 
     const byPaymentMode = await this.billRepo
       .createQueryBuilder('b')
@@ -109,7 +119,9 @@ export class ReportsService {
     const start = new Date(from);
     const end = dayjs(to).endOf('day').toDate();
 
-    const totalPatients = await this.patientRepo.count({ where: { facilityId } });
+    const totalPatients = await this.patientRepo.count({
+      where: { facilityId },
+    });
 
     const newPatientsInRange = await this.patientRepo
       .createQueryBuilder('p')

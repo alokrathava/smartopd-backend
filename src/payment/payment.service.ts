@@ -3,7 +3,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Bill, BillStatus } from './entities/bill.entity';
 import { BillItem } from './entities/bill-item.entity';
-import { PaymentTransaction, TransactionStatus } from './entities/payment-transaction.entity';
+import {
+  PaymentTransaction,
+  TransactionStatus,
+} from './entities/payment-transaction.entity';
 import { CreateBillDto } from './dto/create-bill.dto';
 import { AddBillItemDto } from './dto/add-bill-item.dto';
 import { RecordPaymentDto } from './dto/record-payment.dto';
@@ -41,7 +44,11 @@ export class PaymentService {
     return `${prefix}${String(seq).padStart(5, '0')}`;
   }
 
-  async createBill(dto: CreateBillDto, facilityId: string, userId: string): Promise<Bill> {
+  async createBill(
+    dto: CreateBillDto,
+    facilityId: string,
+    userId: string,
+  ): Promise<Bill> {
     const billNumber = await this.generateBillNumber(facilityId);
     const bill = this.billRepo.create({
       ...dto,
@@ -65,9 +72,14 @@ export class PaymentService {
   }
 
   private async recalculate(billId: string, facilityId: string): Promise<void> {
-    const items = await this.billItemRepo.find({ where: { billId, facilityId } });
+    const items = await this.billItemRepo.find({
+      where: { billId, facilityId },
+    });
     const subtotal = items.reduce((sum, i) => sum + Number(i.amount), 0);
-    const taxAmount = items.reduce((sum, i) => sum + (Number(i.amount) * Number(i.gstPercent)) / 100, 0);
+    const taxAmount = items.reduce(
+      (sum, i) => sum + (Number(i.amount) * Number(i.gstPercent)) / 100,
+      0,
+    );
     const totalAmount = subtotal + taxAmount;
 
     await this.billRepo.update(billId, {
@@ -87,7 +99,11 @@ export class PaymentService {
     return this.billRepo.save(fresh);
   }
 
-  async recordPayment(dto: RecordPaymentDto, facilityId: string, userId: string): Promise<PaymentTransaction> {
+  async recordPayment(
+    dto: RecordPaymentDto,
+    facilityId: string,
+    userId: string,
+  ): Promise<PaymentTransaction> {
     const bill = await this.getBill(dto.billId, facilityId);
 
     const transaction = this.transactionRepo.create({
@@ -144,7 +160,10 @@ export class PaymentService {
     return bill;
   }
 
-  async getPatientBills(patientId: string, facilityId: string): Promise<Bill[]> {
+  async getPatientBills(
+    patientId: string,
+    facilityId: string,
+  ): Promise<Bill[]> {
     return this.billRepo.find({
       where: { patientId, facilityId },
       order: { createdAt: 'DESC' },

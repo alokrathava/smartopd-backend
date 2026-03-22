@@ -49,10 +49,21 @@ export class EquipmentLease {
   @Column({ type: 'datetime', nullable: true, name: 'returned_at' })
   returnedAt: Date;
 
-  @Column({ type: 'enum', enum: EquipmentCondition, nullable: true, name: 'returned_condition' })
+  @Column({
+    type: 'enum',
+    enum: EquipmentCondition,
+    nullable: true,
+    name: 'returned_condition',
+  })
   returnedCondition: EquipmentCondition;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0, name: 'deposit_amount' })
+  @Column({
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    default: 0,
+    name: 'deposit_amount',
+  })
   depositAmount: number;
 
   @Column({ type: 'varchar', nullable: true, name: 'deposit_mode' })
@@ -64,7 +75,11 @@ export class EquipmentLease {
   @Column({ type: 'text', nullable: true })
   notes: string;
 
-  @Column({ type: 'enum', enum: PatientLeaseStatus, default: PatientLeaseStatus.ACTIVE })
+  @Column({
+    type: 'enum',
+    enum: PatientLeaseStatus,
+    default: PatientLeaseStatus.ACTIVE,
+  })
   status: PatientLeaseStatus;
 
   @CreateDateColumn({ name: 'created_at' })

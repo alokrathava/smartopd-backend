@@ -22,7 +22,13 @@ export class Vitals {
   @Column({ type: 'varchar', name: 'recorded_by_id' })
   recordedById: string;
 
-  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true, name: 'temperature_celsius' })
+  @Column({
+    type: 'decimal',
+    precision: 5,
+    scale: 2,
+    nullable: true,
+    name: 'temperature_celsius',
+  })
   temperatureCelsius: number;
 
   @Column({ type: 'varchar', nullable: true, name: 'temperature_site' })
@@ -40,13 +46,31 @@ export class Vitals {
   @Column({ type: 'int', nullable: true, name: 'diastolic_bp' })
   diastolicBp: number;
 
-  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true, name: 'sp_o2' })
+  @Column({
+    type: 'decimal',
+    precision: 5,
+    scale: 2,
+    nullable: true,
+    name: 'sp_o2',
+  })
   spO2: number;
 
-  @Column({ type: 'decimal', precision: 6, scale: 2, nullable: true, name: 'height_cm' })
+  @Column({
+    type: 'decimal',
+    precision: 6,
+    scale: 2,
+    nullable: true,
+    name: 'height_cm',
+  })
   heightCm: number;
 
-  @Column({ type: 'decimal', precision: 6, scale: 2, nullable: true, name: 'weight_kg' })
+  @Column({
+    type: 'decimal',
+    precision: 6,
+    scale: 2,
+    nullable: true,
+    name: 'weight_kg',
+  })
   weightKg: number;
 
   @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
@@ -55,7 +79,13 @@ export class Vitals {
   @Column({ type: 'int', nullable: true, name: 'pain_score' })
   painScore: number;
 
-  @Column({ type: 'decimal', precision: 6, scale: 2, nullable: true, name: 'blood_glucose' })
+  @Column({
+    type: 'decimal',
+    precision: 6,
+    scale: 2,
+    nullable: true,
+    name: 'blood_glucose',
+  })
   bloodGlucose: number;
 
   @Column({ type: 'text', nullable: true })

@@ -19,7 +19,10 @@ export class NotificationService {
   ) {}
 
   renderTemplate(template: string, vars: Record<string, string>): string {
-    return template.replace(/\{\{(\w+)\}\}/g, (_, key) => vars[key] ?? `{{${key}}}`);
+    return template.replace(
+      /\{\{(\w+)\}\}/g,
+      (_, key) => vars[key] ?? `{{${key}}}`,
+    );
   }
 
   async send(
@@ -77,8 +80,13 @@ export class NotificationService {
     return saved;
   }
 
-  async getLogs(facilityId: string, channel?: NotificationChannel, limit = 50): Promise<NotificationLog[]> {
-    const qb = this.logRepo.createQueryBuilder('n')
+  async getLogs(
+    facilityId: string,
+    channel?: NotificationChannel,
+    limit = 50,
+  ): Promise<NotificationLog[]> {
+    const qb = this.logRepo
+      .createQueryBuilder('n')
       .where('n.facilityId = :facilityId', { facilityId })
       .orderBy('n.createdAt', 'DESC')
       .take(limit);
@@ -93,7 +101,10 @@ export class NotificationService {
     });
   }
 
-  async createTemplate(dto: CreateTemplateDto, facilityId: string): Promise<NotificationTemplate> {
+  async createTemplate(
+    dto: CreateTemplateDto,
+    facilityId: string,
+  ): Promise<NotificationTemplate> {
     const template = this.templateRepo.create({ ...dto, facilityId });
     return this.templateRepo.save(template);
   }

@@ -8,7 +8,9 @@ import { PaymentService } from './payment.service';
 import { PaymentController } from './payment.controller';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Bill, BillItem, PaymentTransaction, NhcxClaim])],
+  imports: [
+    TypeOrmModule.forFeature([Bill, BillItem, PaymentTransaction, NhcxClaim]),
+  ],
   controllers: [PaymentController],
   providers: [PaymentService],
   exports: [PaymentService],

@@ -37,13 +37,21 @@ export class Prescription {
   @Column({ type: 'date', name: 'prescription_date' })
   prescriptionDate: Date;
 
-  @Column({ type: 'enum', enum: PrescriptionStatus, default: PrescriptionStatus.DRAFT })
+  @Column({
+    type: 'enum',
+    enum: PrescriptionStatus,
+    default: PrescriptionStatus.DRAFT,
+  })
   status: PrescriptionStatus;
 
   @Column({ type: 'text', nullable: true })
   notes: string;
 
-  @Column({ type: 'longtext', nullable: true, name: 'fhir_medication_request_json' })
+  @Column({
+    type: 'longtext',
+    nullable: true,
+    name: 'fhir_medication_request_json',
+  })
   fhirMedicationRequestJson: string;
 
   @CreateDateColumn({ name: 'created_at' })

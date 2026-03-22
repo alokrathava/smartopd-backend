@@ -1,4 +1,12 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToMany, OneToOne } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  OneToMany,
+  OneToOne,
+} from 'typeorm';
 
 export enum FacilityType {
   HOSPITAL = 'HOSPITAL',
@@ -21,7 +29,12 @@ export class Facility {
   @Column({ type: 'varchar', length: 200 })
   name: string;
 
-  @Column({ type: 'varchar', length: 100, nullable: true, name: 'registration_number' })
+  @Column({
+    type: 'varchar',
+    length: 100,
+    nullable: true,
+    name: 'registration_number',
+  })
   registrationNumber: string;
 
   @Column({ type: 'enum', enum: FacilityType, default: FacilityType.HOSPITAL })
@@ -48,16 +61,31 @@ export class Facility {
   @Column({ type: 'varchar', length: 20, nullable: true, name: 'gst_number' })
   gstNumber: string;
 
-  @Column({ type: 'varchar', length: 100, nullable: true, name: 'abha_facility_id' })
+  @Column({
+    type: 'varchar',
+    length: 100,
+    nullable: true,
+    name: 'abha_facility_id',
+  })
   abhaFacilityId: string;
 
   @Column({ type: 'varchar', length: 200, nullable: true, name: 'abdm_hip_id' })
   abdmHipId: string;
 
-  @Column({ type: 'varchar', length: 200, nullable: true, name: 'abdm_client_id' })
+  @Column({
+    type: 'varchar',
+    length: 200,
+    nullable: true,
+    name: 'abdm_client_id',
+  })
   abdmClientId: string;
 
-  @Column({ type: 'varchar', length: 100, nullable: true, name: 'nabh_accreditation' })
+  @Column({
+    type: 'varchar',
+    length: 100,
+    nullable: true,
+    name: 'nabh_accreditation',
+  })
   nabhAccreditation: string;
 
   @Column({ type: 'varchar', length: 200, nullable: true, name: 'website_url' })
@@ -75,10 +103,20 @@ export class Facility {
   @Column({ type: 'boolean', default: true, name: 'is_active' })
   isActive: boolean;
 
-  @Column({ type: 'varchar', length: 20, default: 'ACTIVE', name: 'approval_status' })
+  @Column({
+    type: 'varchar',
+    length: 20,
+    default: 'ACTIVE',
+    name: 'approval_status',
+  })
   approvalStatus: string; // PENDING | ACTIVE | SUSPENDED
 
-  @Column({ type: 'enum', enum: SubscriptionPlan, default: SubscriptionPlan.STARTER, name: 'subscription_plan' })
+  @Column({
+    type: 'enum',
+    enum: SubscriptionPlan,
+    default: SubscriptionPlan.STARTER,
+    name: 'subscription_plan',
+  })
   subscriptionPlan: SubscriptionPlan;
 
   @Column({ type: 'datetime', nullable: true, name: 'subscription_expires_at' })

@@ -1,4 +1,10 @@
-import { IsUUID, IsOptional, IsString, IsDateString, IsEnum } from 'class-validator';
+import {
+  IsUUID,
+  IsOptional,
+  IsString,
+  IsDateString,
+  IsEnum,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { FollowUpPriority } from '../entities/follow-up.entity';
 

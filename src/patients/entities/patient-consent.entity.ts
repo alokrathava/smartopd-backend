@@ -1,4 +1,9 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+} from 'typeorm';
 
 export enum ConsentType {
   TREATMENT = 'TREATMENT',
@@ -30,7 +35,12 @@ export class PatientConsent {
   @Column({ type: 'boolean', default: false, name: 'is_guardian' })
   isGuardian: boolean;
 
-  @Column({ type: 'varchar', length: 50, nullable: true, name: 'guardian_relation' })
+  @Column({
+    type: 'varchar',
+    length: 50,
+    nullable: true,
+    name: 'guardian_relation',
+  })
   guardianRelation: string;
 
   @Column({ type: 'varchar', length: 50, nullable: true, name: 'ip_address' })
@@ -39,7 +49,12 @@ export class PatientConsent {
   @Column({ type: 'datetime', nullable: true, name: 'revoked_at' })
   revokedAt: Date;
 
-  @Column({ type: 'varchar', length: 500, nullable: true, name: 'document_url' })
+  @Column({
+    type: 'varchar',
+    length: 500,
+    nullable: true,
+    name: 'document_url',
+  })
   documentUrl: string;
 
   @CreateDateColumn({ name: 'created_at' })

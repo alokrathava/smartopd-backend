@@ -1,26 +1,34 @@
-import { Entity, Column, Index, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, DeleteDateColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  Index,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  DeleteDateColumn,
+} from 'typeorm';
 
 export enum AdmissionStatus {
-  PENDING            = 'pending',
-  ACTIVE             = 'active',
-  DISCHARGE_PLANNED  = 'discharge_planned',
-  DISCHARGED         = 'discharged',
-  DAMA               = 'dama',
-  EXPIRED            = 'expired',
-  CANCELLED          = 'cancelled',
+  PENDING = 'pending',
+  ACTIVE = 'active',
+  DISCHARGE_PLANNED = 'discharge_planned',
+  DISCHARGED = 'discharged',
+  DAMA = 'dama',
+  EXPIRED = 'expired',
+  CANCELLED = 'cancelled',
 }
 
 export enum AdmissionType {
-  ELECTIVE    = 'elective',
-  EMERGENCY   = 'emergency',
-  DAY_CARE    = 'day_care',
+  ELECTIVE = 'elective',
+  EMERGENCY = 'emergency',
+  DAY_CARE = 'day_care',
   OBSERVATION = 'observation',
 }
 
 export enum DischargeType {
-  REGULAR  = 'regular',
-  DAMA     = 'dama',
-  EXPIRED  = 'expired',
+  REGULAR = 'regular',
+  DAMA = 'dama',
+  EXPIRED = 'expired',
   TRANSFER = 'transfer',
 }
 

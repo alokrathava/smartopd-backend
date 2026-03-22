@@ -53,7 +53,11 @@ export class VisitsService {
     return count + 1;
   }
 
-  async create(dto: CreateVisitDto, facilityId: string, userId: string): Promise<Visit> {
+  async create(
+    dto: CreateVisitDto,
+    facilityId: string,
+    userId: string,
+  ): Promise<Visit> {
     const visitNumber = await this.generateVisitNumber(facilityId);
     const tokenNumber = await this.getDailyToken(facilityId);
 
@@ -72,7 +76,12 @@ export class VisitsService {
 
   async findAll(
     facilityId: string,
-    filters: { date?: string; doctorId?: string; status?: VisitStatus; patientId?: string },
+    filters: {
+      date?: string;
+      doctorId?: string;
+      status?: VisitStatus;
+      patientId?: string;
+    },
   ) {
     const qb = this.visitRepo
       .createQueryBuilder('v')
@@ -86,9 +95,12 @@ export class VisitsService {
       next.setDate(next.getDate() + 1);
       qb.andWhere('v.checkedInAt >= :d AND v.checkedInAt < :next', { d, next });
     }
-    if (filters.doctorId) qb.andWhere('v.doctorId = :doctorId', { doctorId: filters.doctorId });
-    if (filters.status) qb.andWhere('v.status = :status', { status: filters.status });
-    if (filters.patientId) qb.andWhere('v.patientId = :patientId', { patientId: filters.patientId });
+    if (filters.doctorId)
+      qb.andWhere('v.doctorId = :doctorId', { doctorId: filters.doctorId });
+    if (filters.status)
+      qb.andWhere('v.status = :status', { status: filters.status });
+    if (filters.patientId)
+      qb.andWhere('v.patientId = :patientId', { patientId: filters.patientId });
 
     return qb.getMany();
   }
@@ -101,7 +113,11 @@ export class VisitsService {
     return visit;
   }
 
-  async updateStatus(id: string, dto: UpdateVisitStatusDto, facilityId: string): Promise<Visit> {
+  async updateStatus(
+    id: string,
+    dto: UpdateVisitStatusDto,
+    facilityId: string,
+  ): Promise<Visit> {
     const visit = await this.findOne(id, facilityId);
     visit.status = dto.status;
 
@@ -127,7 +143,11 @@ export class VisitsService {
       .createQueryBuilder('v')
       .where('v.facilityId = :facilityId', { facilityId })
       .andWhere('v.status NOT IN (:...done)', {
-        done: [VisitStatus.COMPLETED, VisitStatus.CANCELLED, VisitStatus.NO_SHOW],
+        done: [
+          VisitStatus.COMPLETED,
+          VisitStatus.CANCELLED,
+          VisitStatus.NO_SHOW,
+        ],
       })
       .andWhere('v.deletedAt IS NULL')
       .orderBy('v.tokenNumber', 'ASC');
@@ -151,7 +171,10 @@ export class VisitsService {
       .getMany();
   }
 
-  async getPatientVisits(patientId: string, facilityId: string): Promise<Visit[]> {
+  async getPatientVisits(
+    patientId: string,
+    facilityId: string,
+  ): Promise<Visit[]> {
     return this.visitRepo.find({
       where: { patientId, facilityId },
       order: { checkedInAt: 'DESC' },
@@ -164,10 +187,17 @@ export class VisitsService {
     return this.visitRepo.save(visit);
   }
 
-  async assignDoctor(id: string, doctorId: string, facilityId: string): Promise<Visit> {
+  async assignDoctor(
+    id: string,
+    doctorId: string,
+    facilityId: string,
+  ): Promise<Visit> {
     const visit = await this.findOne(id, facilityId);
     visit.doctorId = doctorId;
-    if (visit.status === VisitStatus.REGISTERED || visit.status === VisitStatus.WAITING) {
+    if (
+      visit.status === VisitStatus.REGISTERED ||
+      visit.status === VisitStatus.WAITING
+    ) {
       visit.status = VisitStatus.WAITING;
     }
     return this.visitRepo.save(visit);

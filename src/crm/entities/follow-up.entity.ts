@@ -47,7 +47,11 @@ export class FollowUp {
   @Column({ type: 'text', nullable: true })
   notes: string;
 
-  @Column({ type: 'enum', enum: FollowUpStatus, default: FollowUpStatus.PENDING })
+  @Column({
+    type: 'enum',
+    enum: FollowUpStatus,
+    default: FollowUpStatus.PENDING,
+  })
   status: FollowUpStatus;
 
   @Column({ type: 'datetime', nullable: true, name: 'completed_at' })
@@ -62,7 +66,11 @@ export class FollowUp {
   @Column({ type: 'datetime', nullable: true, name: 'notification_sent_at' })
   notificationSentAt: Date;
 
-  @Column({ type: 'enum', enum: FollowUpPriority, default: FollowUpPriority.MEDIUM })
+  @Column({
+    type: 'enum',
+    enum: FollowUpPriority,
+    default: FollowUpPriority.MEDIUM,
+  })
   priority: FollowUpPriority;
 
   @CreateDateColumn({ name: 'created_at' })

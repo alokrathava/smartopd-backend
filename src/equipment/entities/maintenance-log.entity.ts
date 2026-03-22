@@ -55,7 +55,11 @@ export class MaintenanceLog {
   @Column({ type: 'date', nullable: true, name: 'next_due_date' })
   nextDueDate: Date;
 
-  @Column({ type: 'enum', enum: MaintenanceStatus, default: MaintenanceStatus.SCHEDULED })
+  @Column({
+    type: 'enum',
+    enum: MaintenanceStatus,
+    default: MaintenanceStatus.SCHEDULED,
+  })
   status: MaintenanceStatus;
 
   @CreateDateColumn({ name: 'created_at' })

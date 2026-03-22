@@ -96,13 +96,30 @@ export class Visit {
   @Column({ type: 'longtext', nullable: true, name: 'fhir_encounter_json' })
   fhirEncounterJson: string;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0, name: 'total_amount' })
+  @Column({
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    default: 0,
+    name: 'total_amount',
+  })
   totalAmount: number;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0, name: 'paid_amount' })
+  @Column({
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    default: 0,
+    name: 'paid_amount',
+  })
   paidAmount: number;
 
-  @Column({ type: 'enum', enum: PaymentStatus, default: PaymentStatus.PENDING, name: 'payment_status' })
+  @Column({
+    type: 'enum',
+    enum: PaymentStatus,
+    default: PaymentStatus.PENDING,
+    name: 'payment_status',
+  })
   paymentStatus: PaymentStatus;
 
   @CreateDateColumn({ name: 'created_at' })

@@ -9,7 +9,12 @@ import {
   UseGuards,
   ParseUUIDPipe,
 } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiOperation,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -57,12 +62,20 @@ export class AdmissionController {
     @Query('doctorId') doctorId?: string,
     @Query('date') date?: string,
   ) {
-    return this.admissionService.findAll(user.facilityId!, { status, wardId, doctorId, date });
+    return this.admissionService.findAll(user.facilityId!, {
+      status,
+      wardId,
+      doctorId,
+      date,
+    });
   }
 
   @Get(':id')
   @ApiOperation({ summary: 'Get admission by ID' })
-  findOne(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: JwtPayload) {
+  findOne(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: JwtPayload,
+  ) {
     return this.admissionService.findOne(id, user.facilityId!);
   }
 
@@ -79,7 +92,10 @@ export class AdmissionController {
 
   @Post(':id/ward-intake')
   @Roles(Role.NURSE, Role.FACILITY_ADMIN)
-  @ApiOperation({ summary: 'Ward nurse acknowledges patient arrival and assigns primary nurse' })
+  @ApiOperation({
+    summary:
+      'Ward nurse acknowledges patient arrival and assigns primary nurse',
+  })
   wardIntake(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: WardIntakeDto,
@@ -102,20 +118,36 @@ export class AdmissionController {
   @Post('ward-rounds')
   @Roles(Role.DOCTOR, Role.FACILITY_ADMIN)
   @ApiOperation({ summary: 'Create a ward round session with per-bed stops' })
-  createWardRound(@Body() dto: CreateWardRoundDto & { admissionId: string }, @CurrentUser() user: JwtPayload) {
+  createWardRound(
+    @Body() dto: CreateWardRoundDto & { admissionId: string },
+    @CurrentUser() user: JwtPayload,
+  ) {
     const { admissionId, ...roundDto } = dto;
-    return this.admissionService.createWardRound(admissionId, roundDto, user.facilityId!, user.sub);
+    return this.admissionService.createWardRound(
+      admissionId,
+      roundDto,
+      user.facilityId!,
+      user.sub,
+    );
   }
 
   @Get(':id/timeline')
-  @ApiOperation({ summary: 'Get chronological patient timeline (ward rounds + stops + nursing notes)' })
-  getTimeline(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: JwtPayload) {
+  @ApiOperation({
+    summary:
+      'Get chronological patient timeline (ward rounds + stops + nursing notes)',
+  })
+  getTimeline(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: JwtPayload,
+  ) {
     return this.admissionService.getTimeline(id, user.facilityId!);
   }
 
   @Patch(':id/initiate-discharge')
   @Roles(Role.DOCTOR, Role.FACILITY_ADMIN)
-  @ApiOperation({ summary: 'Initiate discharge planning — moves status to DISCHARGE_PLANNED' })
+  @ApiOperation({
+    summary: 'Initiate discharge planning — moves status to DISCHARGE_PLANNED',
+  })
   initiateDischarge(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: InitiateDischargeDto,
@@ -148,7 +180,10 @@ export class AdmissionController {
 
   @Get(':id/discharge-summary')
   @ApiOperation({ summary: 'Get discharge summary for an admission' })
-  getDischargeSummary(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: JwtPayload) {
+  getDischargeSummary(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: JwtPayload,
+  ) {
     return this.admissionService.getDischargeSummary(id, user.facilityId!);
   }
 }

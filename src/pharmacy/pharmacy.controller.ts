@@ -1,12 +1,10 @@
+import { Controller, Get, Post, Body, Query, UseGuards } from '@nestjs/common';
 import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Query,
-  UseGuards,
-} from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery } from '@nestjs/swagger';
+  ApiTags,
+  ApiBearerAuth,
+  ApiOperation,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -48,7 +46,11 @@ export class PharmacyController {
     @Query('drugName') drugName: string,
     @CurrentUser() user: JwtPayload,
   ) {
-    return this.pharmacyService.checkAllergy(patientId, drugName, user.facilityId!);
+    return this.pharmacyService.checkAllergy(
+      patientId,
+      drugName,
+      user.facilityId!,
+    );
   }
 
   @Get('inventory')
@@ -65,7 +67,10 @@ export class PharmacyController {
   @Post('inventory')
   @Roles(Role.PHARMACIST, Role.FACILITY_ADMIN)
   @ApiOperation({ summary: 'Add inventory item' })
-  addInventory(@Body() dto: CreateInventoryDto, @CurrentUser() user: JwtPayload) {
+  addInventory(
+    @Body() dto: CreateInventoryDto,
+    @CurrentUser() user: JwtPayload,
+  ) {
     return this.pharmacyService.addInventory(dto, user.facilityId!);
   }
 
@@ -97,6 +102,9 @@ export class PharmacyController {
     @Query('patientId') patientId?: string,
     @Query('prescriptionId') prescriptionId?: string,
   ) {
-    return this.pharmacyService.getDispenseHistory(user.facilityId!, { patientId, prescriptionId });
+    return this.pharmacyService.getDispenseHistory(user.facilityId!, {
+      patientId,
+      prescriptionId,
+    });
   }
 }

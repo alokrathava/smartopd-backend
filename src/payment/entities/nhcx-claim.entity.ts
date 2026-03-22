@@ -40,13 +40,24 @@ export class NhcxClaim {
   @Column({ type: 'decimal', precision: 10, scale: 2, name: 'claim_amount' })
   claimAmount: number;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true, name: 'approved_amount' })
+  @Column({
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    nullable: true,
+    name: 'approved_amount',
+  })
   approvedAmount: number;
 
   @Column({ type: 'varchar', nullable: true, name: 'nhcx_claim_id' })
   nhcxClaimId: string;
 
-  @Column({ type: 'enum', enum: NhcxStatus, default: NhcxStatus.PENDING, name: 'nhcx_status' })
+  @Column({
+    type: 'enum',
+    enum: NhcxStatus,
+    default: NhcxStatus.PENDING,
+    name: 'nhcx_status',
+  })
   nhcxStatus: NhcxStatus;
 
   @Column({ type: 'datetime', name: 'submitted_at' })

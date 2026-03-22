@@ -40,8 +40,15 @@ export class EquipmentController {
   @Get()
   @Roles(Role.EQUIPMENT_STAFF, Role.DOCTOR, Role.NURSE, Role.FACILITY_ADMIN)
   @ApiOperation({ summary: 'List all equipment' })
-  findAll(@CurrentUser() user: JwtPayload, @Query('status') status?: any, @Query('category') category?: string) {
-    return this.equipmentService.findAll(user.facilityId!, { status, category });
+  findAll(
+    @CurrentUser() user: JwtPayload,
+    @Query('status') status?: any,
+    @Query('category') category?: string,
+  ) {
+    return this.equipmentService.findAll(user.facilityId!, {
+      status,
+      category,
+    });
   }
 
   @Get('qr/:qrCode')
@@ -68,8 +75,15 @@ export class EquipmentController {
   @Post('leases')
   @Roles(Role.EQUIPMENT_STAFF, Role.RECEPTIONIST, Role.FACILITY_ADMIN)
   @ApiOperation({ summary: 'Issue equipment to patient' })
-  issueToPatient(@Body() dto: CreatePatientLeaseDto, @CurrentUser() user: JwtPayload) {
-    return this.equipmentService.issueToPatient(dto, user.facilityId!, user.sub);
+  issueToPatient(
+    @Body() dto: CreatePatientLeaseDto,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    return this.equipmentService.issueToPatient(
+      dto,
+      user.facilityId!,
+      user.sub,
+    );
   }
 
   @Patch('leases/:id/return')
@@ -86,7 +100,10 @@ export class EquipmentController {
   @Post('maintenance')
   @Roles(Role.EQUIPMENT_STAFF, Role.FACILITY_ADMIN)
   @ApiOperation({ summary: 'Create maintenance log' })
-  createMaintenanceLog(@Body() dto: CreateMaintenanceLogDto, @CurrentUser() user: JwtPayload) {
+  createMaintenanceLog(
+    @Body() dto: CreateMaintenanceLogDto,
+    @CurrentUser() user: JwtPayload,
+  ) {
     return this.equipmentService.createMaintenanceLog(dto, user.facilityId!);
   }
 
@@ -100,7 +117,10 @@ export class EquipmentController {
   @Get(':id')
   @Roles(Role.EQUIPMENT_STAFF, Role.DOCTOR, Role.NURSE, Role.FACILITY_ADMIN)
   @ApiOperation({ summary: 'Get equipment by ID' })
-  findOne(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: JwtPayload) {
+  findOne(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: JwtPayload,
+  ) {
     return this.equipmentService.findOne(id, user.facilityId!);
   }
 

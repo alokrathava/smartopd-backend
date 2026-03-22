@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
@@ -17,7 +21,8 @@ export class UsersService {
   constructor(
     @InjectRepository(User) private userRepo: Repository<User>,
     @InjectRepository(Facility) private facilityRepo: Repository<Facility>,
-    @InjectRepository(FacilitySettings) private settingsRepo: Repository<FacilitySettings>,
+    @InjectRepository(FacilitySettings)
+    private settingsRepo: Repository<FacilitySettings>,
   ) {}
 
   // ── Users ────────────────────────────────────────────────────
@@ -47,7 +52,11 @@ export class UsersService {
     return this.userRepo.findOne({ where: { id } });
   }
 
-  async updateUser(id: string, dto: UpdateUserDto, facilityId: string): Promise<User> {
+  async updateUser(
+    id: string,
+    dto: UpdateUserDto,
+    facilityId: string,
+  ): Promise<User> {
     const user = await this.findUserById(id, facilityId);
     Object.assign(user, dto);
     return this.userRepo.save(user);
@@ -59,7 +68,9 @@ export class UsersService {
   }
 
   async getDoctors(facilityId: string): Promise<User[]> {
-    return this.userRepo.find({ where: { facilityId, role: Role.DOCTOR, isActive: true } });
+    return this.userRepo.find({
+      where: { facilityId, role: Role.DOCTOR, isActive: true },
+    });
   }
 
   async updateLastLogin(id: string): Promise<void> {
@@ -95,7 +106,10 @@ export class UsersService {
     return settings;
   }
 
-  async updateFacilitySettings(facilityId: string, dto: UpdateFacilitySettingsDto): Promise<FacilitySettings> {
+  async updateFacilitySettings(
+    facilityId: string,
+    dto: UpdateFacilitySettingsDto,
+  ): Promise<FacilitySettings> {
     let settings = await this.getFacilitySettings(facilityId);
     Object.assign(settings, dto);
     return this.settingsRepo.save(settings);
@@ -127,7 +141,11 @@ export class UsersService {
     return this.facilityRepo.save(facility);
   }
 
-  async uploadSettingsAsset(facilityId: string, field: 'logoUrl' | 'faviconUrl', url: string): Promise<FacilitySettings> {
+  async uploadSettingsAsset(
+    facilityId: string,
+    field: 'logoUrl' | 'faviconUrl',
+    url: string,
+  ): Promise<FacilitySettings> {
     const settings = await this.getFacilitySettings(facilityId);
     settings[field] = url;
     return this.settingsRepo.save(settings);

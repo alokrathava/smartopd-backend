@@ -2,7 +2,10 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Like } from 'typeorm';
 import { Consultation } from './entities/consultation.entity';
-import { Prescription, PrescriptionStatus } from './entities/prescription.entity';
+import {
+  Prescription,
+  PrescriptionStatus,
+} from './entities/prescription.entity';
 import { PrescriptionItem } from './entities/prescription-item.entity';
 import { Icd10 } from './entities/icd10.entity';
 import { CreateConsultationDto } from './dto/create-consultation.dto';
@@ -23,7 +26,11 @@ export class DoctorService {
     private readonly icd10Repo: Repository<Icd10>,
   ) {}
 
-  async createConsultation(dto: CreateConsultationDto, facilityId: string, doctorId: string): Promise<Consultation> {
+  async createConsultation(
+    dto: CreateConsultationDto,
+    facilityId: string,
+    doctorId: string,
+  ): Promise<Consultation> {
     const consultation = this.consultationRepo.create({
       ...dto,
       facilityId,
@@ -34,14 +41,28 @@ export class DoctorService {
     return this.consultationRepo.save(consultation);
   }
 
-  async getConsultation(visitId: string, facilityId: string): Promise<Consultation> {
-    const c = await this.consultationRepo.findOne({ where: { visitId, facilityId } });
-    if (!c) throw new NotFoundException(`Consultation for visit ${visitId} not found`);
+  async getConsultation(
+    visitId: string,
+    facilityId: string,
+  ): Promise<Consultation> {
+    const c = await this.consultationRepo.findOne({
+      where: { visitId, facilityId },
+    });
+    if (!c)
+      throw new NotFoundException(
+        `Consultation for visit ${visitId} not found`,
+      );
     return c;
   }
 
-  async updateConsultation(id: string, dto: CreateConsultationDto, facilityId: string): Promise<Consultation> {
-    const c = await this.consultationRepo.findOne({ where: { id, facilityId } });
+  async updateConsultation(
+    id: string,
+    dto: CreateConsultationDto,
+    facilityId: string,
+  ): Promise<Consultation> {
+    const c = await this.consultationRepo.findOne({
+      where: { id, facilityId },
+    });
     if (!c) throw new NotFoundException(`Consultation ${id} not found`);
     Object.assign(c, dto);
     if (dto.diagnoses) c.diagnoses = JSON.stringify(dto.diagnoses);
@@ -49,8 +70,14 @@ export class DoctorService {
     return this.consultationRepo.save(c);
   }
 
-  async completeConsultation(id: string, dto: CompleteConsultationDto, facilityId: string): Promise<Consultation> {
-    const c = await this.consultationRepo.findOne({ where: { id, facilityId } });
+  async completeConsultation(
+    id: string,
+    dto: CompleteConsultationDto,
+    facilityId: string,
+  ): Promise<Consultation> {
+    const c = await this.consultationRepo.findOne({
+      where: { id, facilityId },
+    });
     if (!c) throw new NotFoundException(`Consultation ${id} not found`);
     Object.assign(c, dto);
     c.isComplete = true;
@@ -59,7 +86,11 @@ export class DoctorService {
     return this.consultationRepo.save(c);
   }
 
-  async createPrescription(dto: CreatePrescriptionDto, facilityId: string, doctorId: string): Promise<Prescription> {
+  async createPrescription(
+    dto: CreatePrescriptionDto,
+    facilityId: string,
+    doctorId: string,
+  ): Promise<Prescription> {
     const prescription = this.prescriptionRepo.create({
       ...dto,
       facilityId,
@@ -69,20 +100,30 @@ export class DoctorService {
     return this.prescriptionRepo.save(prescription);
   }
 
-  async addPrescriptionItem(dto: CreatePrescriptionItemDto, facilityId: string): Promise<PrescriptionItem> {
+  async addPrescriptionItem(
+    dto: CreatePrescriptionItemDto,
+    facilityId: string,
+  ): Promise<PrescriptionItem> {
     const item = this.prescriptionItemRepo.create({ ...dto, facilityId });
     return this.prescriptionItemRepo.save(item);
   }
 
-  async finalizePrescription(id: string, facilityId: string): Promise<Prescription> {
-    const p = await this.prescriptionRepo.findOne({ where: { id, facilityId } });
+  async finalizePrescription(
+    id: string,
+    facilityId: string,
+  ): Promise<Prescription> {
+    const p = await this.prescriptionRepo.findOne({
+      where: { id, facilityId },
+    });
     if (!p) throw new NotFoundException(`Prescription ${id} not found`);
     p.status = PrescriptionStatus.FINALIZED;
     return this.prescriptionRepo.save(p);
   }
 
   async getPrescription(visitId: string, facilityId: string) {
-    const prescription = await this.prescriptionRepo.findOne({ where: { visitId, facilityId } });
+    const prescription = await this.prescriptionRepo.findOne({
+      where: { visitId, facilityId },
+    });
     if (!prescription) return null;
     const items = await this.prescriptionItemRepo.find({
       where: { prescriptionId: prescription.id, facilityId },

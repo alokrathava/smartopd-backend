@@ -35,40 +35,106 @@ export class Bill {
   @Column({ type: 'date', name: 'bill_date' })
   billDate: Date;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0, name: 'consultation_fee' })
+  @Column({
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    default: 0,
+    name: 'consultation_fee',
+  })
   consultationFee: number;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0, name: 'medicine_amount' })
+  @Column({
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    default: 0,
+    name: 'medicine_amount',
+  })
   medicineAmount: number;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0, name: 'procedure_amount' })
+  @Column({
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    default: 0,
+    name: 'procedure_amount',
+  })
   procedureAmount: number;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0, name: 'diagnostic_amount' })
+  @Column({
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    default: 0,
+    name: 'diagnostic_amount',
+  })
   diagnosticAmount: number;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0, name: 'misc_amount' })
+  @Column({
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    default: 0,
+    name: 'misc_amount',
+  })
   miscAmount: number;
 
   @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
   subtotal: number;
 
-  @Column({ type: 'decimal', precision: 5, scale: 2, default: 0, name: 'discount_percent' })
+  @Column({
+    type: 'decimal',
+    precision: 5,
+    scale: 2,
+    default: 0,
+    name: 'discount_percent',
+  })
   discountPercent: number;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0, name: 'discount_amount' })
+  @Column({
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    default: 0,
+    name: 'discount_amount',
+  })
   discountAmount: number;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0, name: 'tax_amount' })
+  @Column({
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    default: 0,
+    name: 'tax_amount',
+  })
   taxAmount: number;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0, name: 'total_amount' })
+  @Column({
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    default: 0,
+    name: 'total_amount',
+  })
   totalAmount: number;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0, name: 'paid_amount' })
+  @Column({
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    default: 0,
+    name: 'paid_amount',
+  })
   paidAmount: number;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0, name: 'due_amount' })
+  @Column({
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    default: 0,
+    name: 'due_amount',
+  })
   dueAmount: number;
 
   @Column({ type: 'enum', enum: BillStatus, default: BillStatus.DRAFT })
@@ -77,7 +143,13 @@ export class Bill {
   @Column({ type: 'boolean', default: false, name: 'insurance_covered' })
   insuranceCovered: boolean;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0, name: 'insurance_amount' })
+  @Column({
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    default: 0,
+    name: 'insurance_amount',
+  })
   insuranceAmount: number;
 
   @Column({ type: 'text', nullable: true })

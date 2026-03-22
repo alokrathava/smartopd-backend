@@ -9,7 +9,9 @@ import { EquipmentLease } from '../equipment/entities/equipment-lease.entity';
 import { Patient } from '../patients/entities/patient.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Visit, Bill, Equipment, EquipmentLease, Patient])],
+  imports: [
+    TypeOrmModule.forFeature([Visit, Bill, Equipment, EquipmentLease, Patient]),
+  ],
   controllers: [ReportsController],
   providers: [ReportsService],
 })
