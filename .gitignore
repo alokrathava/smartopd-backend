@@ -27,8 +27,7 @@ lerna-debug.log*
 *.launch
 .settings/
 *.sublime-workspace
-#Claude AI
-.claude
+
 # IDE - VSCode
 .vscode/*
 !.vscode/settings.json
@@ -55,3 +54,6 @@ pids
 
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+#Claude AI
+.claude/
