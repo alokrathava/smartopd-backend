@@ -2,7 +2,10 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, LessThanOrEqual } from 'typeorm';
 import { Equipment, EquipmentStatus } from './entities/equipment.entity';
-import { EquipmentLease, PatientLeaseStatus } from './entities/equipment-lease.entity';
+import {
+  EquipmentLease,
+  PatientLeaseStatus,
+} from './entities/equipment-lease.entity';
 import { MaintenanceLog } from './entities/maintenance-log.entity';
 import { CreateEquipmentDto } from './dto/create-equipment.dto';
 import { CreatePatientLeaseDto } from './dto/create-patient-lease.dto';
@@ -20,25 +23,37 @@ export class EquipmentService {
     private readonly maintenanceRepo: Repository<MaintenanceLog>,
   ) {}
 
-  async create(dto: CreateEquipmentDto, facilityId: string): Promise<Equipment> {
+  async create(
+    dto: CreateEquipmentDto,
+    facilityId: string,
+  ): Promise<Equipment> {
     const eq = this.equipmentRepo.create({
       ...dto,
       facilityId,
       purchaseDate: dto.purchaseDate ? new Date(dto.purchaseDate) : undefined,
-      warrantyExpiresAt: dto.warrantyExpiresAt ? new Date(dto.warrantyExpiresAt) : undefined,
-      nextMaintenanceDue: dto.nextMaintenanceDue ? new Date(dto.nextMaintenanceDue) : undefined,
+      warrantyExpiresAt: dto.warrantyExpiresAt
+        ? new Date(dto.warrantyExpiresAt)
+        : undefined,
+      nextMaintenanceDue: dto.nextMaintenanceDue
+        ? new Date(dto.nextMaintenanceDue)
+        : undefined,
     });
     return this.equipmentRepo.save(eq);
   }
 
-  async findAll(facilityId: string, filters?: { status?: EquipmentStatus; category?: string }) {
+  async findAll(
+    facilityId: string,
+    filters?: { status?: EquipmentStatus; category?: string },
+  ) {
     const qb = this.equipmentRepo
       .createQueryBuilder('e')
       .where('e.facilityId = :facilityId', { facilityId })
       .orderBy('e.name', 'ASC');
 
-    if (filters?.status) qb.andWhere('e.status = :status', { status: filters.status });
-    if (filters?.category) qb.andWhere('e.category = :category', { category: filters.category });
+    if (filters?.status)
+      qb.andWhere('e.status = :status', { status: filters.status });
+    if (filters?.category)
+      qb.andWhere('e.category = :category', { category: filters.category });
 
     return qb.getMany();
   }
@@ -49,16 +64,26 @@ export class EquipmentService {
     return eq;
   }
 
-  async update(id: string, dto: Partial<CreateEquipmentDto>, facilityId: string): Promise<Equipment> {
+  async update(
+    id: string,
+    dto: Partial<CreateEquipmentDto>,
+    facilityId: string,
+  ): Promise<Equipment> {
     const eq = await this.findOne(id, facilityId);
     Object.assign(eq, dto);
     if (dto.purchaseDate) eq.purchaseDate = new Date(dto.purchaseDate);
-    if (dto.warrantyExpiresAt) eq.warrantyExpiresAt = new Date(dto.warrantyExpiresAt);
-    if (dto.nextMaintenanceDue) eq.nextMaintenanceDue = new Date(dto.nextMaintenanceDue);
+    if (dto.warrantyExpiresAt)
+      eq.warrantyExpiresAt = new Date(dto.warrantyExpiresAt);
+    if (dto.nextMaintenanceDue)
+      eq.nextMaintenanceDue = new Date(dto.nextMaintenanceDue);
     return this.equipmentRepo.save(eq);
   }
 
-  async issueToPatient(dto: CreatePatientLeaseDto, facilityId: string, userId: string): Promise<EquipmentLease> {
+  async issueToPatient(
+    dto: CreatePatientLeaseDto,
+    facilityId: string,
+    userId: string,
+  ): Promise<EquipmentLease> {
     const eq = await this.findOne(dto.equipmentId, facilityId);
     eq.status = EquipmentStatus.LEASED_OUT;
     await this.equipmentRepo.save(eq);
@@ -73,8 +98,14 @@ export class EquipmentService {
     return this.leaseRepo.save(lease);
   }
 
-  async returnFromPatient(leaseId: string, dto: ReturnEquipmentDto, facilityId: string): Promise<EquipmentLease> {
-    const lease = await this.leaseRepo.findOne({ where: { id: leaseId, facilityId } });
+  async returnFromPatient(
+    leaseId: string,
+    dto: ReturnEquipmentDto,
+    facilityId: string,
+  ): Promise<EquipmentLease> {
+    const lease = await this.leaseRepo.findOne({
+      where: { id: leaseId, facilityId },
+    });
     if (!lease) throw new NotFoundException(`Lease ${leaseId} not found`);
 
     lease.returnedAt = new Date();
@@ -82,7 +113,9 @@ export class EquipmentService {
     lease.status = PatientLeaseStatus.RETURNED;
     if (dto.notes) lease.notes = dto.notes;
 
-    const eq = await this.equipmentRepo.findOne({ where: { id: lease.equipmentId } });
+    const eq = await this.equipmentRepo.findOne({
+      where: { id: lease.equipmentId },
+    });
     if (eq) {
       eq.status = EquipmentStatus.AVAILABLE;
       await this.equipmentRepo.save(eq);
@@ -108,12 +141,17 @@ export class EquipmentService {
       .getMany();
   }
 
-  async createMaintenanceLog(dto: CreateMaintenanceLogDto, facilityId: string): Promise<MaintenanceLog> {
+  async createMaintenanceLog(
+    dto: CreateMaintenanceLogDto,
+    facilityId: string,
+  ): Promise<MaintenanceLog> {
     const log = this.maintenanceRepo.create({
       ...dto,
       facilityId,
       scheduledDate: new Date(dto.scheduledDate),
-      performedDate: dto.performedDate ? new Date(dto.performedDate) : undefined,
+      performedDate: dto.performedDate
+        ? new Date(dto.performedDate)
+        : undefined,
       nextDueDate: dto.nextDueDate ? new Date(dto.nextDueDate) : undefined,
     });
     return this.maintenanceRepo.save(log);
@@ -133,7 +171,8 @@ export class EquipmentService {
 
   async findByQr(qrCode: string): Promise<Equipment> {
     const eq = await this.equipmentRepo.findOne({ where: { qrCode } });
-    if (!eq) throw new NotFoundException(`Equipment with QR code ${qrCode} not found`);
+    if (!eq)
+      throw new NotFoundException(`Equipment with QR code ${qrCode} not found`);
     return eq;
   }
 }

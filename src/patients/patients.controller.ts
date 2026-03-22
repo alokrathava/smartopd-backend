@@ -12,7 +12,12 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiOperation,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -34,10 +39,7 @@ export class PatientsController {
   @Post()
   @Roles(Role.RECEPTIONIST, Role.NURSE, Role.FACILITY_ADMIN)
   @ApiOperation({ summary: 'Register a new patient' })
-  create(
-    @Body() dto: CreatePatientDto,
-    @CurrentUser() user: JwtPayload,
-  ) {
+  create(@Body() dto: CreatePatientDto, @CurrentUser() user: JwtPayload) {
     return this.patientsService.create(dto, user.facilityId!, user.sub);
   }
 
@@ -53,7 +55,11 @@ export class PatientsController {
     @Query('page') page?: number,
     @Query('limit') limit?: number,
   ) {
-    return this.patientsService.findAll(user.facilityId!, { search, page, limit });
+    return this.patientsService.findAll(user.facilityId!, {
+      search,
+      page,
+      limit,
+    });
   }
 
   @Get(':id')
@@ -96,7 +102,12 @@ export class PatientsController {
     @Body() dto: CreateConsentDto,
     @CurrentUser() user: JwtPayload,
   ) {
-    return this.patientsService.recordConsent(id, dto, user.facilityId!, user.sub);
+    return this.patientsService.recordConsent(
+      id,
+      dto,
+      user.facilityId!,
+      user.sub,
+    );
   }
 
   @Get(':id/consents')

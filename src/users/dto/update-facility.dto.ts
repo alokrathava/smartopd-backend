@@ -4,7 +4,10 @@ import { FacilityType } from '../entities/facility.entity';
 
 export class UpdateFacilityDto {
   @ApiPropertyOptional() @IsOptional() @IsString() name?: string;
-  @ApiPropertyOptional({ enum: FacilityType }) @IsOptional() @IsEnum(FacilityType) type?: FacilityType;
+  @ApiPropertyOptional({ enum: FacilityType })
+  @IsOptional()
+  @IsEnum(FacilityType)
+  type?: FacilityType;
   @ApiPropertyOptional() @IsOptional() @IsString() registrationNumber?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() address?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() city?: string;

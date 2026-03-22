@@ -31,11 +31,13 @@ export class AuthService {
     private usersService: UsersService,
     private jwtService: JwtService,
     private config: ConfigService,
-    @InjectRepository(RefreshToken) private refreshRepo: Repository<RefreshToken>,
+    @InjectRepository(RefreshToken)
+    private refreshRepo: Repository<RefreshToken>,
     @InjectRepository(Otp) private otpRepo: Repository<Otp>,
     @InjectRepository(User) private userRepo: Repository<User>,
     @InjectRepository(Facility) private facilityRepo: Repository<Facility>,
-    @InjectRepository(FacilitySettings) private settingsRepo: Repository<FacilitySettings>,
+    @InjectRepository(FacilitySettings)
+    private settingsRepo: Repository<FacilitySettings>,
   ) {}
 
   // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -85,18 +87,15 @@ export class AuthService {
   /** Splits `<selector>.<secret>` and validates against DB. Returns the record. */
   private async validateRefreshToken(rawToken: string): Promise<RefreshToken> {
     const dotIndex = rawToken.indexOf('.');
-    if (dotIndex === -1) throw new UnauthorizedException('Malformed refresh token');
+    if (dotIndex === -1)
+      throw new UnauthorizedException('Malformed refresh token');
 
     const selector = rawToken.substring(0, dotIndex);
     const secret = rawToken.substring(dotIndex + 1);
 
     const record = await this.refreshRepo.findOne({ where: { selector } });
 
-    if (
-      !record ||
-      record.revoked ||
-      dayjs().isAfter(record.expiresAt)
-    ) {
+    if (!record || record.revoked || dayjs().isAfter(record.expiresAt)) {
       throw new UnauthorizedException('Invalid or expired refresh token');
     }
 
@@ -110,7 +109,8 @@ export class AuthService {
 
   async login(dto: LoginDto, ip: string, userAgent: string) {
     const user = await this.usersService.findUserByEmail(dto.email);
-    if (!user || !user.isActive) throw new UnauthorizedException('Invalid credentials');
+    if (!user || !user.isActive)
+      throw new UnauthorizedException('Invalid credentials');
 
     const passwordValid = await bcrypt.compare(dto.password, user.passwordHash);
     if (!passwordValid) throw new UnauthorizedException('Invalid credentials');
@@ -141,8 +141,11 @@ export class AuthService {
     record.revoked = true;
     await this.refreshRepo.save(record);
 
-    const dbUser = await this.userRepo.findOne({ where: { id: record.userId } });
-    if (!dbUser || !dbUser.isActive) throw new UnauthorizedException('User not found or inactive');
+    const dbUser = await this.userRepo.findOne({
+      where: { id: record.userId },
+    });
+    if (!dbUser || !dbUser.isActive)
+      throw new UnauthorizedException('User not found or inactive');
 
     const accessToken = this.signAccessToken(this.buildPayload(dbUser));
     const newRawRefresh = await this.createRefreshToken(dbUser, '', '');
@@ -151,7 +154,10 @@ export class AuthService {
   }
 
   async logout(userId: string) {
-    await this.refreshRepo.update({ userId, revoked: false }, { revoked: true });
+    await this.refreshRepo.update(
+      { userId, revoked: false },
+      { revoked: true },
+    );
     return { message: 'Logged out successfully' };
   }
 
@@ -159,18 +165,27 @@ export class AuthService {
     const user = await this.userRepo.findOne({ where: { id: userId } });
     if (!user) throw new UnauthorizedException('User not found');
 
-    const currentValid = await bcrypt.compare(dto.currentPassword, user.passwordHash);
-    if (!currentValid) throw new BadRequestException('Current password is incorrect');
+    const currentValid = await bcrypt.compare(
+      dto.currentPassword,
+      user.passwordHash,
+    );
+    if (!currentValid)
+      throw new BadRequestException('Current password is incorrect');
 
     if (dto.currentPassword === dto.newPassword) {
-      throw new BadRequestException('New password must differ from current password');
+      throw new BadRequestException(
+        'New password must differ from current password',
+      );
     }
 
     user.passwordHash = await bcrypt.hash(dto.newPassword, 12);
     await this.userRepo.save(user);
 
     // Revoke all active refresh tokens — forces re-login on all devices
-    await this.refreshRepo.update({ userId, revoked: false }, { revoked: true });
+    await this.refreshRepo.update(
+      { userId, revoked: false },
+      { revoked: true },
+    );
 
     return { message: 'Password changed successfully. Please log in again.' };
   }
@@ -249,7 +264,9 @@ export class AuthService {
 
   async registerFacility(dto: RegisterFacilityDto) {
     // Check if email is already in use
-    const existing = await this.userRepo.findOne({ where: { email: dto.adminEmail } });
+    const existing = await this.userRepo.findOne({
+      where: { email: dto.adminEmail },
+    });
     if (existing) throw new BadRequestException('Email already registered');
 
     // Create facility
@@ -283,22 +300,33 @@ export class AuthService {
     });
     const savedUser = await this.userRepo.save(user);
 
-    console.log(`[REGISTRATION] New facility "${savedFacility.name}" registered. Facility ID: ${savedFacility.id}. Pending SUPER_ADMIN approval.`);
+    console.log(
+      `[REGISTRATION] New facility "${savedFacility.name}" registered. Facility ID: ${savedFacility.id}. Pending SUPER_ADMIN approval.`,
+    );
 
     return {
-      message: 'Registration successful. Your account is pending approval. You will be notified once activated.',
+      message:
+        'Registration successful. Your account is pending approval. You will be notified once activated.',
       facilityId: savedFacility.id,
       adminEmail: savedUser.email,
     };
   }
 
-  async inviteUser(dto: InviteUserDto, inviterFacilityId: string, inviterRole: Role) {
+  async inviteUser(
+    dto: InviteUserDto,
+    inviterFacilityId: string,
+    inviterRole: Role,
+  ) {
     // Only SUPER_ADMIN or FACILITY_ADMIN can invite
     if (![Role.SUPER_ADMIN, Role.FACILITY_ADMIN].includes(inviterRole)) {
-      throw new UnauthorizedException('Insufficient permissions to invite users');
+      throw new UnauthorizedException(
+        'Insufficient permissions to invite users',
+      );
     }
 
-    const existing = await this.userRepo.findOne({ where: { email: dto.email } });
+    const existing = await this.userRepo.findOne({
+      where: { email: dto.email },
+    });
     if (existing) throw new BadRequestException('Email already registered');
 
     const inviteToken = uuidv4();
@@ -327,9 +355,12 @@ export class AuthService {
   }
 
   async acceptInvite(dto: AcceptInviteDto) {
-    const user = await this.userRepo.findOne({ where: { inviteToken: dto.inviteToken } });
+    const user = await this.userRepo.findOne({
+      where: { inviteToken: dto.inviteToken },
+    });
     if (!user) throw new BadRequestException('Invalid invite token');
-    if (dayjs().isAfter(user.inviteExpiresAt)) throw new BadRequestException('Invite token has expired');
+    if (dayjs().isAfter(user.inviteExpiresAt))
+      throw new BadRequestException('Invite token has expired');
 
     user.passwordHash = await bcrypt.hash(dto.password, 12);
     user.isActive = true;

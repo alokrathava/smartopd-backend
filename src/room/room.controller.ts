@@ -1,5 +1,20 @@
-import { Controller, Get, Post, Patch, Body, Param, Query, UseGuards, ParseUUIDPipe } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery } from '@nestjs/swagger';
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Body,
+  Param,
+  Query,
+  UseGuards,
+  ParseUUIDPipe,
+} from '@nestjs/common';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiOperation,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -43,7 +58,10 @@ export class RoomController {
 
   @Get('rooms/:id/beds')
   @ApiOperation({ summary: 'Get all beds in a room' })
-  getBedsForRoom(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: JwtPayload) {
+  getBedsForRoom(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: JwtPayload,
+  ) {
     return this.roomService.getBedsForRoom(id, user.facilityId!);
   }
 
@@ -63,27 +81,42 @@ export class RoomController {
 
   @Get('beds/available')
   @Roles(Role.RECEPTIONIST, Role.NURSE, Role.FACILITY_ADMIN, Role.SUPER_ADMIN)
-  @ApiOperation({ summary: 'Available beds — optionally filtered by room type' })
+  @ApiOperation({
+    summary: 'Available beds — optionally filtered by room type',
+  })
   @ApiQuery({ name: 'roomType', required: false, enum: RoomType })
-  getAvailableBeds(@CurrentUser() user: JwtPayload, @Query('roomType') roomType?: RoomType) {
+  getAvailableBeds(
+    @CurrentUser() user: JwtPayload,
+    @Query('roomType') roomType?: RoomType,
+  ) {
     return this.roomService.getAvailableBeds(user.facilityId!, roomType);
   }
 
   @Patch('beds/:id/status')
   @Roles(Role.NURSE, Role.FACILITY_ADMIN, Role.SUPER_ADMIN, Role.RECEPTIONIST)
-  @ApiOperation({ summary: 'Update bed status (enforces state machine transitions)' })
+  @ApiOperation({
+    summary: 'Update bed status (enforces state machine transitions)',
+  })
   updateBedStatus(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateBedStatusDto,
     @CurrentUser() user: JwtPayload,
   ) {
-    return this.roomService.updateBedStatus(id, dto, user.facilityId!, user.sub);
+    return this.roomService.updateBedStatus(
+      id,
+      dto,
+      user.facilityId!,
+      user.sub,
+    );
   }
 
   @Post('beds/:id/housekeeping')
   @Roles(Role.NURSE, Role.FACILITY_ADMIN, Role.SUPER_ADMIN)
   @ApiOperation({ summary: 'Trigger housekeeping/cleaning job for a bed' })
-  startHousekeeping(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: JwtPayload) {
+  startHousekeeping(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: JwtPayload,
+  ) {
     return this.roomService.startHousekeeping(id, user.facilityId!);
   }
 
@@ -95,20 +128,31 @@ export class RoomController {
     @Body('notes') notes: string,
     @CurrentUser() user: JwtPayload,
   ) {
-    return this.roomService.completeHousekeeping(id, user.facilityId!, user.sub, notes);
+    return this.roomService.completeHousekeeping(
+      id,
+      user.facilityId!,
+      user.sub,
+      notes,
+    );
   }
 
   @Get('beds/:id/housekeeping-history')
   @Roles(Role.NURSE, Role.FACILITY_ADMIN, Role.SUPER_ADMIN)
   @ApiOperation({ summary: 'Cleaning turnaround history for a bed' })
-  getHousekeepingHistory(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: JwtPayload) {
+  getHousekeepingHistory(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: JwtPayload,
+  ) {
     return this.roomService.getHousekeepingHistory(id, user.facilityId!);
   }
 
   @Get('wards/:ward/occupancy')
   @Roles(Role.FACILITY_ADMIN, Role.SUPER_ADMIN, Role.NURSE)
   @ApiOperation({ summary: 'Ward occupancy metrics' })
-  getWardOccupancy(@Param('ward') ward: string, @CurrentUser() user: JwtPayload) {
+  getWardOccupancy(
+    @Param('ward') ward: string,
+    @CurrentUser() user: JwtPayload,
+  ) {
     return this.roomService.getWardOccupancy(ward, user.facilityId!);
   }
 

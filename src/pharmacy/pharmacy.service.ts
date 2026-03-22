@@ -25,7 +25,11 @@ export class PharmacyService {
       .getMany();
   }
 
-  async dispense(dto: DispenseDto, facilityId: string, pharmacistId: string): Promise<DispenseRecord> {
+  async dispense(
+    dto: DispenseDto,
+    facilityId: string,
+    pharmacistId: string,
+  ): Promise<DispenseRecord> {
     const totalPrice =
       dto.unitPrice && dto.quantityDispensed
         ? dto.unitPrice * dto.quantityDispensed
@@ -43,7 +47,11 @@ export class PharmacyService {
     return this.dispenseRepo.save(record);
   }
 
-  async checkAllergy(patientId: string, drugName: string, facilityId: string): Promise<{ hasAllergy: boolean; matchedAllergens: string[] }> {
+  async checkAllergy(
+    patientId: string,
+    drugName: string,
+    facilityId: string,
+  ): Promise<{ hasAllergy: boolean; matchedAllergens: string[] }> {
     // Simplified: this would typically look up patient allergies
     // and do a string match against drug name
     return {
@@ -52,7 +60,10 @@ export class PharmacyService {
     };
   }
 
-  async getInventory(facilityId: string, filters?: { drugName?: string }): Promise<PharmacyInventory[]> {
+  async getInventory(
+    facilityId: string,
+    filters?: { drugName?: string },
+  ): Promise<PharmacyInventory[]> {
     const qb = this.inventoryRepo
       .createQueryBuilder('i')
       .where('i.facilityId = :facilityId', { facilityId })
@@ -66,7 +77,10 @@ export class PharmacyService {
     return qb.getMany();
   }
 
-  async addInventory(dto: CreateInventoryDto, facilityId: string): Promise<PharmacyInventory> {
+  async addInventory(
+    dto: CreateInventoryDto,
+    facilityId: string,
+  ): Promise<PharmacyInventory> {
     const item = this.inventoryRepo.create({
       ...dto,
       facilityId,
@@ -85,7 +99,10 @@ export class PharmacyService {
       .getMany();
   }
 
-  async getExpiringStock(facilityId: string, days = 30): Promise<PharmacyInventory[]> {
+  async getExpiringStock(
+    facilityId: string,
+    days = 30,
+  ): Promise<PharmacyInventory[]> {
     const expiryThreshold = new Date();
     expiryThreshold.setDate(expiryThreshold.getDate() + days);
 
@@ -99,14 +116,21 @@ export class PharmacyService {
     });
   }
 
-  async getDispenseHistory(facilityId: string, filters?: { patientId?: string; prescriptionId?: string }) {
+  async getDispenseHistory(
+    facilityId: string,
+    filters?: { patientId?: string; prescriptionId?: string },
+  ) {
     const qb = this.dispenseRepo
       .createQueryBuilder('d')
       .where('d.facilityId = :facilityId', { facilityId })
       .orderBy('d.dispensedAt', 'DESC');
 
-    if (filters?.patientId) qb.andWhere('d.patientId = :patientId', { patientId: filters.patientId });
-    if (filters?.prescriptionId) qb.andWhere('d.prescriptionId = :prescriptionId', { prescriptionId: filters.prescriptionId });
+    if (filters?.patientId)
+      qb.andWhere('d.patientId = :patientId', { patientId: filters.patientId });
+    if (filters?.prescriptionId)
+      qb.andWhere('d.prescriptionId = :prescriptionId', {
+        prescriptionId: filters.prescriptionId,
+      });
 
     return qb.getMany();
   }

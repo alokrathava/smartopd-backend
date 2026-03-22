@@ -9,7 +9,12 @@ import {
   UseGuards,
   ParseUUIDPipe,
 } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiOperation,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -32,7 +37,10 @@ export class CrmController {
   @Post('follow-ups')
   @Roles(Role.CRM_ANALYST, Role.FACILITY_ADMIN, Role.DOCTOR)
   @ApiOperation({ summary: 'Create follow-up' })
-  createFollowUp(@Body() dto: CreateFollowUpDto, @CurrentUser() user: JwtPayload) {
+  createFollowUp(
+    @Body() dto: CreateFollowUpDto,
+    @CurrentUser() user: JwtPayload,
+  ) {
     return this.crmService.createFollowUp(dto, user.facilityId!);
   }
 
@@ -55,7 +63,11 @@ export class CrmController {
     @Query('status') status?: FollowUpStatus,
     @Query('patientId') patientId?: string,
   ) {
-    return this.crmService.getFollowUps(user.facilityId!, { date, status, patientId });
+    return this.crmService.getFollowUps(user.facilityId!, {
+      date,
+      status,
+      patientId,
+    });
   }
 
   @Patch('follow-ups/:id')
@@ -72,7 +84,10 @@ export class CrmController {
   @Post('segments')
   @Roles(Role.CRM_ANALYST, Role.FACILITY_ADMIN)
   @ApiOperation({ summary: 'Create patient segment' })
-  createSegment(@Body() dto: CreateSegmentDto, @CurrentUser() user: JwtPayload) {
+  createSegment(
+    @Body() dto: CreateSegmentDto,
+    @CurrentUser() user: JwtPayload,
+  ) {
     return this.crmService.createSegment(dto, user.facilityId!);
   }
 
@@ -86,7 +101,10 @@ export class CrmController {
   @Post('campaigns')
   @Roles(Role.CRM_ANALYST, Role.FACILITY_ADMIN)
   @ApiOperation({ summary: 'Create campaign' })
-  createCampaign(@Body() dto: CreateCampaignDto, @CurrentUser() user: JwtPayload) {
+  createCampaign(
+    @Body() dto: CreateCampaignDto,
+    @CurrentUser() user: JwtPayload,
+  ) {
     return this.crmService.createCampaign(dto, user.facilityId!);
   }
 

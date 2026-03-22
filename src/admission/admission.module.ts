@@ -9,7 +9,15 @@ import { AdmissionService } from './admission.service';
 import { AdmissionController } from './admission.controller';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Admission, WardRound, WardRoundStop, DischargeSummary, Bed])],
+  imports: [
+    TypeOrmModule.forFeature([
+      Admission,
+      WardRound,
+      WardRoundStop,
+      DischargeSummary,
+      Bed,
+    ]),
+  ],
   controllers: [AdmissionController],
   providers: [AdmissionService],
   exports: [AdmissionService],

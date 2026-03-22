@@ -8,7 +8,12 @@ import {
   UseGuards,
   ParseUUIDPipe,
 } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiOperation,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -47,7 +52,10 @@ export class PaymentController {
   @Get('bills/:id')
   @Roles(Role.RECEPTIONIST, Role.PHARMACIST, Role.FACILITY_ADMIN)
   @ApiOperation({ summary: 'Get bill by ID' })
-  getBill(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: JwtPayload) {
+  getBill(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: JwtPayload,
+  ) {
     return this.paymentService.getBill(id, user.facilityId!);
   }
 
@@ -66,7 +74,10 @@ export class PaymentController {
   @Post('bills/:id/finalize')
   @Roles(Role.RECEPTIONIST, Role.PHARMACIST, Role.FACILITY_ADMIN)
   @ApiOperation({ summary: 'Finalize bill' })
-  finalizeBill(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: JwtPayload) {
+  finalizeBill(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: JwtPayload,
+  ) {
     return this.paymentService.finalizeBill(id, user.facilityId!);
   }
 

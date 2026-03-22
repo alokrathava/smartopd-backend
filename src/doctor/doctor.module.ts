@@ -8,7 +8,14 @@ import { DoctorService } from './doctor.service';
 import { DoctorController } from './doctor.controller';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Consultation, Prescription, PrescriptionItem, Icd10])],
+  imports: [
+    TypeOrmModule.forFeature([
+      Consultation,
+      Prescription,
+      PrescriptionItem,
+      Icd10,
+    ]),
+  ],
   controllers: [DoctorController],
   providers: [DoctorService],
   exports: [DoctorService],

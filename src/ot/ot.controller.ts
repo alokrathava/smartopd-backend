@@ -9,7 +9,12 @@ import {
   UseGuards,
   ParseUUIDPipe,
 } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiOperation,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -51,7 +56,12 @@ export class OtController {
     @Query('status') status?: OtStatus,
     @Query('otRoomId') otRoomId?: string,
   ) {
-    return this.otService.findAll(user.facilityId!, { date, surgeonId, status, otRoomId });
+    return this.otService.findAll(user.facilityId!, {
+      date,
+      surgeonId,
+      status,
+      otRoomId,
+    });
   }
 
   // GET /ot/availability
@@ -70,7 +80,9 @@ export class OtController {
   // GET /ot/analytics/surgeon-stats
   @Get('analytics/surgeon-stats')
   @Roles(Role.FACILITY_ADMIN, Role.DOCTOR)
-  @ApiOperation({ summary: 'Surgeon performance stats — completed surgeries and avg duration' })
+  @ApiOperation({
+    summary: 'Surgeon performance stats — completed surgeries and avg duration',
+  })
   @ApiQuery({ name: 'surgeonId', required: true })
   @ApiQuery({ name: 'from', required: false })
   @ApiQuery({ name: 'to', required: false })
@@ -80,33 +92,51 @@ export class OtController {
     @Query('from') from?: string,
     @Query('to') to?: string,
   ) {
-    return this.otService.getSurgeonStats(surgeonId, user.facilityId!, { from, to });
+    return this.otService.getSurgeonStats(surgeonId, user.facilityId!, {
+      from,
+      to,
+    });
   }
 
   // GET /ot/bookings/:id
   @Get('bookings/:id')
   @ApiOperation({ summary: 'Get OT booking by ID' })
-  findOne(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: JwtPayload) {
+  findOne(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: JwtPayload,
+  ) {
     return this.otService.findOne(id, user.facilityId!);
   }
 
   // POST /ot/bookings/:id/preop-checklist
   @Post('bookings/:id/preop-checklist')
   @Roles(Role.NURSE, Role.DOCTOR, Role.FACILITY_ADMIN)
-  @ApiOperation({ summary: 'Submit/update pre-op checklist — auto-advances status to preop_check when all items checked' })
+  @ApiOperation({
+    summary:
+      'Submit/update pre-op checklist — auto-advances status to preop_check when all items checked',
+  })
   updatePreopChecklist(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() checklistData: Record<string, any>,
     @CurrentUser() user: JwtPayload,
   ) {
-    return this.otService.updatePreopChecklist(id, checklistData, user.facilityId!);
+    return this.otService.updatePreopChecklist(
+      id,
+      checklistData,
+      user.facilityId!,
+    );
   }
 
   // PATCH /ot/bookings/:id/start
   @Patch('bookings/:id/start')
   @Roles(Role.DOCTOR, Role.NURSE, Role.FACILITY_ADMIN)
-  @ApiOperation({ summary: 'Start OT — blocked if pre-op checklist not complete' })
-  startOt(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: JwtPayload) {
+  @ApiOperation({
+    summary: 'Start OT — blocked if pre-op checklist not complete',
+  })
+  startOt(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: JwtPayload,
+  ) {
     return this.otService.startOt(id, user.facilityId!);
   }
 

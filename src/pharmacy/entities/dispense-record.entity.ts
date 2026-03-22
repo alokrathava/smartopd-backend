@@ -40,10 +40,22 @@ export class DispenseRecord {
   @Column({ type: 'int', name: 'quantity_dispensed' })
   quantityDispensed: number;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true, name: 'unit_price' })
+  @Column({
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    nullable: true,
+    name: 'unit_price',
+  })
   unitPrice: number;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true, name: 'total_price' })
+  @Column({
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    nullable: true,
+    name: 'total_price',
+  })
   totalPrice: number;
 
   @Column({ type: 'datetime', name: 'dispensed_at' })

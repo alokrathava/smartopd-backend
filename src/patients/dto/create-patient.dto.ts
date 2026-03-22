@@ -32,12 +32,18 @@ export class CreatePatientDto {
   gender: Gender;
 
   @ApiProperty({ example: '+919876543210' })
-  @Matches(/^\+91[6-9]\d{9}$/, { message: 'phone must be a valid Indian mobile number in format +91XXXXXXXXXX' })
+  @Matches(/^\+91[6-9]\d{9}$/, {
+    message:
+      'phone must be a valid Indian mobile number in format +91XXXXXXXXXX',
+  })
   phone: string;
 
   @ApiPropertyOptional({ example: '+919876543211' })
   @IsOptional()
-  @Matches(/^\+91[6-9]\d{9}$/, { message: 'alternatePhone must be a valid Indian mobile number in format +91XXXXXXXXXX' })
+  @Matches(/^\+91[6-9]\d{9}$/, {
+    message:
+      'alternatePhone must be a valid Indian mobile number in format +91XXXXXXXXXX',
+  })
   alternatePhone?: string;
 
   @ApiPropertyOptional({ example: 'john.doe@example.com' })
@@ -100,12 +106,17 @@ export class CreatePatientDto {
   @IsString()
   chronicConditions?: string;
 
-  @ApiPropertyOptional({ example: '{"provider": "Star Health", "policyNumber": "POL123"}' })
+  @ApiPropertyOptional({
+    example: '{"provider": "Star Health", "policyNumber": "POL123"}',
+  })
   @IsOptional()
   @IsString()
   insuranceInfo?: string;
 
-  @ApiProperty({ description: 'Patient must provide consent to proceed', example: true })
+  @ApiProperty({
+    description: 'Patient must provide consent to proceed',
+    example: true,
+  })
   @IsBoolean()
   @Equals(true, { message: 'Patient consent is required to create a record' })
   consentGiven: boolean;

@@ -34,7 +34,12 @@ export class Patient {
   @Column({ type: 'varchar', length: 20 })
   phone: string;
 
-  @Column({ type: 'varchar', length: 20, nullable: true, name: 'alternate_phone' })
+  @Column({
+    type: 'varchar',
+    length: 20,
+    nullable: true,
+    name: 'alternate_phone',
+  })
   alternatePhone: string;
 
   @Column({ type: 'varchar', length: 150, nullable: true })
@@ -58,19 +63,39 @@ export class Patient {
   @Column({ type: 'varchar', length: 20, nullable: true, name: 'abha_number' })
   abhaNumber: string;
 
-  @Column({ type: 'varchar', length: 100, nullable: true, name: 'abha_address' })
+  @Column({
+    type: 'varchar',
+    length: 100,
+    nullable: true,
+    name: 'abha_address',
+  })
   abhaAddress: string;
 
-  @Column({ type: 'varchar', length: 4, nullable: true, name: 'aadhar_last_four' })
+  @Column({
+    type: 'varchar',
+    length: 4,
+    nullable: true,
+    name: 'aadhar_last_four',
+  })
   aadharLastFour: string;
 
   @Column({ type: 'boolean', default: false, name: 'aadhaar_verified' })
   aadhaarVerified: boolean;
 
-  @Column({ type: 'varchar', length: 100, nullable: true, name: 'emergency_contact_name' })
+  @Column({
+    type: 'varchar',
+    length: 100,
+    nullable: true,
+    name: 'emergency_contact_name',
+  })
   emergencyContactName: string;
 
-  @Column({ type: 'varchar', length: 20, nullable: true, name: 'emergency_contact_phone' })
+  @Column({
+    type: 'varchar',
+    length: 20,
+    nullable: true,
+    name: 'emergency_contact_phone',
+  })
   emergencyContactPhone: string;
 
   @Column({ type: 'text', nullable: true })

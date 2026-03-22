@@ -1,5 +1,25 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, UseInterceptors, UploadedFile, HttpCode, HttpStatus, BadRequestException } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiConsumes, ApiBody, ApiOperation } from '@nestjs/swagger';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  UseInterceptors,
+  UploadedFile,
+  HttpCode,
+  HttpStatus,
+  BadRequestException,
+} from '@nestjs/common';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiConsumes,
+  ApiBody,
+  ApiOperation,
+} from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
@@ -73,30 +93,50 @@ export class UsersController {
 
   @Patch('facilities/:id/settings')
   @Roles(Role.SUPER_ADMIN, Role.FACILITY_ADMIN)
-  updateFacilitySettings(@Param('id') id: string, @Body() dto: UpdateFacilitySettingsDto) {
+  updateFacilitySettings(
+    @Param('id') id: string,
+    @Body() dto: UpdateFacilitySettingsDto,
+  ) {
     return this.usersService.updateFacilitySettings(id, dto);
   }
 
   @Post('facilities/:id/upload-logo')
   @Roles(Role.SUPER_ADMIN, Role.FACILITY_ADMIN)
-  @ApiOperation({ summary: 'Upload facility logo', description: 'Accepts PNG/JPG/SVG. Max 2MB.' })
+  @ApiOperation({
+    summary: 'Upload facility logo',
+    description: 'Accepts PNG/JPG/SVG. Max 2MB.',
+  })
   @ApiConsumes('multipart/form-data')
-  @ApiBody({ schema: { type: 'object', properties: { logo: { type: 'string', format: 'binary' } } } })
-  @UseInterceptors(FileInterceptor('logo', {
-    storage: diskStorage({
-      destination: './uploads/logos',
-      filename: (req, file, cb) => cb(null, `logo-${Date.now()}${extname(file.originalname)}`),
-    }),
-    limits: { fileSize: 2 * 1024 * 1024 }, // 2MB
-    fileFilter: (req, file, cb) => {
-      const allowed = ['.png', '.jpg', '.jpeg', '.svg', '.webp'];
-      if (!allowed.includes(extname(file.originalname).toLowerCase())) {
-        return cb(new BadRequestException('Only PNG, JPG, SVG, WEBP allowed'), false);
-      }
-      cb(null, true);
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: { logo: { type: 'string', format: 'binary' } },
     },
-  }))
-  async uploadFacilityLogo(@Param('id') id: string, @UploadedFile() file: Express.Multer.File) {
+  })
+  @UseInterceptors(
+    FileInterceptor('logo', {
+      storage: diskStorage({
+        destination: './uploads/logos',
+        filename: (req, file, cb) =>
+          cb(null, `logo-${Date.now()}${extname(file.originalname)}`),
+      }),
+      limits: { fileSize: 2 * 1024 * 1024 }, // 2MB
+      fileFilter: (req, file, cb) => {
+        const allowed = ['.png', '.jpg', '.jpeg', '.svg', '.webp'];
+        if (!allowed.includes(extname(file.originalname).toLowerCase())) {
+          return cb(
+            new BadRequestException('Only PNG, JPG, SVG, WEBP allowed'),
+            false,
+          );
+        }
+        cb(null, true);
+      },
+    }),
+  )
+  async uploadFacilityLogo(
+    @Param('id') id: string,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
     if (!file) throw new BadRequestException('No file uploaded');
     const logoUrl = `/uploads/logos/${file.filename}`;
     return this.usersService.uploadFacilityLogo(id, logoUrl);
@@ -106,44 +146,76 @@ export class UsersController {
   @Roles(Role.SUPER_ADMIN, Role.FACILITY_ADMIN)
   @ApiOperation({ summary: 'Upload branding logo for white-label kit' })
   @ApiConsumes('multipart/form-data')
-  @ApiBody({ schema: { type: 'object', properties: { logo: { type: 'string', format: 'binary' } } } })
-  @UseInterceptors(FileInterceptor('logo', {
-    storage: diskStorage({
-      destination: './uploads/logos',
-      filename: (req, file, cb) => cb(null, `brand-logo-${Date.now()}${extname(file.originalname)}`),
-    }),
-    limits: { fileSize: 2 * 1024 * 1024 },
-    fileFilter: (req, file, cb) => {
-      const allowed = ['.png', '.jpg', '.jpeg', '.svg', '.webp'];
-      if (!allowed.includes(extname(file.originalname).toLowerCase())) return cb(new BadRequestException('Invalid file type'), false);
-      cb(null, true);
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: { logo: { type: 'string', format: 'binary' } },
     },
-  }))
-  async uploadSettingsLogo(@Param('id') id: string, @UploadedFile() file: Express.Multer.File) {
+  })
+  @UseInterceptors(
+    FileInterceptor('logo', {
+      storage: diskStorage({
+        destination: './uploads/logos',
+        filename: (req, file, cb) =>
+          cb(null, `brand-logo-${Date.now()}${extname(file.originalname)}`),
+      }),
+      limits: { fileSize: 2 * 1024 * 1024 },
+      fileFilter: (req, file, cb) => {
+        const allowed = ['.png', '.jpg', '.jpeg', '.svg', '.webp'];
+        if (!allowed.includes(extname(file.originalname).toLowerCase()))
+          return cb(new BadRequestException('Invalid file type'), false);
+        cb(null, true);
+      },
+    }),
+  )
+  async uploadSettingsLogo(
+    @Param('id') id: string,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
     if (!file) throw new BadRequestException('No file uploaded');
-    return this.usersService.uploadSettingsAsset(id, 'logoUrl', `/uploads/logos/${file.filename}`);
+    return this.usersService.uploadSettingsAsset(
+      id,
+      'logoUrl',
+      `/uploads/logos/${file.filename}`,
+    );
   }
 
   @Post('facilities/:id/settings/upload-favicon')
   @Roles(Role.SUPER_ADMIN, Role.FACILITY_ADMIN)
   @ApiOperation({ summary: 'Upload favicon for white-label kit' })
   @ApiConsumes('multipart/form-data')
-  @ApiBody({ schema: { type: 'object', properties: { favicon: { type: 'string', format: 'binary' } } } })
-  @UseInterceptors(FileInterceptor('favicon', {
-    storage: diskStorage({
-      destination: './uploads/logos',
-      filename: (req, file, cb) => cb(null, `favicon-${Date.now()}${extname(file.originalname)}`),
-    }),
-    limits: { fileSize: 512 * 1024 }, // 512KB for favicon
-    fileFilter: (req, file, cb) => {
-      const allowed = ['.png', '.ico', '.svg'];
-      if (!allowed.includes(extname(file.originalname).toLowerCase())) return cb(new BadRequestException('Invalid file type'), false);
-      cb(null, true);
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: { favicon: { type: 'string', format: 'binary' } },
     },
-  }))
-  async uploadFavicon(@Param('id') id: string, @UploadedFile() file: Express.Multer.File) {
+  })
+  @UseInterceptors(
+    FileInterceptor('favicon', {
+      storage: diskStorage({
+        destination: './uploads/logos',
+        filename: (req, file, cb) =>
+          cb(null, `favicon-${Date.now()}${extname(file.originalname)}`),
+      }),
+      limits: { fileSize: 512 * 1024 }, // 512KB for favicon
+      fileFilter: (req, file, cb) => {
+        const allowed = ['.png', '.ico', '.svg'];
+        if (!allowed.includes(extname(file.originalname).toLowerCase()))
+          return cb(new BadRequestException('Invalid file type'), false);
+        cb(null, true);
+      },
+    }),
+  )
+  async uploadFavicon(
+    @Param('id') id: string,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
     if (!file) throw new BadRequestException('No file uploaded');
-    return this.usersService.uploadSettingsAsset(id, 'faviconUrl', `/uploads/logos/${file.filename}`);
+    return this.usersService.uploadSettingsAsset(
+      id,
+      'faviconUrl',
+      `/uploads/logos/${file.filename}`,
+    );
   }
 
   // ── Users ─────────────────────────────────────────────────
@@ -178,7 +250,11 @@ export class UsersController {
 
   @Patch('users/:id')
   @Roles(Role.SUPER_ADMIN, Role.FACILITY_ADMIN)
-  updateUser(@Param('id') id: string, @Body() dto: UpdateUserDto, @CurrentUser() user: JwtPayload) {
+  updateUser(
+    @Param('id') id: string,
+    @Body() dto: UpdateUserDto,
+    @CurrentUser() user: JwtPayload,
+  ) {
     return this.usersService.updateUser(id, dto, user.facilityId!);
   }
 

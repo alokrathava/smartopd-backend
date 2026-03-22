@@ -52,7 +52,13 @@ export class PharmacyInventory {
   @Column({ type: 'varchar', nullable: true, name: 'hsn_code' })
   hsnCode: string;
 
-  @Column({ type: 'decimal', precision: 5, scale: 2, default: 18, name: 'gst_percent' })
+  @Column({
+    type: 'decimal',
+    precision: 5,
+    scale: 2,
+    default: 18,
+    name: 'gst_percent',
+  })
   gstPercent: number;
 
   @Column({ type: 'boolean', default: true, name: 'is_active' })

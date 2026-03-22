@@ -9,7 +9,12 @@ import {
   UseGuards,
   ParseUUIDPipe,
 } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiOperation,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -32,8 +37,15 @@ export class DoctorController {
   @Post('consultations')
   @Roles(Role.DOCTOR, Role.FACILITY_ADMIN)
   @ApiOperation({ summary: 'Create consultation' })
-  createConsultation(@Body() dto: CreateConsultationDto, @CurrentUser() user: JwtPayload) {
-    return this.doctorService.createConsultation(dto, user.facilityId!, user.sub);
+  createConsultation(
+    @Body() dto: CreateConsultationDto,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    return this.doctorService.createConsultation(
+      dto,
+      user.facilityId!,
+      user.sub,
+    );
   }
 
   @Get('consultations/:visitId')
@@ -71,12 +83,25 @@ export class DoctorController {
   @Post('prescriptions')
   @Roles(Role.DOCTOR, Role.FACILITY_ADMIN)
   @ApiOperation({ summary: 'Create prescription' })
-  createPrescription(@Body() dto: CreatePrescriptionDto, @CurrentUser() user: JwtPayload) {
-    return this.doctorService.createPrescription(dto, user.facilityId!, user.sub);
+  createPrescription(
+    @Body() dto: CreatePrescriptionDto,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    return this.doctorService.createPrescription(
+      dto,
+      user.facilityId!,
+      user.sub,
+    );
   }
 
   @Get('prescriptions/:visitId')
-  @Roles(Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST, Role.PHARMACIST, Role.FACILITY_ADMIN)
+  @Roles(
+    Role.DOCTOR,
+    Role.NURSE,
+    Role.RECEPTIONIST,
+    Role.PHARMACIST,
+    Role.FACILITY_ADMIN,
+  )
   @ApiOperation({ summary: 'Get prescription by visit ID' })
   getPrescription(
     @Param('visitId', ParseUUIDPipe) visitId: string,

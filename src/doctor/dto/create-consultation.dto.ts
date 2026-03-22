@@ -1,4 +1,10 @@
-import { IsUUID, IsOptional, IsString, IsDateString, IsArray } from 'class-validator';
+import {
+  IsUUID,
+  IsOptional,
+  IsString,
+  IsDateString,
+  IsArray,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateConsultationDto {
@@ -40,7 +46,10 @@ export class CreateConsultationDto {
   @IsString()
   investigations?: string;
 
-  @ApiPropertyOptional({ type: 'array', description: 'JSON array of diagnosis objects' })
+  @ApiPropertyOptional({
+    type: 'array',
+    description: 'JSON array of diagnosis objects',
+  })
   @IsOptional()
   diagnoses?: any[];
 

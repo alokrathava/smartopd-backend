@@ -1,4 +1,11 @@
-import { IsUUID, IsEnum, IsString, IsOptional, IsNumber, IsDateString } from 'class-validator';
+import {
+  IsUUID,
+  IsEnum,
+  IsString,
+  IsOptional,
+  IsNumber,
+  IsDateString,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { MaintenanceType } from '../entities/maintenance-log.entity';

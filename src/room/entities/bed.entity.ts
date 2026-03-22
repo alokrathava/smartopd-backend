@@ -3,28 +3,34 @@ import { BaseEntity } from '../../common/base/base.entity';
 import { RoomType } from './room.entity';
 
 export enum BedStatus {
-  AVAILABLE   = 'AVAILABLE',
-  OCCUPIED    = 'OCCUPIED',
-  CLEANING    = 'CLEANING',
-  RESERVED    = 'RESERVED',
+  AVAILABLE = 'AVAILABLE',
+  OCCUPIED = 'OCCUPIED',
+  CLEANING = 'CLEANING',
+  RESERVED = 'RESERVED',
   MAINTENANCE = 'MAINTENANCE',
-  BLOCKED     = 'BLOCKED',
+  BLOCKED = 'BLOCKED',
 }
 
 export const VALID_BED_TRANSITIONS: Record<BedStatus, BedStatus[]> = {
-  [BedStatus.AVAILABLE]:   [BedStatus.OCCUPIED, BedStatus.RESERVED, BedStatus.MAINTENANCE, BedStatus.BLOCKED],
-  [BedStatus.OCCUPIED]:    [BedStatus.CLEANING],
-  [BedStatus.CLEANING]:    [BedStatus.AVAILABLE, BedStatus.MAINTENANCE],
-  [BedStatus.RESERVED]:    [BedStatus.OCCUPIED, BedStatus.AVAILABLE],
+  [BedStatus.AVAILABLE]: [
+    BedStatus.OCCUPIED,
+    BedStatus.RESERVED,
+    BedStatus.MAINTENANCE,
+    BedStatus.BLOCKED,
+  ],
+  [BedStatus.OCCUPIED]: [BedStatus.CLEANING],
+  [BedStatus.CLEANING]: [BedStatus.AVAILABLE, BedStatus.MAINTENANCE],
+  [BedStatus.RESERVED]: [BedStatus.OCCUPIED, BedStatus.AVAILABLE],
   [BedStatus.MAINTENANCE]: [BedStatus.AVAILABLE, BedStatus.BLOCKED],
-  [BedStatus.BLOCKED]:     [BedStatus.AVAILABLE, BedStatus.MAINTENANCE],
+  [BedStatus.BLOCKED]: [BedStatus.AVAILABLE, BedStatus.MAINTENANCE],
 };
 
 @Entity('beds')
 export class Bed extends BaseEntity {
   @Column() roomId: string;
   @Column() bedNumber: string;
-  @Column({ type: 'varchar', length: 20, default: BedStatus.AVAILABLE }) status: BedStatus;
+  @Column({ type: 'varchar', length: 20, default: BedStatus.AVAILABLE })
+  status: BedStatus;
   @Column({ nullable: true }) currentPatientId?: string;
   @Column({ nullable: true }) currentAdmissionId?: string;
   @Column({ default: false }) hasVentilator: boolean;
@@ -47,5 +53,6 @@ export class Bed extends BaseEntity {
   @Column({ type: 'varchar', nullable: true }) lastCleanedBy?: string | null;
 
   /** When cleaning of this bed started */
-  @Column({ type: 'timestamp', nullable: true }) cleaningStartedAt?: Date | null;
+  @Column({ type: 'timestamp', nullable: true })
+  cleaningStartedAt?: Date | null;
 }

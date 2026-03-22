@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between, IsNull } from 'typeorm';
 import { OtBooking, OtStatus, OtUrgency } from './entities/ot-booking.entity';
@@ -13,12 +17,17 @@ export class OtService {
   ) {}
 
   /** Create a booking — validates no time-slot conflict in the same OT room */
-  async create(dto: CreateOtBookingDto, facilityId: string): Promise<OtBooking> {
+  async create(
+    dto: CreateOtBookingDto,
+    facilityId: string,
+  ): Promise<OtBooking> {
     const scheduledStart = new Date(dto.scheduledStart);
     const scheduledEnd = new Date(dto.scheduledEnd);
 
     if (scheduledEnd <= scheduledStart) {
-      throw new BadRequestException('scheduledEnd must be after scheduledStart');
+      throw new BadRequestException(
+        'scheduledEnd must be after scheduledStart',
+      );
     }
 
     const conflict = await this.otRepo
@@ -91,11 +100,19 @@ export class OtService {
     if (filters.date) {
       const dayStart = dayjs(filters.date).startOf('day').toDate();
       const dayEnd = dayjs(filters.date).endOf('day').toDate();
-      qb.andWhere('ot.scheduledStart BETWEEN :dayStart AND :dayEnd', { dayStart, dayEnd });
+      qb.andWhere('ot.scheduledStart BETWEEN :dayStart AND :dayEnd', {
+        dayStart,
+        dayEnd,
+      });
     }
-    if (filters.surgeonId) qb.andWhere('ot.surgeonId = :surgeonId', { surgeonId: filters.surgeonId });
-    if (filters.status) qb.andWhere('ot.status = :status', { status: filters.status });
-    if (filters.otRoomId) qb.andWhere('ot.otRoomId = :otRoomId', { otRoomId: filters.otRoomId });
+    if (filters.surgeonId)
+      qb.andWhere('ot.surgeonId = :surgeonId', {
+        surgeonId: filters.surgeonId,
+      });
+    if (filters.status)
+      qb.andWhere('ot.status = :status', { status: filters.status });
+    if (filters.otRoomId)
+      qb.andWhere('ot.otRoomId = :otRoomId', { otRoomId: filters.otRoomId });
 
     return qb.getMany();
   }
@@ -121,8 +138,11 @@ export class OtService {
     booking.preOpChecklist = checklistData;
 
     // Determine if all items are checked
-    const items: any[] = Array.isArray(checklistData.items) ? checklistData.items : [];
-    const allChecked = items.length > 0 && items.every((item: any) => item.checked === true);
+    const items: any[] = Array.isArray(checklistData.items)
+      ? checklistData.items
+      : [];
+    const allChecked =
+      items.length > 0 && items.every((item: any) => item.checked === true);
     if (allChecked) {
       booking.preOpChecklistCompletedAt = new Date();
       booking.status = OtStatus.PREOP_CHECK;
@@ -147,11 +167,17 @@ export class OtService {
   }
 
   /** Complete OT — saves notes, sets actualEnd */
-  async completeOt(id: string, dto: CompleteOtDto, facilityId: string): Promise<OtBooking> {
+  async completeOt(
+    id: string,
+    dto: CompleteOtDto,
+    facilityId: string,
+  ): Promise<OtBooking> {
     const booking = await this.findOne(id, facilityId);
 
     if (booking.status !== OtStatus.IN_PROGRESS) {
-      throw new BadRequestException('Can only complete an IN_PROGRESS OT booking');
+      throw new BadRequestException(
+        'Can only complete an IN_PROGRESS OT booking',
+      );
     }
 
     if (dto.intraOpNotes !== undefined) booking.intraOpNotes = dto.intraOpNotes;
@@ -165,11 +191,17 @@ export class OtService {
     return this.otRepo.save(booking);
   }
 
-  async cancelBooking(id: string, reason: string, facilityId: string): Promise<OtBooking> {
+  async cancelBooking(
+    id: string,
+    reason: string,
+    facilityId: string,
+  ): Promise<OtBooking> {
     const booking = await this.findOne(id, facilityId);
 
     if ([OtStatus.COMPLETED, OtStatus.CANCELLED].includes(booking.status)) {
-      throw new BadRequestException(`Cannot cancel OT in status: ${booking.status}`);
+      throw new BadRequestException(
+        `Cannot cancel OT in status: ${booking.status}`,
+      );
     }
 
     booking.status = OtStatus.CANCELLED;
@@ -185,7 +217,9 @@ export class OtService {
     const booking = await this.findOne(id, facilityId);
 
     if ([OtStatus.COMPLETED, OtStatus.CANCELLED].includes(booking.status)) {
-      throw new BadRequestException(`Cannot postpone OT in status: ${booking.status}`);
+      throw new BadRequestException(
+        `Cannot postpone OT in status: ${booking.status}`,
+      );
     }
 
     booking.status = OtStatus.POSTPONED;
@@ -207,7 +241,9 @@ export class OtService {
       .andWhere('ot.status = :status', { status: OtStatus.COMPLETED });
 
     if (filters.from) {
-      qb.andWhere('ot.scheduledStart >= :from', { from: new Date(filters.from) });
+      qb.andWhere('ot.scheduledStart >= :from', {
+        from: new Date(filters.from),
+      });
     }
     if (filters.to) {
       qb.andWhere('ot.scheduledStart <= :to', {
@@ -220,13 +256,14 @@ export class OtService {
     // Average duration in minutes
     const durationsMinutes = completed
       .filter((b) => b.actualStart && b.actualEnd)
-      .map((b) =>
-        dayjs(b.actualEnd!).diff(dayjs(b.actualStart!), 'minute'),
-      );
+      .map((b) => dayjs(b.actualEnd!).diff(dayjs(b.actualStart!), 'minute'));
 
     const avgDuration =
       durationsMinutes.length > 0
-        ? Math.round(durationsMinutes.reduce((a, b) => a + b, 0) / durationsMinutes.length)
+        ? Math.round(
+            durationsMinutes.reduce((a, b) => a + b, 0) /
+              durationsMinutes.length,
+          )
         : 0;
 
     // Breakdown by procedure name

@@ -58,19 +58,34 @@ export class Equipment {
   @Column({ type: 'enum', enum: EquipmentCategory })
   category: EquipmentCategory;
 
-  @Column({ type: 'enum', enum: OwnershipType, default: OwnershipType.OWNED, name: 'ownership_type' })
+  @Column({
+    type: 'enum',
+    enum: OwnershipType,
+    default: OwnershipType.OWNED,
+    name: 'ownership_type',
+  })
   ownershipType: OwnershipType;
 
   @Column({ type: 'date', nullable: true, name: 'purchase_date' })
   purchaseDate: Date;
 
-  @Column({ type: 'decimal', precision: 12, scale: 2, nullable: true, name: 'purchase_price' })
+  @Column({
+    type: 'decimal',
+    precision: 12,
+    scale: 2,
+    nullable: true,
+    name: 'purchase_price',
+  })
   purchasePrice: number;
 
   @Column({ type: 'varchar', nullable: true })
   location: string;
 
-  @Column({ type: 'enum', enum: EquipmentStatus, default: EquipmentStatus.AVAILABLE })
+  @Column({
+    type: 'enum',
+    enum: EquipmentStatus,
+    default: EquipmentStatus.AVAILABLE,
+  })
   status: EquipmentStatus;
 
   @Column({ type: 'date', nullable: true, name: 'warranty_expires_at' })

@@ -1,5 +1,21 @@
-import { Controller, Get, Post, Body, Query, UseGuards, HttpCode, HttpStatus } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery, ApiOkResponse, ApiCreatedResponse } from '@nestjs/swagger';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Query,
+  UseGuards,
+  HttpCode,
+  HttpStatus,
+} from '@nestjs/common';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiOperation,
+  ApiQuery,
+  ApiOkResponse,
+  ApiCreatedResponse,
+} from '@nestjs/swagger';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -13,8 +29,13 @@ import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 class SendNotificationDto {
-  @ApiProperty({ enum: NotificationChannel }) @IsEnum(NotificationChannel) channel: NotificationChannel;
-  @ApiProperty({ example: '+919876543210 or email@example.com' }) @IsNotEmpty() @IsString() recipient: string;
+  @ApiProperty({ enum: NotificationChannel })
+  @IsEnum(NotificationChannel)
+  channel: NotificationChannel;
+  @ApiProperty({ example: '+919876543210 or email@example.com' })
+  @IsNotEmpty()
+  @IsString()
+  recipient: string;
   @ApiProperty() @IsNotEmpty() @IsString() body: string;
   @ApiPropertyOptional() @IsOptional() @IsString() templateCode?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() relatedEntityType?: string;
@@ -54,14 +75,21 @@ export class NotificationController {
     @Query('channel') channel?: NotificationChannel,
     @Query('limit') limit = 50,
   ) {
-    return this.notificationService.getLogs(user.facilityId!, channel, Number(limit));
+    return this.notificationService.getLogs(
+      user.facilityId!,
+      channel,
+      Number(limit),
+    );
   }
 
   @Post('templates')
   @Roles(Role.FACILITY_ADMIN, Role.SUPER_ADMIN)
   @ApiOperation({ summary: 'Create notification template' })
   @ApiCreatedResponse({ description: 'Template created' })
-  createTemplate(@Body() dto: CreateTemplateDto, @CurrentUser() user: JwtPayload) {
+  createTemplate(
+    @Body() dto: CreateTemplateDto,
+    @CurrentUser() user: JwtPayload,
+  ) {
     return this.notificationService.createTemplate(dto, user.facilityId!);
   }
 

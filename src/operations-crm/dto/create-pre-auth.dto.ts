@@ -8,7 +8,13 @@ export class CreatePreAuthDto {
   @ApiProperty() @IsString() insurerName: string;
   @ApiPropertyOptional() @IsOptional() @IsString() policyNumber?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() tpaName?: string;
-  @ApiPropertyOptional({ description: 'JSON array of ICD-10 codes' }) @IsOptional() @IsString() diagnosisCodes?: string;
-  @ApiPropertyOptional({ description: 'JSON array of procedure names/codes' }) @IsOptional() @IsString() requestedProcedures?: string;
+  @ApiPropertyOptional({ description: 'JSON array of ICD-10 codes' })
+  @IsOptional()
+  @IsString()
+  diagnosisCodes?: string;
+  @ApiPropertyOptional({ description: 'JSON array of procedure names/codes' })
+  @IsOptional()
+  @IsString()
+  requestedProcedures?: string;
   @ApiProperty() @IsNumber() @Min(0) estimatedCost: number;
 }

@@ -1,4 +1,10 @@
-import { IsUUID, IsEnum, IsString, IsNumber, IsOptional } from 'class-validator';
+import {
+  IsUUID,
+  IsEnum,
+  IsString,
+  IsNumber,
+  IsOptional,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { ItemType } from '../entities/bill-item.entity';

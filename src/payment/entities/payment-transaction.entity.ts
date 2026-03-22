@@ -59,7 +59,11 @@ export class PaymentTransaction {
   @Column({ type: 'text', nullable: true, name: 'gateway_response' })
   gatewayResponse: string;
 
-  @Column({ type: 'enum', enum: TransactionStatus, default: TransactionStatus.INITIATED })
+  @Column({
+    type: 'enum',
+    enum: TransactionStatus,
+    default: TransactionStatus.INITIATED,
+  })
   status: TransactionStatus;
 
   @Column({ type: 'datetime', nullable: true, name: 'paid_at' })

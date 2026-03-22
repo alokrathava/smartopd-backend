@@ -43,7 +43,8 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Login with email and password',
-    description: 'Returns a short-lived access token (15 min) and a 7-day rotating refresh token.',
+    description:
+      'Returns a short-lived access token (15 min) and a 7-day rotating refresh token.',
   })
   @ApiOkResponse({
     description: 'Login successful',
@@ -62,9 +63,15 @@ export class AuthController {
       },
     },
   })
-  @ApiUnauthorizedResponse({ description: 'Invalid credentials or inactive account' })
+  @ApiUnauthorizedResponse({
+    description: 'Invalid credentials or inactive account',
+  })
   login(@Body() dto: LoginDto, @Req() req: Request) {
-    return this.authService.login(dto, req.ip || '', req.headers['user-agent'] || '');
+    return this.authService.login(
+      dto,
+      req.ip || '',
+      req.headers['user-agent'] || '',
+    );
   }
 
   @Public()
@@ -84,7 +91,9 @@ export class AuthController {
       },
     },
   })
-  @ApiUnauthorizedResponse({ description: 'Refresh token is invalid, expired, or already revoked' })
+  @ApiUnauthorizedResponse({
+    description: 'Refresh token is invalid, expired, or already revoked',
+  })
   refresh(@Body() dto: RefreshTokenDto) {
     return this.authService.refresh(dto.refreshToken);
   }
@@ -99,7 +108,9 @@ export class AuthController {
   })
   @ApiOkResponse({
     description: 'OTP dispatched',
-    schema: { example: { message: 'OTP sent successfully', phone: '+919876543210' } },
+    schema: {
+      example: { message: 'OTP sent successfully', phone: '+919876543210' },
+    },
   })
   requestOtp(@Body() dto: OtpRequestDto) {
     return this.authService.requestOtp(dto);
@@ -118,7 +129,9 @@ export class AuthController {
       example: { verified: true, phone: '+919876543210', purpose: 'LOGIN' },
     },
   })
-  @ApiBadRequestResponse({ description: 'Invalid or expired OTP, or max attempts exceeded' })
+  @ApiBadRequestResponse({
+    description: 'Invalid or expired OTP, or max attempts exceeded',
+  })
   verifyOtp(@Body() dto: OtpVerifyDto) {
     return this.authService.verifyOtp(dto);
   }
@@ -128,7 +141,8 @@ export class AuthController {
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
     summary: 'Register a new facility (hospital/clinic)',
-    description: 'Self-registration for new hospitals. Creates the facility + FACILITY_ADMIN account. Facility starts in PENDING state and requires SUPER_ADMIN activation.',
+    description:
+      'Self-registration for new hospitals. Creates the facility + FACILITY_ADMIN account. Facility starts in PENDING state and requires SUPER_ADMIN activation.',
   })
   @ApiCreatedResponse({
     schema: {
@@ -149,7 +163,8 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Accept an invitation and set password',
-    description: 'Staff member uses their invite token to activate their account and set a password.',
+    description:
+      'Staff member uses their invite token to activate their account and set a password.',
   })
   @ApiOkResponse({
     schema: { example: { message: 'Account activated. You can now log in.' } },
@@ -167,7 +182,8 @@ export class AuthController {
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
     summary: 'Invite a staff member',
-    description: 'FACILITY_ADMIN or SUPER_ADMIN invites a new staff member by email. An invite token is generated (valid 7 days). In production, this is sent via email.',
+    description:
+      'FACILITY_ADMIN or SUPER_ADMIN invites a new staff member by email. An invite token is generated (valid 7 days). In production, this is sent via email.',
   })
   @ApiCreatedResponse({
     schema: {
@@ -186,7 +202,8 @@ export class AuthController {
   @Get('me')
   @ApiOperation({
     summary: 'Get current user profile',
-    description: 'Returns the profile of the authenticated user derived from the JWT.',
+    description:
+      'Returns the profile of the authenticated user derived from the JWT.',
   })
   @ApiOkResponse({
     description: 'Current user profile',
@@ -219,9 +236,15 @@ export class AuthController {
   })
   @ApiOkResponse({
     description: 'Password changed successfully',
-    schema: { example: { message: 'Password changed successfully. Please log in again.' } },
+    schema: {
+      example: {
+        message: 'Password changed successfully. Please log in again.',
+      },
+    },
   })
-  @ApiBadRequestResponse({ description: 'Current password is incorrect or new password is same as old' })
+  @ApiBadRequestResponse({
+    description: 'Current password is incorrect or new password is same as old',
+  })
   @ApiUnauthorizedResponse({ description: 'Missing or invalid bearer token' })
   changePassword(
     @CurrentUser() user: JwtPayload,
