@@ -12,7 +12,12 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiOperation,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -52,7 +57,12 @@ export class VisitsController {
     @Query('status') status?: VisitStatus,
     @Query('patientId') patientId?: string,
   ) {
-    return this.visitsService.findAll(user.facilityId!, { date, doctorId, status, patientId });
+    return this.visitsService.findAll(user.facilityId!, {
+      date,
+      doctorId,
+      status,
+      patientId,
+    });
   }
 
   @Get('queue')

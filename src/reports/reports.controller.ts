@@ -1,5 +1,10 @@
 import { Controller, Get, Query, UseGuards } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiOperation,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -34,7 +39,11 @@ export class ReportsController {
     @Query('to') to?: string,
   ) {
     const range = this.defaultRange();
-    return this.reportsService.getVisitStats(user.facilityId!, from || range.from, to || range.to);
+    return this.reportsService.getVisitStats(
+      user.facilityId!,
+      from || range.from,
+      to || range.to,
+    );
   }
 
   @Get('revenue')
@@ -48,7 +57,11 @@ export class ReportsController {
     @Query('to') to?: string,
   ) {
     const range = this.defaultRange();
-    return this.reportsService.getRevenueSummary(user.facilityId!, from || range.from, to || range.to);
+    return this.reportsService.getRevenueSummary(
+      user.facilityId!,
+      from || range.from,
+      to || range.to,
+    );
   }
 
   @Get('equipment')
@@ -69,12 +82,20 @@ export class ReportsController {
     @Query('to') to?: string,
   ) {
     const range = this.defaultRange();
-    return this.reportsService.getPatientStats(user.facilityId!, from || range.from, to || range.to);
+    return this.reportsService.getPatientStats(
+      user.facilityId!,
+      from || range.from,
+      to || range.to,
+    );
   }
 
   @Get('dhis')
   @Roles(Role.FACILITY_ADMIN, Role.SUPER_ADMIN)
-  @ApiOperation({ summary: 'DHIS incentive dashboard (requires ABDM integration)', description: 'Returns ABDM linkage stats and estimated DHIS incentive income. Requires ABDM M2 integration to be active.' })
+  @ApiOperation({
+    summary: 'DHIS incentive dashboard (requires ABDM integration)',
+    description:
+      'Returns ABDM linkage stats and estimated DHIS incentive income. Requires ABDM M2 integration to be active.',
+  })
   getDhisDashboard(@CurrentUser() user: JwtPayload) {
     return this.reportsService.getDhisDashboard(user.facilityId!);
   }

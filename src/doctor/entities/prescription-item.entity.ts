@@ -78,7 +78,11 @@ export class PrescriptionItem {
   @Column({ type: 'boolean', default: true, name: 'is_generic_substitutable' })
   isGenericSubstitutable: boolean;
 
-  @Column({ type: 'enum', enum: PrescriptionItemStatus, default: PrescriptionItemStatus.ACTIVE })
+  @Column({
+    type: 'enum',
+    enum: PrescriptionItemStatus,
+    default: PrescriptionItemStatus.ACTIVE,
+  })
   status: PrescriptionItemStatus;
 
   @CreateDateColumn({ name: 'created_at' })

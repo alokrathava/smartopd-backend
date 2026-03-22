@@ -39,7 +39,13 @@ export class BillItem {
   @Column({ type: 'decimal', precision: 10, scale: 2 })
   amount: number;
 
-  @Column({ type: 'decimal', precision: 5, scale: 2, default: 0, name: 'gst_percent' })
+  @Column({
+    type: 'decimal',
+    precision: 5,
+    scale: 2,
+    default: 0,
+    name: 'gst_percent',
+  })
   gstPercent: number;
 
   @Column({ type: 'varchar', nullable: true, name: 'hsn_sac_code' })

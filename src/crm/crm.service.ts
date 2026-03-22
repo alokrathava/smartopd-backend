@@ -19,7 +19,10 @@ export class CrmService {
     private readonly campaignRepo: Repository<CrmCampaign>,
   ) {}
 
-  async createFollowUp(dto: CreateFollowUpDto, facilityId: string): Promise<FollowUp> {
+  async createFollowUp(
+    dto: CreateFollowUpDto,
+    facilityId: string,
+  ): Promise<FollowUp> {
     const followUp = this.followUpRepo.create({
       ...dto,
       facilityId,
@@ -37,7 +40,10 @@ export class CrmService {
     return this.followUpRepo
       .createQueryBuilder('f')
       .where('f.facilityId = :facilityId', { facilityId })
-      .andWhere('f.followUpDate >= :today AND f.followUpDate < :tomorrow', { today, tomorrow })
+      .andWhere('f.followUpDate >= :today AND f.followUpDate < :tomorrow', {
+        today,
+        tomorrow,
+      })
       .andWhere('f.status = :status', { status: FollowUpStatus.PENDING })
       .orderBy('f.priority', 'DESC')
       .getMany();
@@ -56,16 +62,30 @@ export class CrmService {
       const d = new Date(filters.date);
       const next = new Date(d);
       next.setDate(next.getDate() + 1);
-      qb.andWhere('f.followUpDate >= :d AND f.followUpDate < :next', { d, next });
+      qb.andWhere('f.followUpDate >= :d AND f.followUpDate < :next', {
+        d,
+        next,
+      });
     }
-    if (filters?.status) qb.andWhere('f.status = :status', { status: filters.status });
-    if (filters?.patientId) qb.andWhere('f.patientId = :patientId', { patientId: filters.patientId });
+    if (filters?.status)
+      qb.andWhere('f.status = :status', { status: filters.status });
+    if (filters?.patientId)
+      qb.andWhere('f.patientId = :patientId', { patientId: filters.patientId });
 
     return qb.getMany();
   }
 
-  async updateFollowUp(id: string, dto: Partial<CreateFollowUpDto> & { status?: FollowUpStatus; notes?: string }, facilityId: string): Promise<FollowUp> {
-    const followUp = await this.followUpRepo.findOne({ where: { id, facilityId } });
+  async updateFollowUp(
+    id: string,
+    dto: Partial<CreateFollowUpDto> & {
+      status?: FollowUpStatus;
+      notes?: string;
+    },
+    facilityId: string,
+  ): Promise<FollowUp> {
+    const followUp = await this.followUpRepo.findOne({
+      where: { id, facilityId },
+    });
     if (!followUp) throw new NotFoundException(`Follow-up ${id} not found`);
 
     Object.assign(followUp, dto);
@@ -76,7 +96,10 @@ export class CrmService {
     return this.followUpRepo.save(followUp);
   }
 
-  async createSegment(dto: CreateSegmentDto, facilityId: string): Promise<PatientSegment> {
+  async createSegment(
+    dto: CreateSegmentDto,
+    facilityId: string,
+  ): Promise<PatientSegment> {
     const segment = this.segmentRepo.create({
       ...dto,
       facilityId,
@@ -92,7 +115,10 @@ export class CrmService {
     });
   }
 
-  async createCampaign(dto: CreateCampaignDto, facilityId: string): Promise<CrmCampaign> {
+  async createCampaign(
+    dto: CreateCampaignDto,
+    facilityId: string,
+  ): Promise<CrmCampaign> {
     const campaign = this.campaignRepo.create({
       ...dto,
       facilityId,

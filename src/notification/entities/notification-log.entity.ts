@@ -42,7 +42,11 @@ export class NotificationLog {
   @Column({ type: 'text' })
   body: string;
 
-  @Column({ type: 'enum', enum: NotificationStatus, default: NotificationStatus.QUEUED })
+  @Column({
+    type: 'enum',
+    enum: NotificationStatus,
+    default: NotificationStatus.QUEUED,
+  })
   status: NotificationStatus;
 
   @Column({ type: 'varchar', nullable: true, name: 'external_id' })

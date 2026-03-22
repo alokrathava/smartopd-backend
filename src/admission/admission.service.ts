@@ -1,7 +1,16 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, IsNull } from 'typeorm';
-import { Admission, AdmissionStatus, AdmissionType, DischargeType } from './entities/admission.entity';
+import {
+  Admission,
+  AdmissionStatus,
+  AdmissionType,
+  DischargeType,
+} from './entities/admission.entity';
 import { WardRound } from './entities/ward-round.entity';
 import { WardRoundStop } from './entities/ward-round-stop.entity';
 import { DischargeSummary } from './entities/discharge-summary.entity';
@@ -112,11 +121,17 @@ export class AdmissionService {
 
   // ── Create admission ───────────────────────────────────────────────────────
 
-  async create(dto: CreateAdmissionDto, facilityId: string, userId: string): Promise<Admission> {
+  async create(
+    dto: CreateAdmissionDto,
+    facilityId: string,
+    userId: string,
+  ): Promise<Admission> {
     const bed = await this.bedRepo.findOne({ where: { id: dto.bedId } });
     if (!bed) throw new NotFoundException(`Bed ${dto.bedId} not found`);
     if (bed.status !== BedStatus.AVAILABLE) {
-      throw new BadRequestException(`Bed ${dto.bedId} is not AVAILABLE (current status: ${bed.status})`);
+      throw new BadRequestException(
+        `Bed ${dto.bedId} is not AVAILABLE (current status: ${bed.status})`,
+      );
     }
 
     const admissionNumber = await this.generateAdmissionNumber(facilityId);
@@ -142,7 +157,12 @@ export class AdmissionService {
 
   async findAll(
     facilityId: string,
-    filters: { status?: AdmissionStatus; wardId?: string; doctorId?: string; date?: string },
+    filters: {
+      status?: AdmissionStatus;
+      wardId?: string;
+      doctorId?: string;
+      date?: string;
+    },
   ): Promise<Admission[]> {
     const qb = this.admissionRepo
       .createQueryBuilder('a')
@@ -150,9 +170,14 @@ export class AdmissionService {
       .andWhere('a.deletedAt IS NULL')
       .orderBy('a.admittedAt', 'DESC');
 
-    if (filters.status) qb.andWhere('a.status = :status', { status: filters.status });
-    if (filters.wardId) qb.andWhere('a.wardId = :wardId', { wardId: filters.wardId });
-    if (filters.doctorId) qb.andWhere('a.admittingDoctorId = :doctorId', { doctorId: filters.doctorId });
+    if (filters.status)
+      qb.andWhere('a.status = :status', { status: filters.status });
+    if (filters.wardId)
+      qb.andWhere('a.wardId = :wardId', { wardId: filters.wardId });
+    if (filters.doctorId)
+      qb.andWhere('a.admittingDoctorId = :doctorId', {
+        doctorId: filters.doctorId,
+      });
     if (filters.date) {
       qb.andWhere('DATE(a.admittedAt) = :date', { date: filters.date });
     }
@@ -172,10 +197,20 @@ export class AdmissionService {
 
   // ── Transfer bed ───────────────────────────────────────────────────────────
 
-  async transfer(id: string, dto: TransferBedDto, facilityId: string): Promise<Admission> {
+  async transfer(
+    id: string,
+    dto: TransferBedDto,
+    facilityId: string,
+  ): Promise<Admission> {
     const admission = await this.findOne(id, facilityId);
-    if (![AdmissionStatus.ACTIVE, AdmissionStatus.DISCHARGE_PLANNED].includes(admission.status)) {
-      throw new BadRequestException('Can only transfer an ACTIVE or DISCHARGE_PLANNED admission');
+    if (
+      ![AdmissionStatus.ACTIVE, AdmissionStatus.DISCHARGE_PLANNED].includes(
+        admission.status,
+      )
+    ) {
+      throw new BadRequestException(
+        'Can only transfer an ACTIVE or DISCHARGE_PLANNED admission',
+      );
     }
 
     const newBed = await this.bedRepo.findOne({ where: { id: dto.newBedId } });
@@ -185,7 +220,9 @@ export class AdmissionService {
     }
 
     // Free old bed
-    const oldBed = await this.bedRepo.findOne({ where: { id: admission.bedId } });
+    const oldBed = await this.bedRepo.findOne({
+      where: { id: admission.bedId },
+    });
     if (oldBed) {
       oldBed.status = BedStatus.AVAILABLE;
       oldBed.lastOccupiedBy = admission.patientId;
@@ -207,10 +244,16 @@ export class AdmissionService {
 
   // ── Ward intake ────────────────────────────────────────────────────────────
 
-  async wardIntake(id: string, dto: WardIntakeDto, facilityId: string): Promise<Admission> {
+  async wardIntake(
+    id: string,
+    dto: WardIntakeDto,
+    facilityId: string,
+  ): Promise<Admission> {
     const admission = await this.findOne(id, facilityId);
     if (admission.status !== AdmissionStatus.ACTIVE) {
-      throw new BadRequestException('Ward intake is only for ACTIVE admissions');
+      throw new BadRequestException(
+        'Ward intake is only for ACTIVE admissions',
+      );
     }
     admission.primaryNurseId = dto.primaryNurseId;
     return this.admissionRepo.save(admission);
@@ -218,7 +261,11 @@ export class AdmissionService {
 
   // ── Add nursing note ───────────────────────────────────────────────────────
 
-  async addNursingNote(id: string, dto: NursingNoteDto, facilityId: string): Promise<WardRoundStop> {
+  async addNursingNote(
+    id: string,
+    dto: NursingNoteDto,
+    facilityId: string,
+  ): Promise<WardRoundStop> {
     const admission = await this.findOne(id, facilityId);
 
     // Create a lightweight ward round session for this nursing note
@@ -292,25 +339,45 @@ export class AdmissionService {
 
   // ── Initiate discharge ─────────────────────────────────────────────────────
 
-  async initiateDischarge(id: string, dto: InitiateDischargeDto, facilityId: string): Promise<Admission> {
+  async initiateDischarge(
+    id: string,
+    dto: InitiateDischargeDto,
+    facilityId: string,
+  ): Promise<Admission> {
     const admission = await this.findOne(id, facilityId);
     if (admission.status !== AdmissionStatus.ACTIVE) {
-      throw new BadRequestException('Can only initiate discharge for an ACTIVE admission');
+      throw new BadRequestException(
+        'Can only initiate discharge for an ACTIVE admission',
+      );
     }
     admission.status = AdmissionStatus.DISCHARGE_PLANNED;
     admission.dischargeInitiatedAt = new Date();
     if (dto.dischargeType) admission.dischargeType = dto.dischargeType;
     if (dto.dischargeNotes) admission.dischargeNotes = dto.dischargeNotes;
-    if (dto.expectedDischargeDate) admission.expectedDischargeDate = dto.expectedDischargeDate;
+    if (dto.expectedDischargeDate)
+      admission.expectedDischargeDate = dto.expectedDischargeDate;
     return this.admissionRepo.save(admission);
   }
 
   // ── Complete discharge ─────────────────────────────────────────────────────
 
-  async completeDischarge(id: string, dto: CompleteDischargeDto, facilityId: string): Promise<Admission> {
+  async completeDischarge(
+    id: string,
+    dto: CompleteDischargeDto,
+    facilityId: string,
+  ): Promise<Admission> {
     const admission = await this.findOne(id, facilityId);
-    if (!([AdmissionStatus.DISCHARGE_PLANNED, AdmissionStatus.ACTIVE] as AdmissionStatus[]).includes(admission.status)) {
-      throw new BadRequestException('Admission is not in a dischargeable state');
+    if (
+      !(
+        [
+          AdmissionStatus.DISCHARGE_PLANNED,
+          AdmissionStatus.ACTIVE,
+        ] as AdmissionStatus[]
+      ).includes(admission.status)
+    ) {
+      throw new BadRequestException(
+        'Admission is not in a dischargeable state',
+      );
     }
 
     admission.status = AdmissionStatus.DISCHARGED;
@@ -326,8 +393,14 @@ export class AdmissionService {
 
   async dama(id: string, dto: DamaDto, facilityId: string): Promise<Admission> {
     const admission = await this.findOne(id, facilityId);
-    if (![AdmissionStatus.ACTIVE, AdmissionStatus.DISCHARGE_PLANNED].includes(admission.status)) {
-      throw new BadRequestException('Can only DAMA an ACTIVE or DISCHARGE_PLANNED admission');
+    if (
+      ![AdmissionStatus.ACTIVE, AdmissionStatus.DISCHARGE_PLANNED].includes(
+        admission.status,
+      )
+    ) {
+      throw new BadRequestException(
+        'Can only DAMA an ACTIVE or DISCHARGE_PLANNED admission',
+      );
     }
 
     admission.status = AdmissionStatus.DAMA;
@@ -341,7 +414,10 @@ export class AdmissionService {
 
   // ── Get timeline ───────────────────────────────────────────────────────────
 
-  async getTimeline(id: string, facilityId: string): Promise<{ rounds: WardRound[]; stops: WardRoundStop[] }> {
+  async getTimeline(
+    id: string,
+    facilityId: string,
+  ): Promise<{ rounds: WardRound[]; stops: WardRoundStop[] }> {
     await this.findOne(id, facilityId);
 
     const rounds = await this.wardRoundRepo.find({
@@ -359,7 +435,10 @@ export class AdmissionService {
 
   // ── Get discharge summary ──────────────────────────────────────────────────
 
-  async getDischargeSummary(id: string, facilityId: string): Promise<DischargeSummary | null> {
+  async getDischargeSummary(
+    id: string,
+    facilityId: string,
+  ): Promise<DischargeSummary | null> {
     await this.findOne(id, facilityId);
     return this.summaryRepo.findOne({ where: { admissionId: id, facilityId } });
   }

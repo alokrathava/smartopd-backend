@@ -25,19 +25,33 @@ export class NurseService {
     return Math.round((weightKg / (heightM * heightM)) * 100) / 100;
   }
 
-  private detectCriticals(dto: CreateVitalsDto): { isCritical: boolean; flags: string[] } {
+  private detectCriticals(dto: CreateVitalsDto): {
+    isCritical: boolean;
+    flags: string[];
+  } {
     const flags: string[] = [];
-    if (dto.spO2 !== undefined && dto.spO2 < 94) flags.push(`SpO2 low: ${dto.spO2}%`);
-    if (dto.systolicBp !== undefined && dto.systolicBp > 180) flags.push(`SBP high: ${dto.systolicBp}`);
-    if (dto.systolicBp !== undefined && dto.systolicBp < 90) flags.push(`SBP low: ${dto.systolicBp}`);
-    if (dto.temperatureCelsius !== undefined && dto.temperatureCelsius > 39) flags.push(`Temp high: ${dto.temperatureCelsius}°C`);
-    if (dto.temperatureCelsius !== undefined && dto.temperatureCelsius < 35) flags.push(`Temp low: ${dto.temperatureCelsius}°C`);
-    if (dto.pulseBpm !== undefined && dto.pulseBpm > 130) flags.push(`Pulse high: ${dto.pulseBpm}`);
-    if (dto.pulseBpm !== undefined && dto.pulseBpm < 50) flags.push(`Pulse low: ${dto.pulseBpm}`);
+    if (dto.spO2 !== undefined && dto.spO2 < 94)
+      flags.push(`SpO2 low: ${dto.spO2}%`);
+    if (dto.systolicBp !== undefined && dto.systolicBp > 180)
+      flags.push(`SBP high: ${dto.systolicBp}`);
+    if (dto.systolicBp !== undefined && dto.systolicBp < 90)
+      flags.push(`SBP low: ${dto.systolicBp}`);
+    if (dto.temperatureCelsius !== undefined && dto.temperatureCelsius > 39)
+      flags.push(`Temp high: ${dto.temperatureCelsius}°C`);
+    if (dto.temperatureCelsius !== undefined && dto.temperatureCelsius < 35)
+      flags.push(`Temp low: ${dto.temperatureCelsius}°C`);
+    if (dto.pulseBpm !== undefined && dto.pulseBpm > 130)
+      flags.push(`Pulse high: ${dto.pulseBpm}`);
+    if (dto.pulseBpm !== undefined && dto.pulseBpm < 50)
+      flags.push(`Pulse low: ${dto.pulseBpm}`);
     return { isCritical: flags.length > 0, flags };
   }
 
-  async recordVitals(dto: CreateVitalsDto, facilityId: string, userId: string): Promise<Vitals> {
+  async recordVitals(
+    dto: CreateVitalsDto,
+    facilityId: string,
+    userId: string,
+  ): Promise<Vitals> {
     const bmi = this.computeBmi(dto.weightKg, dto.heightCm);
     const { isCritical, flags } = this.detectCriticals(dto);
 
@@ -61,7 +75,11 @@ export class NurseService {
     });
   }
 
-  async createTriage(dto: CreateTriageDto, facilityId: string, userId: string): Promise<Triage> {
+  async createTriage(
+    dto: CreateTriageDto,
+    facilityId: string,
+    userId: string,
+  ): Promise<Triage> {
     const triage = this.triageRepo.create({
       ...dto,
       facilityId,
@@ -72,12 +90,19 @@ export class NurseService {
   }
 
   async getTriage(visitId: string, facilityId: string): Promise<Triage> {
-    const triage = await this.triageRepo.findOne({ where: { visitId, facilityId } });
-    if (!triage) throw new NotFoundException(`Triage for visit ${visitId} not found`);
+    const triage = await this.triageRepo.findOne({
+      where: { visitId, facilityId },
+    });
+    if (!triage)
+      throw new NotFoundException(`Triage for visit ${visitId} not found`);
     return triage;
   }
 
-  async createMar(dto: CreateMarDto, facilityId: string, userId: string): Promise<Mar> {
+  async createMar(
+    dto: CreateMarDto,
+    facilityId: string,
+    userId: string,
+  ): Promise<Mar> {
     const mar = this.marRepo.create({
       ...dto,
       facilityId,

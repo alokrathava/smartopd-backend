@@ -59,7 +59,12 @@ export class AuditService {
 
   async findAll(
     facilityId: string,
-    filters: { userId?: string; resource?: string; startDate?: string; endDate?: string },
+    filters: {
+      userId?: string;
+      resource?: string;
+      startDate?: string;
+      endDate?: string;
+    },
     pagination: { page?: number; limit?: number } = {},
   ) {
     const { page = 1, limit = 50 } = pagination;
@@ -72,10 +77,18 @@ export class AuditService {
       .skip(skip)
       .take(limit);
 
-    if (filters.userId) qb.andWhere('a.userId = :userId', { userId: filters.userId });
-    if (filters.resource) qb.andWhere('a.resource = :resource', { resource: filters.resource });
-    if (filters.startDate) qb.andWhere('a.timestamp >= :startDate', { startDate: new Date(filters.startDate) });
-    if (filters.endDate) qb.andWhere('a.timestamp <= :endDate', { endDate: new Date(filters.endDate) });
+    if (filters.userId)
+      qb.andWhere('a.userId = :userId', { userId: filters.userId });
+    if (filters.resource)
+      qb.andWhere('a.resource = :resource', { resource: filters.resource });
+    if (filters.startDate)
+      qb.andWhere('a.timestamp >= :startDate', {
+        startDate: new Date(filters.startDate),
+      });
+    if (filters.endDate)
+      qb.andWhere('a.timestamp <= :endDate', {
+        endDate: new Date(filters.endDate),
+      });
 
     const [data, total] = await qb.getManyAndCount();
     return { data, total, page, limit };

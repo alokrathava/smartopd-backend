@@ -15,14 +15,22 @@ import { UsersModule } from '../users/users.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([RefreshToken, Otp, User, Facility, FacilitySettings]),
+    TypeOrmModule.forFeature([
+      RefreshToken,
+      Otp,
+      User,
+      Facility,
+      FacilitySettings,
+    ]),
     PassportModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
         secret: config.get<string>('JWT_SECRET') || 'smartopd-secret-key',
-        signOptions: { expiresIn: (config.get<string>('JWT_EXPIRES_IN') || '15m') as any },
+        signOptions: {
+          expiresIn: (config.get<string>('JWT_EXPIRES_IN') || '15m') as any,
+        },
       }),
     }),
     UsersModule,

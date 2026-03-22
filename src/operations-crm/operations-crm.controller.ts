@@ -9,7 +9,12 @@ import {
   UseGuards,
   ParseUUIDPipe,
 } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiOperation,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -45,7 +50,9 @@ export class OperationsCrmController {
 
   // GET /roster/shifts
   @Get('roster/shifts')
-  @ApiOperation({ summary: 'List shifts — filter by wardId, date, staffId, shiftType, status' })
+  @ApiOperation({
+    summary: 'List shifts — filter by wardId, date, staffId, shiftType, status',
+  })
   @ApiQuery({ name: 'wardId', required: false })
   @ApiQuery({ name: 'date', required: false, example: '2025-04-01' })
   @ApiQuery({ name: 'staffId', required: false })
@@ -59,7 +66,13 @@ export class OperationsCrmController {
     @Query('shiftType') shiftType?: ShiftType,
     @Query('status') status?: ShiftStatus,
   ) {
-    return this.service.findShifts(user.facilityId!, { wardId, date, staffId, shiftType, status });
+    return this.service.findShifts(user.facilityId!, {
+      wardId,
+      date,
+      staffId,
+      shiftType,
+      status,
+    });
   }
 
   // PATCH /roster/shifts/:id/status
@@ -89,7 +102,9 @@ export class OperationsCrmController {
   // GET /roster/staffing-gaps
   @Get('roster/staffing-gaps')
   @Roles(Role.FACILITY_ADMIN)
-  @ApiOperation({ summary: 'Staffing gap alerts for a given date and optional ward' })
+  @ApiOperation({
+    summary: 'Staffing gap alerts for a given date and optional ward',
+  })
   @ApiQuery({ name: 'wardId', required: false })
   @ApiQuery({ name: 'date', required: true, example: '2025-04-01' })
   getStaffingGaps(
@@ -120,13 +135,18 @@ export class OperationsCrmController {
   @Post('insurance/pre-auth')
   @Roles(Role.FACILITY_ADMIN, Role.RECEPTIONIST)
   @ApiOperation({ summary: 'Create insurance pre-authorisation request' })
-  createPreAuth(@Body() dto: CreatePreAuthDto, @CurrentUser() user: JwtPayload) {
+  createPreAuth(
+    @Body() dto: CreatePreAuthDto,
+    @CurrentUser() user: JwtPayload,
+  ) {
     return this.service.createPreAuth(dto, user.facilityId!, user.sub);
   }
 
   // GET /insurance/pre-auth
   @Get('insurance/pre-auth')
-  @ApiOperation({ summary: 'List pre-auth requests — filter by status, admissionId' })
+  @ApiOperation({
+    summary: 'List pre-auth requests — filter by status, admissionId',
+  })
   @ApiQuery({ name: 'status', required: false, enum: PreAuthStatus })
   @ApiQuery({ name: 'admissionId', required: false })
   findPreAuths(
@@ -162,7 +182,10 @@ export class OperationsCrmController {
   @Post('consumables')
   @Roles(Role.FACILITY_ADMIN)
   @ApiOperation({ summary: 'Create consumable item' })
-  createConsumableItem(@Body() dto: CreateConsumableItemDto, @CurrentUser() user: JwtPayload) {
+  createConsumableItem(
+    @Body() dto: CreateConsumableItemDto,
+    @CurrentUser() user: JwtPayload,
+  ) {
     return this.service.createConsumableItem(dto, user.facilityId!);
   }
 
@@ -179,8 +202,13 @@ export class OperationsCrmController {
   // POST /consumables/consumption
   @Post('consumables/consumption')
   @Roles(Role.NURSE, Role.FACILITY_ADMIN)
-  @ApiOperation({ summary: 'Record consumable consumption — deducts from ward inventory' })
-  recordConsumption(@Body() dto: RecordConsumptionDto, @CurrentUser() user: JwtPayload) {
+  @ApiOperation({
+    summary: 'Record consumable consumption — deducts from ward inventory',
+  })
+  recordConsumption(
+    @Body() dto: RecordConsumptionDto,
+    @CurrentUser() user: JwtPayload,
+  ) {
     return this.service.recordConsumption(dto, user.facilityId!);
   }
 
@@ -189,9 +217,15 @@ export class OperationsCrmController {
   @Roles(Role.FACILITY_ADMIN)
   @ApiOperation({ summary: 'Restock ward inventory' })
   restockInventory(
-    @Body() body: { wardId: string; consumableItemId: string; quantity: number },
+    @Body()
+    body: { wardId: string; consumableItemId: string; quantity: number },
     @CurrentUser() user: JwtPayload,
   ) {
-    return this.service.restockInventory(body.wardId, body.consumableItemId, body.quantity, user.facilityId!);
+    return this.service.restockInventory(
+      body.wardId,
+      body.consumableItemId,
+      body.quantity,
+      user.facilityId!,
+    );
   }
 }

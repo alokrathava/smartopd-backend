@@ -39,7 +39,11 @@ export class PatientsService {
     return `HOSP-${year}-${String(seq).padStart(6, '0')}`;
   }
 
-  async create(dto: CreatePatientDto, facilityId: string, userId: string): Promise<Patient> {
+  async create(
+    dto: CreatePatientDto,
+    facilityId: string,
+    userId: string,
+  ): Promise<Patient> {
     const mrn = await this.generateMrn(facilityId);
     const patient = this.patientRepo.create({
       ...dto,
@@ -85,7 +89,11 @@ export class PatientsService {
     return patient;
   }
 
-  async update(id: string, dto: UpdatePatientDto, facilityId: string): Promise<Patient> {
+  async update(
+    id: string,
+    dto: UpdatePatientDto,
+    facilityId: string,
+  ): Promise<Patient> {
     const patient = await this.findOne(id, facilityId);
     Object.assign(patient, dto);
     if (dto.dateOfBirth) patient.dateOfBirth = new Date(dto.dateOfBirth);
@@ -120,7 +128,9 @@ export class PatientsService {
       patientId: patient.id,
       facilityId,
       consentType: dto.consentType,
-      consentGivenAt: dto.consentGivenAt ? new Date(dto.consentGivenAt) : new Date(),
+      consentGivenAt: dto.consentGivenAt
+        ? new Date(dto.consentGivenAt)
+        : new Date(),
       consentGivenBy: userId,
       isGuardian: dto.isGuardian ?? false,
       guardianRelation: dto.guardianRelation,
@@ -129,7 +139,10 @@ export class PatientsService {
     return this.consentRepo.save(consent);
   }
 
-  async getConsents(patientId: string, facilityId: string): Promise<PatientConsent[]> {
+  async getConsents(
+    patientId: string,
+    facilityId: string,
+  ): Promise<PatientConsent[]> {
     return this.consentRepo.find({
       where: { patientId, facilityId },
       order: { createdAt: 'DESC' },
