@@ -163,4 +163,40 @@ export class VisitsService {
     visit.status = VisitStatus.CANCELLED;
     return this.visitRepo.save(visit);
   }
+
+  async assignDoctor(id: string, doctorId: string, facilityId: string): Promise<Visit> {
+    const visit = await this.findOne(id, facilityId);
+    visit.doctorId = doctorId;
+    if (visit.status === VisitStatus.REGISTERED || visit.status === VisitStatus.WAITING) {
+      visit.status = VisitStatus.WAITING;
+    }
+    return this.visitRepo.save(visit);
+  }
+
+  async startTriage(id: string, facilityId: string): Promise<Visit> {
+    const visit = await this.findOne(id, facilityId);
+    visit.status = VisitStatus.WITH_NURSE;
+    visit.nurseSeenAt = new Date();
+    return this.visitRepo.save(visit);
+  }
+
+  async startConsultation(id: string, facilityId: string): Promise<Visit> {
+    const visit = await this.findOne(id, facilityId);
+    visit.status = VisitStatus.WITH_DOCTOR;
+    visit.doctorSeenAt = new Date();
+    return this.visitRepo.save(visit);
+  }
+
+  async completeVisit(id: string, facilityId: string): Promise<Visit> {
+    const visit = await this.findOne(id, facilityId);
+    visit.status = VisitStatus.COMPLETED;
+    visit.completedAt = new Date();
+    return this.visitRepo.save(visit);
+  }
+
+  async markNoShow(id: string, facilityId: string): Promise<Visit> {
+    const visit = await this.findOne(id, facilityId);
+    visit.status = VisitStatus.NO_SHOW;
+    return this.visitRepo.save(visit);
+  }
 }

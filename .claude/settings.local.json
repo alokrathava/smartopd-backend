@@ -30,7 +30,22 @@
       "Bash(powershell -Command \"Get-Content ''D:\\\\Practice\\\\web\\\\smartopd-backend\\\\src\\\\equipment\\\\entities\\\\equipment.entity.ts''\")",
       "Bash(powershell -Command \"Get-Content ''D:\\\\Practice\\\\web\\\\smartopd-backend\\\\src\\\\equipment\\\\entities\\\\equipment-lease.entity.ts''\")",
       "Bash(powershell -Command \"Select-String -Path ''D:\\\\Practice\\\\web\\\\smartopd-backend\\\\src\\\\audit\\\\entities\\\\audit-log.entity.ts'', ''D:\\\\Practice\\\\web\\\\smartopd-backend\\\\src\\\\crm\\\\entities\\\\follow-up.entity.ts'', ''D:\\\\Practice\\\\web\\\\smartopd-backend\\\\src\\\\pharmacy\\\\entities\\\\pharmacy-inventory.entity.ts'' -Pattern ''@Index|unique: true'' | Select-Object Filename, LineNumber, Line\")",
-      "Bash(powershell -Command \"Stop-Process -Id \\(Get-NetTCPConnection -LocalPort 3000 -ErrorAction SilentlyContinue\\).OwningProcess -Force -ErrorAction SilentlyContinue; Write-Host ''Port cleared''\")"
+      "Bash(powershell -Command \"Stop-Process -Id \\(Get-NetTCPConnection -LocalPort 3000 -ErrorAction SilentlyContinue\\).OwningProcess -Force -ErrorAction SilentlyContinue; Write-Host ''Port cleared''\")",
+      "Bash(pandoc \"C:\\\\Users\\\\AlokkumarRathava\\\\Downloads\\\\SmartOPD_TRD.docx\" -o trd_content.md)",
+      "Bash(pandoc \"C:\\\\Users\\\\AlokkumarRathava\\\\Downloads\\\\SmartOPD_BusinessDocument.docx\" -o brd_content.md)",
+      "Bash(python \"C:\\\\Users\\\\AlokkumarRathava\\\\AppData\\\\Roaming\\\\Claude\\\\local-agent-mode-sessions\\\\skills-plugin\\\\ae871e46-4ffd-44f2-bdac-1662e5be08f1\\\\350de1f8-120c-4a53-b9bc-7682dbcc37cf\\\\skills\\\\docx\\\\scripts\\\\office\\\\unpack.py\" \"C:\\\\Users\\\\AlokkumarRathava\\\\Downloads\\\\SmartOPD_TRD.docx\" \"C:\\\\Users\\\\AlokkumarRathava\\\\Downloads\\\\trd_unpacked\")",
+      "Bash(python \"C:\\\\Users\\\\AlokkumarRathava\\\\AppData\\\\Roaming\\\\Claude\\\\local-agent-mode-sessions\\\\skills-plugin\\\\ae871e46-4ffd-44f2-bdac-1662e5be08f1\\\\350de1f8-120c-4a53-b9bc-7682dbcc37cf\\\\skills\\\\docx\\\\scripts\\\\office\\\\unpack.py\" \"C:\\\\Users\\\\AlokkumarRathava\\\\Downloads\\\\SmartOPD_BusinessDocument.docx\" \"C:\\\\Users\\\\AlokkumarRathava\\\\Downloads\\\\brd_unpacked\")",
+      "Bash(pip install:*)",
+      "Bash(python -c \":*)",
+      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(''''\\\\n''''.join\\(sorted\\(d.get\\(''''dependencies'''',{}\\).keys\\(\\)\\)\\)\\)\")",
+      "Bash(echo \"Exit code: $?\")",
+      "Bash(python \"C:\\\\Users\\\\AlokkumarRathava\\\\AppData\\\\Roaming\\\\Claude\\\\local-agent-mode-sessions\\\\skills-plugin\\\\ae871e46-4ffd-44f2-bdac-1662e5be08f1\\\\350de1f8-120c-4a53-b9bc-7682dbcc37cf\\\\skills\\\\docx\\\\scripts\\\\office\\\\unpack.py\" \"C:\\\\Users\\\\AlokkumarRathava\\\\Downloads\\\\SmartOPD_TRD_Addendum.docx\" \"C:\\\\Users\\\\AlokkumarRathava\\\\Downloads\\\\addendum_unpacked\")",
+      "Bash(python -c \"import os; print\\(os.listdir\\(''C:/Users/AlokkumarRathava/Downloads/addendum_unpacked''\\)\\)\")",
+      "Bash(python -c \"import os; base = r''C:\\\\Users\\\\AlokkumarRathava\\\\Downloads''; print\\([x for x in os.listdir\\(base\\) if ''addendum'' in x.lower\\(\\) or ''Addendum'' in x]\\)\")",
+      "Bash(python -c \"import os; base = r''C:\\\\Users\\\\AlokkumarRathava\\\\Downloads''; print\\([x for x in os.listdir\\(base\\) if ''TRD'' in x or ''Smart'' in x or ''.docx'' in x.lower\\(\\)]\\)\")",
+      "Bash(python \"C:\\\\Users\\\\AlokkumarRathava\\\\AppData\\\\Roaming\\\\Claude\\\\local-agent-mode-sessions\\\\skills-plugin\\\\ae871e46-4ffd-44f2-bdac-1662e5be08f1\\\\350de1f8-120c-4a53-b9bc-7682dbcc37cf\\\\skills\\\\docx\\\\scripts\\\\office\\\\unpack.py\" \"C:\\\\Users\\\\AlokkumarRathava\\\\Downloads\\\\SmartOPD_TRD_Addendum.docx\" \"C:\\\\Users\\\\AlokkumarRathava\\\\Downloads\\\\addendum_unpacked2\")",
+      "Bash(echo \"EXIT_CODE:$?\")",
+      "Bash(echo \"tsc exit: $?\")"
     ]
   }
 }

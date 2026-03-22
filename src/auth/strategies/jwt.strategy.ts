@@ -16,8 +16,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: JwtPayload) {
-    const user = await this.usersService.findUserByEmail(payload.email);
-    if (!user || !user.isActive) throw new UnauthorizedException('User is inactive or not found');
+    // Look up by primary key (indexed) — faster than email lookup
+    const user = await this.usersService.findUserByIdOnly(payload.sub);
+    if (!user || !user.isActive) {
+      throw new UnauthorizedException('User is inactive or not found');
+    }
     return payload;
   }
 }

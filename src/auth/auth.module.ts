@@ -9,11 +9,13 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { RefreshToken } from './entities/refresh-token.entity';
 import { Otp } from './entities/otp.entity';
 import { User } from '../users/entities/user.entity';
+import { Facility } from '../users/entities/facility.entity';
+import { FacilitySettings } from '../users/entities/facility-settings.entity';
 import { UsersModule } from '../users/users.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([RefreshToken, Otp, User]),
+    TypeOrmModule.forFeature([RefreshToken, Otp, User, Facility, FacilitySettings]),
     PassportModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],

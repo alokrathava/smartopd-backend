@@ -16,6 +16,7 @@ import { PaymentModule } from './payment/payment.module';
 import { NotificationModule } from './notification/notification.module';
 import { CrmModule } from './crm/crm.module';
 import { AuditModule } from './audit/audit.module';
+import { ReportsModule } from './reports/reports.module';
 
 // Import ALL entities
 import { User } from './users/entities/user.entity';
@@ -48,6 +49,23 @@ import { FollowUp } from './crm/entities/follow-up.entity';
 import { PatientSegment } from './crm/entities/patient-segment.entity';
 import { CrmCampaign } from './crm/entities/crm-campaign.entity';
 import { AuditLog } from './audit/entities/audit-log.entity';
+import { Room } from './room/entities/room.entity';
+import { Bed } from './room/entities/bed.entity';
+import { HousekeepingLog } from './room/entities/housekeeping-log.entity';
+import { RoomModule } from './room/room.module';
+import { Admission } from './admission/entities/admission.entity';
+import { WardRound } from './admission/entities/ward-round.entity';
+import { WardRoundStop } from './admission/entities/ward-round-stop.entity';
+import { DischargeSummary } from './admission/entities/discharge-summary.entity';
+import { AdmissionModule } from './admission/admission.module';
+import { OtBooking } from './ot/entities/ot-booking.entity';
+import { OtModule } from './ot/ot.module';
+import { StaffRoster } from './operations-crm/entities/staff-roster.entity';
+import { InsurancePreAuth } from './operations-crm/entities/insurance-pre-auth.entity';
+import { ConsumableItem } from './operations-crm/entities/consumable-item.entity';
+import { WardInventory } from './operations-crm/entities/ward-inventory.entity';
+import { ConsumableConsumption } from './operations-crm/entities/consumable-consumption.entity';
+import { OperationsCrmModule } from './operations-crm/operations-crm.module';
 
 @Module({
   imports: [
@@ -76,6 +94,10 @@ import { AuditLog } from './audit/entities/audit-log.entity';
           NotificationLog, NotificationTemplate,
           FollowUp, PatientSegment, CrmCampaign,
           AuditLog,
+          Room, Bed, HousekeepingLog,
+          Admission, WardRound, WardRoundStop, DischargeSummary,
+          OtBooking,
+          StaffRoster, InsurancePreAuth, ConsumableItem, WardInventory, ConsumableConsumption,
         ],
         synchronize: true, // ⚠️ disable in production
       }),
@@ -92,6 +114,11 @@ import { AuditLog } from './audit/entities/audit-log.entity';
     NotificationModule,
     CrmModule,
     AuditModule,
+    ReportsModule,
+    RoomModule,
+    AdmissionModule,
+    OtModule,
+    OperationsCrmModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -1,9 +1,14 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, UseInterceptors, UploadedFile, HttpCode, HttpStatus, BadRequestException } from '@nestjs/common';
+import { ApiTags, ApiBearerAuth, ApiConsumes, ApiBody, ApiOperation } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { CreateFacilityDto } from './dto/create-facility.dto';
+import { UpdateFacilitySettingsDto } from './dto/update-facility-settings.dto';
+import { UpdateFacilityDto } from './dto/update-facility.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -37,6 +42,29 @@ export class UsersController {
     return this.usersService.findFacilityById(id);
   }
 
+  @Patch('facilities/:id')
+  @Roles(Role.SUPER_ADMIN)
+  @ApiOperation({ summary: 'Update facility details (SUPER_ADMIN)' })
+  updateFacility(@Param('id') id: string, @Body() dto: UpdateFacilityDto) {
+    return this.usersService.updateFacility(id, dto);
+  }
+
+  @Post('facilities/:id/activate')
+  @Roles(Role.SUPER_ADMIN)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Activate a pending facility (SUPER_ADMIN)' })
+  activateFacility(@Param('id') id: string) {
+    return this.usersService.activateFacility(id);
+  }
+
+  @Post('facilities/:id/suspend')
+  @Roles(Role.SUPER_ADMIN)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Suspend a facility (SUPER_ADMIN)' })
+  suspendFacility(@Param('id') id: string) {
+    return this.usersService.suspendFacility(id);
+  }
+
   @Get('facilities/:id/settings')
   @Roles(Role.SUPER_ADMIN, Role.FACILITY_ADMIN)
   getFacilitySettings(@Param('id') id: string) {
@@ -45,8 +73,77 @@ export class UsersController {
 
   @Patch('facilities/:id/settings')
   @Roles(Role.SUPER_ADMIN, Role.FACILITY_ADMIN)
-  updateFacilitySettings(@Param('id') id: string, @Body() dto: any) {
+  updateFacilitySettings(@Param('id') id: string, @Body() dto: UpdateFacilitySettingsDto) {
     return this.usersService.updateFacilitySettings(id, dto);
+  }
+
+  @Post('facilities/:id/upload-logo')
+  @Roles(Role.SUPER_ADMIN, Role.FACILITY_ADMIN)
+  @ApiOperation({ summary: 'Upload facility logo', description: 'Accepts PNG/JPG/SVG. Max 2MB.' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({ schema: { type: 'object', properties: { logo: { type: 'string', format: 'binary' } } } })
+  @UseInterceptors(FileInterceptor('logo', {
+    storage: diskStorage({
+      destination: './uploads/logos',
+      filename: (req, file, cb) => cb(null, `logo-${Date.now()}${extname(file.originalname)}`),
+    }),
+    limits: { fileSize: 2 * 1024 * 1024 }, // 2MB
+    fileFilter: (req, file, cb) => {
+      const allowed = ['.png', '.jpg', '.jpeg', '.svg', '.webp'];
+      if (!allowed.includes(extname(file.originalname).toLowerCase())) {
+        return cb(new BadRequestException('Only PNG, JPG, SVG, WEBP allowed'), false);
+      }
+      cb(null, true);
+    },
+  }))
+  async uploadFacilityLogo(@Param('id') id: string, @UploadedFile() file: Express.Multer.File) {
+    if (!file) throw new BadRequestException('No file uploaded');
+    const logoUrl = `/uploads/logos/${file.filename}`;
+    return this.usersService.uploadFacilityLogo(id, logoUrl);
+  }
+
+  @Post('facilities/:id/settings/upload-logo')
+  @Roles(Role.SUPER_ADMIN, Role.FACILITY_ADMIN)
+  @ApiOperation({ summary: 'Upload branding logo for white-label kit' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({ schema: { type: 'object', properties: { logo: { type: 'string', format: 'binary' } } } })
+  @UseInterceptors(FileInterceptor('logo', {
+    storage: diskStorage({
+      destination: './uploads/logos',
+      filename: (req, file, cb) => cb(null, `brand-logo-${Date.now()}${extname(file.originalname)}`),
+    }),
+    limits: { fileSize: 2 * 1024 * 1024 },
+    fileFilter: (req, file, cb) => {
+      const allowed = ['.png', '.jpg', '.jpeg', '.svg', '.webp'];
+      if (!allowed.includes(extname(file.originalname).toLowerCase())) return cb(new BadRequestException('Invalid file type'), false);
+      cb(null, true);
+    },
+  }))
+  async uploadSettingsLogo(@Param('id') id: string, @UploadedFile() file: Express.Multer.File) {
+    if (!file) throw new BadRequestException('No file uploaded');
+    return this.usersService.uploadSettingsAsset(id, 'logoUrl', `/uploads/logos/${file.filename}`);
+  }
+
+  @Post('facilities/:id/settings/upload-favicon')
+  @Roles(Role.SUPER_ADMIN, Role.FACILITY_ADMIN)
+  @ApiOperation({ summary: 'Upload favicon for white-label kit' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({ schema: { type: 'object', properties: { favicon: { type: 'string', format: 'binary' } } } })
+  @UseInterceptors(FileInterceptor('favicon', {
+    storage: diskStorage({
+      destination: './uploads/logos',
+      filename: (req, file, cb) => cb(null, `favicon-${Date.now()}${extname(file.originalname)}`),
+    }),
+    limits: { fileSize: 512 * 1024 }, // 512KB for favicon
+    fileFilter: (req, file, cb) => {
+      const allowed = ['.png', '.ico', '.svg'];
+      if (!allowed.includes(extname(file.originalname).toLowerCase())) return cb(new BadRequestException('Invalid file type'), false);
+      cb(null, true);
+    },
+  }))
+  async uploadFavicon(@Param('id') id: string, @UploadedFile() file: Express.Multer.File) {
+    if (!file) throw new BadRequestException('No file uploaded');
+    return this.usersService.uploadSettingsAsset(id, 'faviconUrl', `/uploads/logos/${file.filename}`);
   }
 
   // ── Users ─────────────────────────────────────────────────

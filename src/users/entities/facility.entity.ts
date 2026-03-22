@@ -51,11 +51,32 @@ export class Facility {
   @Column({ type: 'varchar', length: 100, nullable: true, name: 'abha_facility_id' })
   abhaFacilityId: string;
 
+  @Column({ type: 'varchar', length: 200, nullable: true, name: 'abdm_hip_id' })
+  abdmHipId: string;
+
+  @Column({ type: 'varchar', length: 200, nullable: true, name: 'abdm_client_id' })
+  abdmClientId: string;
+
+  @Column({ type: 'varchar', length: 100, nullable: true, name: 'nabh_accreditation' })
+  nabhAccreditation: string;
+
+  @Column({ type: 'varchar', length: 200, nullable: true, name: 'website_url' })
+  websiteUrl: string;
+
+  @Column({ type: 'varchar', length: 20, nullable: true, name: 'fax_number' })
+  faxNumber: string;
+
+  @Column({ type: 'varchar', length: 500, nullable: true, name: 'favicon_url' })
+  faviconUrl: string;
+
   @Column({ type: 'varchar', length: 500, nullable: true, name: 'logo_url' })
   logoUrl: string;
 
   @Column({ type: 'boolean', default: true, name: 'is_active' })
   isActive: boolean;
+
+  @Column({ type: 'varchar', length: 20, default: 'ACTIVE', name: 'approval_status' })
+  approvalStatus: string; // PENDING | ACTIVE | SUSPENDED
 
   @Column({ type: 'enum', enum: SubscriptionPlan, default: SubscriptionPlan.STARTER, name: 'subscription_plan' })
   subscriptionPlan: SubscriptionPlan;

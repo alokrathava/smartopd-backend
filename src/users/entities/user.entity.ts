@@ -33,6 +33,12 @@ export class User {
   @Column({ type: 'datetime', nullable: true, name: 'last_login_at' })
   lastLoginAt: Date;
 
+  @Column({ type: 'varchar', length: 255, nullable: true, name: 'invite_token' })
+  inviteToken: string;
+
+  @Column({ type: 'datetime', nullable: true, name: 'invite_expires_at' })
+  inviteExpiresAt: Date;
+
   @Column({ type: 'varchar', length: 500, nullable: true, name: 'profile_photo' })
   profilePhoto: string;
 

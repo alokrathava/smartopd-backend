@@ -77,6 +77,15 @@ export class NotificationService {
     return saved;
   }
 
+  async getLogs(facilityId: string, channel?: NotificationChannel, limit = 50): Promise<NotificationLog[]> {
+    const qb = this.logRepo.createQueryBuilder('n')
+      .where('n.facilityId = :facilityId', { facilityId })
+      .orderBy('n.createdAt', 'DESC')
+      .take(limit);
+    if (channel) qb.andWhere('n.channel = :channel', { channel });
+    return qb.getMany();
+  }
+
   async getTemplates(facilityId: string): Promise<NotificationTemplate[]> {
     return this.templateRepo.find({
       where: { facilityId, isActive: true },

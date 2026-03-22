@@ -87,6 +87,57 @@ export class VisitsController {
     return this.visitsService.updateStatus(id, dto, user.facilityId!);
   }
 
+  @Patch(':id/assign-doctor')
+  @Roles(Role.RECEPTIONIST, Role.FACILITY_ADMIN)
+  @ApiOperation({ summary: 'Assign doctor to visit' })
+  assignDoctor(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body('doctorId') doctorId: string,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    return this.visitsService.assignDoctor(id, doctorId, user.facilityId!);
+  }
+
+  @Patch(':id/start-triage')
+  @Roles(Role.NURSE, Role.FACILITY_ADMIN)
+  @ApiOperation({ summary: 'Nurse starts triage for patient' })
+  startTriage(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    return this.visitsService.startTriage(id, user.facilityId!);
+  }
+
+  @Patch(':id/start-consultation')
+  @Roles(Role.DOCTOR, Role.FACILITY_ADMIN)
+  @ApiOperation({ summary: 'Doctor opens consultation' })
+  startConsultation(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    return this.visitsService.startConsultation(id, user.facilityId!);
+  }
+
+  @Patch(':id/complete')
+  @Roles(Role.DOCTOR, Role.FACILITY_ADMIN)
+  @ApiOperation({ summary: 'Mark visit as completed' })
+  completeVisit(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    return this.visitsService.completeVisit(id, user.facilityId!);
+  }
+
+  @Patch(':id/no-show')
+  @Roles(Role.RECEPTIONIST, Role.FACILITY_ADMIN)
+  @ApiOperation({ summary: 'Mark patient as no-show' })
+  markNoShow(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    return this.visitsService.markNoShow(id, user.facilityId!);
+  }
+
   @Delete(':id')
   @Roles(Role.RECEPTIONIST, Role.FACILITY_ADMIN)
   @HttpCode(HttpStatus.NO_CONTENT)
