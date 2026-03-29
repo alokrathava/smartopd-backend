@@ -46,6 +46,20 @@ lerna-debug.log*
 .temp
 .tmp
 
+# Misc
+*.swp
+*.txt
+*.bak
+
+# Editor caches and temporary build files
+.eslintcache
+.cache
+.parcel-cache
+
+# Uploads and generated assets
+/uploads
+
+
 # Runtime data
 pids
 *.pid
@@ -57,3 +71,8 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
 #Claude AI
 .claude/
+
+# Personal files (downloads) - do not commit
+# Specific text files to keep out of the repo
+brd_text.txt
+trd_text.txt

@@ -110,6 +110,9 @@ export class Patient {
   @Column({ type: 'longtext', nullable: true, name: 'fhir_patient_json' })
   fhirPatientJson: string;
 
+  @Column({ type: 'timestamp', nullable: true, name: 'abha_linked_at' })
+  abhaLinkedAt: Date | null;
+
   @Column({ type: 'varchar', length: 500, nullable: true, name: 'photo_url' })
   photoUrl: string;
 
