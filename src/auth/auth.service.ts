@@ -11,6 +11,8 @@ import * as bcrypt from 'bcryptjs';
 import dayjs from 'dayjs';
 import { v4 as uuidv4 } from 'uuid';
 import { UsersService } from '../users/users.service';
+import { RedisService } from '../redis/redis.service';
+import { QueueService } from '../queue/queue.service';
 import { User } from '../users/entities/user.entity';
 import { Facility } from '../users/entities/facility.entity';
 import { FacilitySettings } from '../users/entities/facility-settings.entity';
@@ -31,6 +33,8 @@ export class AuthService {
     private usersService: UsersService,
     private jwtService: JwtService,
     private config: ConfigService,
+    private redisService: RedisService,
+    private queueService: QueueService,
     @InjectRepository(RefreshToken)
     private refreshRepo: Repository<RefreshToken>,
     @InjectRepository(Otp) private otpRepo: Repository<Otp>,
@@ -44,6 +48,7 @@ export class AuthService {
 
   private buildPayload(user: User): JwtPayload {
     return {
+      jti: uuidv4(), // unique token ID for blacklisting
       sub: user.id,
       email: user.email,
       role: user.role,
@@ -52,9 +57,23 @@ export class AuthService {
   }
 
   private signAccessToken(payload: JwtPayload): string {
-    return this.jwtService.sign(payload, {
-      expiresIn: (this.config.get<string>('JWT_EXPIRES_IN') || '15m') as any,
-    });
+    const expiresIn = this.config.get<string>('JWT_EXPIRES_IN', '15m');
+    return this.jwtService.sign(payload, { expiresIn } as any);
+  }
+
+  /** Blacklist a JWT by its jti — used on explicit logout */
+  async blacklistAccessToken(token: string): Promise<void> {
+    try {
+      const decoded = this.jwtService.decode(token) as JwtPayload & { exp: number };
+      if (decoded?.jti && decoded?.exp) {
+        const ttl = decoded.exp - Math.floor(Date.now() / 1000);
+        if (ttl > 0) {
+          await this.redisService.blacklistToken(decoded.jti, ttl);
+        }
+      }
+    } catch {
+      // ignore malformed tokens
+    }
   }
 
   /**
@@ -153,11 +172,18 @@ export class AuthService {
     return { accessToken, refreshToken: newRawRefresh };
   }
 
-  async logout(userId: string) {
+  async logout(userId: string, accessToken?: string) {
+    // Revoke all refresh tokens in DB
     await this.refreshRepo.update(
       { userId, revoked: false },
       { revoked: true },
     );
+
+    // Blacklist the current access token in Redis
+    if (accessToken) {
+      await this.blacklistAccessToken(accessToken);
+    }
+
     return { message: 'Logged out successfully' };
   }
 
@@ -224,10 +250,12 @@ export class AuthService {
       expiresAt: dayjs().add(5, 'minute').toDate(),
     });
 
-    // TODO: Integrate MSG91 / Twilio for real SMS delivery
-    if (this.config.get<string>('NODE_ENV') !== 'production') {
-      console.log(`[DEV] OTP for ${dto.phone}: ${code}`);
-    }
+    // Enqueue SMS via BullMQ (MSG91 in production, console in dev)
+    await this.queueService.enqueueSms({
+      to: dto.phone,
+      message: `Your SmartOPD OTP is ${code}. Valid for 5 minutes. Do not share.`,
+      facilityId: dto.facilityId || 'system',
+    });
 
     return { message: 'OTP sent successfully', phone: dto.phone };
   }

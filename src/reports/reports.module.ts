@@ -14,5 +14,6 @@ import { Patient } from '../patients/entities/patient.entity';
   ],
   controllers: [ReportsController],
   providers: [ReportsService],
+  exports: [ReportsService],
 })
 export class ReportsModule {}
