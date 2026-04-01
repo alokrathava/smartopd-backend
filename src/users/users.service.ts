@@ -110,7 +110,7 @@ export class UsersService {
     facilityId: string,
     dto: UpdateFacilitySettingsDto,
   ): Promise<FacilitySettings> {
-    let settings = await this.getFacilitySettings(facilityId);
+    const settings = await this.getFacilitySettings(facilityId);
     Object.assign(settings, dto);
     return this.settingsRepo.save(settings);
   }

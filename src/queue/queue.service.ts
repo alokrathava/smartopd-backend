@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bull';
-import { Queue } from 'bull';
+import type { Queue } from 'bull';
 import {
   QUEUE_NAMES,
   JOB_NAMES,
@@ -76,7 +76,10 @@ export class QueueService {
   }
 
   async enqueueCampaignSend(campaignId: string, facilityId: string) {
-    return this.crmQueue.add(JOB_NAMES.SEND_CAMPAIGN, { campaignId, facilityId });
+    return this.crmQueue.add(JOB_NAMES.SEND_CAMPAIGN, {
+      campaignId,
+      facilityId,
+    });
   }
 
   async enqueueChurnScoring(facilityId: string) {

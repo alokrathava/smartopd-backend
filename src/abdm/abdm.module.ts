@@ -7,10 +7,7 @@ import { AbdmRecord } from './entities/abdm-record.entity';
 import { Patient } from '../patients/entities/patient.entity';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([AbdmRecord, Patient]),
-    HttpModule,
-  ],
+  imports: [TypeOrmModule.forFeature([AbdmRecord, Patient]), HttpModule],
   controllers: [AbdmController],
   providers: [AbdmService],
   exports: [AbdmService],

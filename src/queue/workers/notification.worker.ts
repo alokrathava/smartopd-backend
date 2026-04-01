@@ -1,12 +1,18 @@
 import { Processor, Process } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
-import { Job } from 'bull';
+import type { Job } from 'bull';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { firstValueFrom } from 'rxjs';
-import { QUEUE_NAMES, JOB_NAMES, SmsJobData, EmailJobData, WhatsAppJobData } from '../queue.constants';
+import {
+  QUEUE_NAMES,
+  JOB_NAMES,
+  SmsJobData,
+  EmailJobData,
+  WhatsAppJobData,
+} from '../queue.constants';
 import { NotificationLog } from '../../notification/entities/notification-log.entity';
 
 @Processor(QUEUE_NAMES.NOTIFICATIONS)
@@ -99,7 +105,10 @@ export class NotificationWorker {
 
   private async sendSms(to: string, message: string): Promise<void> {
     const apiKey = this.configService.get<string>('MSG91_API_KEY');
-    const senderId = this.configService.get<string>('MSG91_SENDER_ID', 'SMTOPD');
+    const senderId = this.configService.get<string>(
+      'MSG91_SENDER_ID',
+      'SMTOPD',
+    );
 
     if (!apiKey) {
       // Dev/test: log to console
@@ -127,9 +136,16 @@ export class NotificationWorker {
     );
   }
 
-  private async sendEmail(to: string, subject: string, body: string): Promise<void> {
+  private async sendEmail(
+    to: string,
+    subject: string,
+    body: string,
+  ): Promise<void> {
     const resendApiKey = this.configService.get<string>('RESEND_API_KEY');
-    const fromEmail = this.configService.get<string>('EMAIL_FROM', 'noreply@smartopd.in');
+    const fromEmail = this.configService.get<string>(
+      'EMAIL_FROM',
+      'noreply@smartopd.in',
+    );
 
     if (!resendApiKey) {
       this.logger.debug(`[EMAIL DEV] To: ${to} | Subject: ${subject}`);
@@ -152,11 +168,17 @@ export class NotificationWorker {
     variables: Record<string, string>,
   ): Promise<void> {
     const wabaToken = this.configService.get<string>('WHATSAPP_API_TOKEN');
-    const wabaId = this.configService.get<string>('WHATSAPP_BUSINESS_ACCOUNT_ID');
-    const phoneNumberId = this.configService.get<string>('WHATSAPP_PHONE_NUMBER_ID');
+    const wabaId = this.configService.get<string>(
+      'WHATSAPP_BUSINESS_ACCOUNT_ID',
+    );
+    const phoneNumberId = this.configService.get<string>(
+      'WHATSAPP_PHONE_NUMBER_ID',
+    );
 
     if (!wabaToken || !wabaId || !phoneNumberId) {
-      this.logger.debug(`[WHATSAPP DEV] To: ${to} | Template: ${templateCode} | Vars: ${JSON.stringify(variables)}`);
+      this.logger.debug(
+        `[WHATSAPP DEV] To: ${to} | Template: ${templateCode} | Vars: ${JSON.stringify(variables)}`,
+      );
       return;
     }
 
@@ -164,7 +186,10 @@ export class NotificationWorker {
     const components = [
       {
         type: 'body',
-        parameters: Object.values(variables).map((v) => ({ type: 'text', text: v })),
+        parameters: Object.values(variables).map((v) => ({
+          type: 'text',
+          text: v,
+        })),
       },
     ];
 

@@ -61,7 +61,11 @@ export class PharmacyService {
     patientId: string,
     drugName: string,
     facilityId: string,
-  ): Promise<{ hasAllergy: boolean; matchedAllergens: string[]; warning?: string }> {
+  ): Promise<{
+    hasAllergy: boolean;
+    matchedAllergens: string[];
+    warning?: string;
+  }> {
     const patient = await this.patientRepo.findOne({
       where: { id: patientId, facilityId },
     });
@@ -85,10 +89,7 @@ export class PharmacyService {
 
       const drugLower = drugName.toLowerCase();
       for (const allergen of allergyList) {
-        if (
-          drugLower.includes(allergen) ||
-          allergen.includes(drugLower)
-        ) {
+        if (drugLower.includes(allergen) || allergen.includes(drugLower)) {
           matchedAllergens.push(allergen);
         }
       }
@@ -114,14 +115,24 @@ export class PharmacyService {
     facilityId: string,
   ): Promise<{
     hasInteractions: boolean;
-    interactions: Array<{ drug1: string; drug2: string; severity: string; description: string }>;
+    interactions: Array<{
+      drug1: string;
+      drug2: string;
+      severity: string;
+      description: string;
+    }>;
   }> {
     if (drugNames.length < 2) {
       return { hasInteractions: false, interactions: [] };
     }
 
     try {
-      const interactions: Array<{ drug1: string; drug2: string; severity: string; description: string }> = [];
+      const interactions: Array<{
+        drug1: string;
+        drug2: string;
+        severity: string;
+        description: string;
+      }> = [];
 
       // Query OpenFDA drug-drug interactions
       for (let i = 0; i < drugNames.length; i++) {
@@ -141,10 +152,10 @@ export class PharmacyService {
 
             const results = response.data?.results || [];
             for (const result of results) {
-              const interactionText = (result.drug_interactions || []).join(' ');
-              if (
-                interactionText.toLowerCase().includes(drug2.toLowerCase())
-              ) {
+              const interactionText = (result.drug_interactions || []).join(
+                ' ',
+              );
+              if (interactionText.toLowerCase().includes(drug2.toLowerCase())) {
                 interactions.push({
                   drug1,
                   drug2,

@@ -38,7 +38,10 @@ export class PharmacyController {
 
   @Get('allergy-check')
   @Roles(Role.PHARMACIST, Role.DOCTOR, Role.NURSE, Role.FACILITY_ADMIN)
-  @ApiOperation({ summary: 'Check patient allergy against a drug — looks up patient allergy record' })
+  @ApiOperation({
+    summary:
+      'Check patient allergy against a drug — looks up patient allergy record',
+  })
   @ApiQuery({ name: 'patientId', required: true })
   @ApiQuery({ name: 'drugName', required: true })
   checkAllergy(
@@ -46,19 +49,37 @@ export class PharmacyController {
     @Query('drugName') drugName: string,
     @CurrentUser() user: JwtPayload,
   ) {
-    return this.pharmacyService.checkAllergy(patientId, drugName, user.facilityId!);
+    return this.pharmacyService.checkAllergy(
+      patientId,
+      drugName,
+      user.facilityId!,
+    );
   }
 
   @Get('drug-interactions')
   @Roles(Role.PHARMACIST, Role.DOCTOR, Role.FACILITY_ADMIN)
-  @ApiOperation({ summary: 'Check drug-drug interactions via OpenFDA — pass comma-separated drug names' })
-  @ApiQuery({ name: 'drugs', required: true, description: 'Comma-separated drug names', example: 'warfarin,aspirin' })
+  @ApiOperation({
+    summary:
+      'Check drug-drug interactions via OpenFDA — pass comma-separated drug names',
+  })
+  @ApiQuery({
+    name: 'drugs',
+    required: true,
+    description: 'Comma-separated drug names',
+    example: 'warfarin,aspirin',
+  })
   checkInteractions(
     @Query('drugs') drugs: string,
     @CurrentUser() user: JwtPayload,
   ) {
-    const drugList = drugs.split(',').map((d) => d.trim()).filter(Boolean);
-    return this.pharmacyService.checkDrugInteractions(drugList, user.facilityId!);
+    const drugList = drugs
+      .split(',')
+      .map((d) => d.trim())
+      .filter(Boolean);
+    return this.pharmacyService.checkDrugInteractions(
+      drugList,
+      user.facilityId!,
+    );
   }
 
   @Get('inventory')

@@ -5,31 +5,53 @@ import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { firstValueFrom } from 'rxjs';
 import { v4 as uuidv4 } from 'uuid';
-import { LabOrder, LabOrderStatus, LabPartner } from './entities/lab-order.entity';
+import {
+  LabOrder,
+  LabOrderStatus,
+  LabPartner,
+} from './entities/lab-order.entity';
 import { LabResult, ResultStatus } from './entities/lab-result.entity';
 import { Patient } from '../patients/entities/patient.entity';
 import { NotificationService } from '../notification/notification.service';
 import { NotificationChannel } from '../notification/entities/notification-log.entity';
-import { CreateLabOrderDto, AddLabResultDto, LabOrderFilterDto } from './dto/lab.dto';
+import {
+  CreateLabOrderDto,
+  AddLabResultDto,
+  LabOrderFilterDto,
+} from './dto/lab.dto';
 
 @Injectable()
 export class LabService {
   private readonly logger = new Logger(LabService.name);
 
   constructor(
-    @InjectRepository(LabOrder) private readonly orderRepo: Repository<LabOrder>,
-    @InjectRepository(LabResult) private readonly resultRepo: Repository<LabResult>,
-    @InjectRepository(Patient) private readonly patientRepo: Repository<Patient>,
+    @InjectRepository(LabOrder)
+    private readonly orderRepo: Repository<LabOrder>,
+    @InjectRepository(LabResult)
+    private readonly resultRepo: Repository<LabResult>,
+    @InjectRepository(Patient)
+    private readonly patientRepo: Repository<Patient>,
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
     private readonly notificationService: NotificationService,
   ) {}
 
-  async createOrder(dto: CreateLabOrderDto, facilityId: string, doctorId: string): Promise<LabOrder> {
-    const patient = await this.patientRepo.findOne({ where: { id: dto.patientId, facilityId } });
+  async createOrder(
+    dto: CreateLabOrderDto,
+    facilityId: string,
+    doctorId: string,
+  ): Promise<LabOrder> {
+    const patient = await this.patientRepo.findOne({
+      where: { id: dto.patientId, facilityId },
+    });
     if (!patient) throw new NotFoundException('Patient not found');
 
-    const fhirServiceRequest = this.buildFhirServiceRequest(dto, patient, facilityId, doctorId);
+    const fhirServiceRequest = this.buildFhirServiceRequest(
+      dto,
+      patient,
+      facilityId,
+      doctorId,
+    );
 
     const order = this.orderRepo.create({
       ...dto,
@@ -51,25 +73,37 @@ export class LabService {
     return saved;
   }
 
-  async getOrders(facilityId: string, filters: LabOrderFilterDto): Promise<LabOrder[]> {
-    const qb = this.orderRepo.createQueryBuilder('o')
+  async getOrders(
+    facilityId: string,
+    filters: LabOrderFilterDto,
+  ): Promise<LabOrder[]> {
+    const qb = this.orderRepo
+      .createQueryBuilder('o')
       .where('o.facilityId = :facilityId', { facilityId })
       .orderBy('o.createdAt', 'DESC');
 
-    if (filters.status) qb.andWhere('o.status = :status', { status: filters.status });
-    if (filters.patientId) qb.andWhere('o.patientId = :patientId', { patientId: filters.patientId });
-    if (filters.visitId) qb.andWhere('o.visitId = :visitId', { visitId: filters.visitId });
+    if (filters.status)
+      qb.andWhere('o.status = :status', { status: filters.status });
+    if (filters.patientId)
+      qb.andWhere('o.patientId = :patientId', { patientId: filters.patientId });
+    if (filters.visitId)
+      qb.andWhere('o.visitId = :visitId', { visitId: filters.visitId });
 
     return qb.getMany();
   }
 
   async getOrder(orderId: string, facilityId: string): Promise<LabOrder> {
-    const order = await this.orderRepo.findOne({ where: { id: orderId, facilityId } });
+    const order = await this.orderRepo.findOne({
+      where: { id: orderId, facilityId },
+    });
     if (!order) throw new NotFoundException('Lab order not found');
     return order;
   }
 
-  async getOrderResults(orderId: string, facilityId: string): Promise<LabResult[]> {
+  async getOrderResults(
+    orderId: string,
+    facilityId: string,
+  ): Promise<LabResult[]> {
     return this.resultRepo.find({
       where: { labOrderId: orderId, facilityId },
       order: { createdAt: 'ASC' },
@@ -77,11 +111,19 @@ export class LabService {
   }
 
   /** Called when results come in (manually or via webhook from partner) */
-  async addResults(orderId: string, results: AddLabResultDto[], facilityId: string): Promise<LabResult[]> {
-    const order = await this.orderRepo.findOne({ where: { id: orderId, facilityId } });
+  async addResults(
+    orderId: string,
+    results: AddLabResultDto[],
+    facilityId: string,
+  ): Promise<LabResult[]> {
+    const order = await this.orderRepo.findOne({
+      where: { id: orderId, facilityId },
+    });
     if (!order) throw new NotFoundException('Lab order not found');
 
-    const patient = await this.patientRepo.findOne({ where: { id: order.patientId, facilityId } });
+    const patient = await this.patientRepo.findOne({
+      where: { id: order.patientId, facilityId },
+    });
 
     const savedResults: LabResult[] = [];
     let hasCritical = false;
@@ -97,7 +139,10 @@ export class LabService {
       });
       savedResults.push(await this.resultRepo.save(result));
 
-      if (r.status === ResultStatus.CRITICAL_HIGH || r.status === ResultStatus.CRITICAL_LOW) {
+      if (
+        r.status === ResultStatus.CRITICAL_HIGH ||
+        r.status === ResultStatus.CRITICAL_LOW
+      ) {
         hasCritical = true;
       }
     }
@@ -110,7 +155,9 @@ export class LabService {
 
     // Notify patient + flag critical values
     if (patient?.phone) {
-      const criticalNote = hasCritical ? ' ⚠️ Critical values detected — please contact your doctor immediately.' : '';
+      const criticalNote = hasCritical
+        ? ' ⚠️ Critical values detected — please contact your doctor immediately.'
+        : '';
       await this.notificationService.send(
         NotificationChannel.SMS,
         patient.phone,
@@ -126,17 +173,27 @@ export class LabService {
   }
 
   async cancelOrder(orderId: string, facilityId: string) {
-    const order = await this.orderRepo.findOne({ where: { id: orderId, facilityId } });
+    const order = await this.orderRepo.findOne({
+      where: { id: orderId, facilityId },
+    });
     if (!order) throw new NotFoundException('Lab order not found');
     await this.orderRepo.update(orderId, { status: LabOrderStatus.CANCELLED });
     return { message: 'Lab order cancelled' };
   }
 
   /** Webhook from lab partners (SRL / Thyrocare / Dr. Lal) */
-  async handlePartnerWebhook(externalOrderId: string, results: AddLabResultDto[], facilityId: string) {
-    const order = await this.orderRepo.findOne({ where: { externalOrderId, facilityId } });
+  async handlePartnerWebhook(
+    externalOrderId: string,
+    results: AddLabResultDto[],
+    facilityId: string,
+  ) {
+    const order = await this.orderRepo.findOne({
+      where: { externalOrderId, facilityId },
+    });
     if (!order) {
-      this.logger.warn(`Lab webhook: order ${externalOrderId} not found for facility ${facilityId}`);
+      this.logger.warn(
+        `Lab webhook: order ${externalOrderId} not found for facility ${facilityId}`,
+      );
       return;
     }
     return this.addResults(order.id, results, facilityId);
@@ -161,7 +218,8 @@ export class LabService {
     // Real routing — partner-specific APIs
     const partnerUrls: Record<string, string> = {
       [LabPartner.SRL]: 'https://api.srl.in/orders',
-      [LabPartner.THYROCARE]: 'https://velso.thyrocare.cloud/api/OrderMaster/RouteOrder',
+      [LabPartner.THYROCARE]:
+        'https://velso.thyrocare.cloud/api/OrderMaster/RouteOrder',
       [LabPartner.DR_LAL]: 'https://api.lalpathlabs.com/v1/orders',
       [LabPartner.METROPOLIS]: 'https://api.metropolisindia.com/v1/orders',
     };
@@ -185,7 +243,12 @@ export class LabService {
               gender: patient.gender,
             },
           },
-          { headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' } },
+          {
+            headers: {
+              Authorization: `Bearer ${apiKey}`,
+              'Content-Type': 'application/json',
+            },
+          },
         ),
       );
 
@@ -195,13 +258,20 @@ export class LabService {
         sentToLabAt: new Date(),
       });
     } catch (err: any) {
-      this.logger.error(`Failed to route order ${order.id} to ${partner}: ${err.message}`);
+      this.logger.error(
+        `Failed to route order ${order.id} to ${partner}: ${err.message}`,
+      );
     }
   }
 
   // ─── FHIR R4 Builders ─────────────────────────────────────────────────────
 
-  private buildFhirServiceRequest(dto: CreateLabOrderDto, patient: Patient, facilityId: string, doctorId: string) {
+  private buildFhirServiceRequest(
+    dto: CreateLabOrderDto,
+    patient: Patient,
+    facilityId: string,
+    doctorId: string,
+  ) {
     return {
       resourceType: 'ServiceRequest',
       id: uuidv4(),
@@ -209,7 +279,15 @@ export class LabService {
       intent: 'order',
       code: {
         coding: [
-          ...(dto.loincCode ? [{ system: 'http://loinc.org', code: dto.loincCode, display: dto.testName }] : []),
+          ...(dto.loincCode
+            ? [
+                {
+                  system: 'http://loinc.org',
+                  code: dto.loincCode,
+                  display: dto.testName,
+                },
+              ]
+            : []),
           { system: 'https://smartopd.in/lab-tests', display: dto.testName },
         ],
         text: dto.testName,
@@ -223,7 +301,11 @@ export class LabService {
     };
   }
 
-  private buildFhirObservation(result: AddLabResultDto, order: LabOrder, facilityId: string) {
+  private buildFhirObservation(
+    result: AddLabResultDto,
+    order: LabOrder,
+    facilityId: string,
+  ) {
     const statusMap: Record<ResultStatus, string> = {
       [ResultStatus.NORMAL]: 'final',
       [ResultStatus.ABNORMAL_HIGH]: 'final',
@@ -239,8 +321,19 @@ export class LabService {
       status: statusMap[result.status || ResultStatus.PENDING],
       code: {
         coding: [
-          ...(result.loincCode ? [{ system: 'http://loinc.org', code: result.loincCode, display: result.componentName }] : []),
-          { system: 'https://smartopd.in/lab-tests', display: result.componentName },
+          ...(result.loincCode
+            ? [
+                {
+                  system: 'http://loinc.org',
+                  code: result.loincCode,
+                  display: result.componentName,
+                },
+              ]
+            : []),
+          {
+            system: 'https://smartopd.in/lab-tests',
+            display: result.componentName,
+          },
         ],
         text: result.componentName,
       },
@@ -254,14 +347,23 @@ export class LabService {
         ? [{ text: result.referenceRange }]
         : undefined,
       interpretation: result.status
-        ? [{
-          coding: [{
-            system: 'http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation',
-            code: result.status.replace('ABNORMAL_', 'A').replace('CRITICAL_', 'AA'),
-          }],
-        }]
+        ? [
+            {
+              coding: [
+                {
+                  system:
+                    'http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation',
+                  code: result.status
+                    .replace('ABNORMAL_', 'A')
+                    .replace('CRITICAL_', 'AA'),
+                },
+              ],
+            },
+          ]
         : undefined,
-      note: result.interpretation ? [{ text: result.interpretation }] : undefined,
+      note: result.interpretation
+        ? [{ text: result.interpretation }]
+        : undefined,
       effectiveDateTime: new Date().toISOString(),
     };
   }

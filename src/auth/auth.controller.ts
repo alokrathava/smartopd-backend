@@ -269,7 +269,9 @@ export class AuthController {
   @ApiUnauthorizedResponse({ description: 'Missing or invalid bearer token' })
   logout(@CurrentUser() user: JwtPayload, @Req() req: Request) {
     // Extract raw access token for blacklisting
-    const authHeader = (req as any).headers?.authorization as string | undefined;
+    const authHeader = (req as any).headers?.authorization as
+      | string
+      | undefined;
     const accessToken = authHeader?.startsWith('Bearer ')
       ? authHeader.slice(7)
       : undefined;

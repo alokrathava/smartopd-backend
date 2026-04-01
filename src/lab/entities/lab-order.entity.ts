@@ -1,5 +1,10 @@
 import {
-  Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, Index,
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  Index,
 } from 'typeorm';
 
 export enum LabOrderStatus {
@@ -39,7 +44,11 @@ export class LabOrder {
   @Column({ type: 'varchar', name: 'ordered_by_id' })
   orderedById: string;
 
-  @Column({ type: 'enum', enum: LabOrderStatus, default: LabOrderStatus.ORDERED })
+  @Column({
+    type: 'enum',
+    enum: LabOrderStatus,
+    default: LabOrderStatus.ORDERED,
+  })
   status: LabOrderStatus;
 
   @Column({ type: 'enum', enum: LabPartner, default: LabPartner.IN_HOUSE })
@@ -58,7 +67,12 @@ export class LabOrder {
   notes: string | null;
 
   /** External order ID from lab partner */
-  @Column({ type: 'varchar', length: 100, nullable: true, name: 'external_order_id' })
+  @Column({
+    type: 'varchar',
+    length: 100,
+    nullable: true,
+    name: 'external_order_id',
+  })
   externalOrderId: string | null;
 
   /** FHIR ServiceRequest JSON */

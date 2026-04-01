@@ -1,9 +1,22 @@
 import {
-  Controller, Post, Get, Patch, Body, Param, Query, UseGuards, HttpCode, HttpStatus,
+  Controller,
+  Post,
+  Get,
+  Patch,
+  Body,
+  Param,
+  Query,
+  UseGuards,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { NhcxService } from './nhcx.service';
-import { CreateClaimDto, UpdateClaimStatusDto, ClaimQueryDto } from './dto/nhcx.dto';
+import {
+  CreateClaimDto,
+  UpdateClaimStatusDto,
+  ClaimQueryDto,
+} from './dto/nhcx.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';

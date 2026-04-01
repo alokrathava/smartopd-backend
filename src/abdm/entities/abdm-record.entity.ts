@@ -1,5 +1,10 @@
 import {
-  Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, Index,
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  Index,
 } from 'typeorm';
 
 export enum AbdmFlowType {
@@ -43,7 +48,12 @@ export class AbdmRecord {
   abhaNumber: string | null;
 
   /** ABHA address (health ID) e.g. name@abdm */
-  @Column({ type: 'varchar', length: 100, nullable: true, name: 'abha_address' })
+  @Column({
+    type: 'varchar',
+    length: 100,
+    nullable: true,
+    name: 'abha_address',
+  })
   abhaAddress: string | null;
 
   /** Txn ID returned by ABDM gateway — used for OTP verification */
@@ -51,7 +61,12 @@ export class AbdmRecord {
   txnId: string | null;
 
   /** Consent artefact ID from M3 flow */
-  @Column({ type: 'varchar', length: 100, nullable: true, name: 'consent_artefact_id' })
+  @Column({
+    type: 'varchar',
+    length: 100,
+    nullable: true,
+    name: 'consent_artefact_id',
+  })
   consentArtefactId: string | null;
 
   /** ABDM access token for data pull (encrypted at rest) */

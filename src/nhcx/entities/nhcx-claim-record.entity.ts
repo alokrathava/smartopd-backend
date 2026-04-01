@@ -1,5 +1,10 @@
 import {
-  Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, Index,
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  Index,
 } from 'typeorm';
 
 export enum NhcxClaimType {
@@ -47,29 +52,55 @@ export class NhcxClaimRecord {
   @Column({ type: 'enum', enum: NhcxClaimType, name: 'claim_type' })
   claimType: NhcxClaimType;
 
-  @Column({ type: 'enum', enum: NhcxClaimStatus, default: NhcxClaimStatus.DRAFT })
+  @Column({
+    type: 'enum',
+    enum: NhcxClaimStatus,
+    default: NhcxClaimStatus.DRAFT,
+  })
   status: NhcxClaimStatus;
 
   /** NHCX claim reference number returned on submission */
-  @Column({ type: 'varchar', length: 100, nullable: true, name: 'nhcx_claim_id' })
+  @Column({
+    type: 'varchar',
+    length: 100,
+    nullable: true,
+    name: 'nhcx_claim_id',
+  })
   nhcxClaimId: string | null;
 
   /** Insurance company (payer) */
   @Column({ type: 'varchar', length: 200, nullable: true, name: 'payer_name' })
   payerName: string | null;
 
-  @Column({ type: 'varchar', length: 100, nullable: true, name: 'policy_number' })
+  @Column({
+    type: 'varchar',
+    length: 100,
+    nullable: true,
+    name: 'policy_number',
+  })
   policyNumber: string | null;
 
   @Column({ type: 'varchar', length: 100, nullable: true, name: 'member_id' })
   memberId: string | null;
 
   /** Claimed amount in INR */
-  @Column({ type: 'decimal', precision: 12, scale: 2, nullable: true, name: 'claimed_amount' })
+  @Column({
+    type: 'decimal',
+    precision: 12,
+    scale: 2,
+    nullable: true,
+    name: 'claimed_amount',
+  })
   claimedAmount: number | null;
 
   /** Approved amount in INR (set on approval) */
-  @Column({ type: 'decimal', precision: 12, scale: 2, nullable: true, name: 'approved_amount' })
+  @Column({
+    type: 'decimal',
+    precision: 12,
+    scale: 2,
+    nullable: true,
+    name: 'approved_amount',
+  })
   approvedAmount: number | null;
 
   /** FHIR ClaimBundle JSON submitted to NHCX */

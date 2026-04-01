@@ -1,5 +1,10 @@
 import {
-  IsUUID, IsEnum, IsString, IsNotEmpty, IsOptional, IsArray,
+  IsUUID,
+  IsEnum,
+  IsString,
+  IsNotEmpty,
+  IsOptional,
+  IsArray,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { LabPartner, LabOrderStatus } from '../entities/lab-order.entity';
@@ -29,7 +34,10 @@ export class CreateLabOrderDto {
   @IsEnum(LabPartner)
   partner?: LabPartner;
 
-  @ApiPropertyOptional({ enum: ['ROUTINE', 'URGENT', 'STAT'], default: 'ROUTINE' })
+  @ApiPropertyOptional({
+    enum: ['ROUTINE', 'URGENT', 'STAT'],
+    default: 'ROUTINE',
+  })
   @IsOptional()
   @IsEnum(['ROUTINE', 'URGENT', 'STAT'])
   urgency?: 'ROUTINE' | 'URGENT' | 'STAT';

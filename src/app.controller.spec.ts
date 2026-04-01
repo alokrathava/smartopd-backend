@@ -15,8 +15,15 @@ describe('AppController', () => {
   });
 
   describe('root', () => {
-    it('should return "Hello World!"', () => {
-      expect(appController.getHello()).toBe('Hello World!');
+    it('should return health and system info', () => {
+      const result = appController.getHealth();
+      expect(result.status).toBe('ok');
+      expect(result.app).toBe('SmartOPD API');
+      expect(result.environment).toBeDefined();
+      expect(result.timestamp).toBeDefined();
+      expect(result.uptimeSeconds).toBeGreaterThanOrEqual(0);
+      expect(result.nodeVersion).toBeDefined();
+      expect(result.docs).toBe('/api/docs');
     });
   });
 });

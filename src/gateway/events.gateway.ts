@@ -26,12 +26,17 @@ import { ConfigService } from '@nestjs/config';
  */
 @WebSocketGateway({
   cors: {
-    origin: process.env.NODE_ENV !== 'production' ? '*' : process.env.ALLOWED_ORIGINS?.split(','),
+    origin:
+      process.env.NODE_ENV !== 'production'
+        ? '*'
+        : process.env.ALLOWED_ORIGINS?.split(','),
     credentials: true,
   },
   transports: ['websocket', 'polling'],
 })
-export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
+export class EventsGateway
+  implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
+{
   @WebSocketServer()
   server: Server;
 
@@ -48,8 +53,7 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
 
   handleConnection(client: Socket) {
     const token =
-      client.handshake.auth?.token ||
-      (client.handshake.query?.token as string);
+      client.handshake.auth?.token || (client.handshake.query?.token as string);
 
     if (!token) {
       client.disconnect(true);
@@ -58,7 +62,10 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
 
     try {
       const payload = this.jwtService.verify(token, {
-        secret: this.configService.get<string>('JWT_SECRET', 'smartopd-secret-key'),
+        secret: this.configService.get<string>(
+          'JWT_SECRET',
+          'smartopd-secret-key',
+        ),
       });
 
       // Store user info on socket for room routing
@@ -69,7 +76,9 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
         void client.join(`facility:${payload.facilityId}`);
       }
 
-      this.logger.debug(`Client connected: ${client.id} (user: ${payload.sub})`);
+      this.logger.debug(
+        `Client connected: ${client.id} (user: ${payload.sub})`,
+      );
     } catch {
       client.disconnect(true);
     }
@@ -98,7 +107,9 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
 
   /** Emit when a visit token is called */
   emitTokenCalled(facilityId: string, payload: TokenCalledPayload) {
-    this.server.to(`facility:${facilityId}`).emit('queue:token-called', payload);
+    this.server
+      .to(`facility:${facilityId}`)
+      .emit('queue:token-called', payload);
   }
 
   // ─── Bed Board Events ──────────────────────────────────────────────────────
@@ -115,14 +126,18 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
 
   /** Broadcast bed status change to all bed board watchers */
   emitBedStatusChanged(facilityId: string, payload: BedStatusPayload) {
-    this.server.to(`facility:${facilityId}`).emit('beds:status-changed', payload);
+    this.server
+      .to(`facility:${facilityId}`)
+      .emit('beds:status-changed', payload);
   }
 
   // ─── Critical Value Alerts ─────────────────────────────────────────────────
 
   /** Broadcast critical vitals alert to doctors/nurses in facility */
   emitCriticalAlert(facilityId: string, payload: CriticalAlertPayload) {
-    this.server.to(`facility:${facilityId}`).emit('alert:critical-vitals', payload);
+    this.server
+      .to(`facility:${facilityId}`)
+      .emit('alert:critical-vitals', payload);
     this.logger.warn(
       `Critical alert for patient ${payload.patientId} in facility ${facilityId}: ${payload.flags.join(', ')}`,
     );

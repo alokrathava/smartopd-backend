@@ -64,7 +64,7 @@ export class AuthService {
   /** Blacklist a JWT by its jti — used on explicit logout */
   async blacklistAccessToken(token: string): Promise<void> {
     try {
-      const decoded = this.jwtService.decode(token) as JwtPayload & { exp: number };
+      const decoded = this.jwtService.decode(token);
       if (decoded?.jti && decoded?.exp) {
         const ttl = decoded.exp - Math.floor(Date.now() / 1000);
         if (ttl > 0) {

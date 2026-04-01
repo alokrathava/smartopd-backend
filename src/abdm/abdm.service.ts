@@ -1,5 +1,8 @@
 import {
-  Injectable, BadRequestException, NotFoundException, Logger,
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+  Logger,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -7,12 +10,19 @@ import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { firstValueFrom } from 'rxjs';
 import { v4 as uuidv4 } from 'uuid';
-import { AbdmRecord, AbdmFlowType, AbdmStatus } from './entities/abdm-record.entity';
+import {
+  AbdmRecord,
+  AbdmFlowType,
+  AbdmStatus,
+} from './entities/abdm-record.entity';
 import { Patient } from '../patients/entities/patient.entity';
 import { QueueService } from '../queue/queue.service';
 import {
-  GenerateAadhaarOtpDto, VerifyAadhaarOtpDto,
-  InitM2LinkDto, ConfirmM2LinkDto, RequestM3ConsentDto,
+  GenerateAadhaarOtpDto,
+  VerifyAadhaarOtpDto,
+  InitM2LinkDto,
+  ConfirmM2LinkDto,
+  RequestM3ConsentDto,
 } from './dto/abdm.dto';
 
 @Injectable()
@@ -25,13 +35,18 @@ export class AbdmService {
   private tokenExpiresAt: Date | null = null;
 
   constructor(
-    @InjectRepository(AbdmRecord) private readonly abdmRepo: Repository<AbdmRecord>,
-    @InjectRepository(Patient) private readonly patientRepo: Repository<Patient>,
+    @InjectRepository(AbdmRecord)
+    private readonly abdmRepo: Repository<AbdmRecord>,
+    @InjectRepository(Patient)
+    private readonly patientRepo: Repository<Patient>,
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
     private readonly queueService: QueueService,
   ) {
-    this.baseUrl = configService.get<string>('ABDM_BASE_URL', 'https://dev.abdm.gov.in/gateway');
+    this.baseUrl = configService.get<string>(
+      'ABDM_BASE_URL',
+      'https://dev.abdm.gov.in/gateway',
+    );
     this.clientId = configService.get<string>('ABDM_CLIENT_ID', '');
     this.clientSecret = configService.get<string>('ABDM_CLIENT_SECRET', '');
   }
@@ -39,12 +54,18 @@ export class AbdmService {
   // ─── ABDM Gateway Auth ─────────────────────────────────────────────────────
 
   private async getGatewayToken(): Promise<string> {
-    if (this.abdmAccessToken && this.tokenExpiresAt && new Date() < this.tokenExpiresAt) {
+    if (
+      this.abdmAccessToken &&
+      this.tokenExpiresAt &&
+      new Date() < this.tokenExpiresAt
+    ) {
       return this.abdmAccessToken;
     }
 
     if (!this.clientId || !this.clientSecret) {
-      this.logger.warn('[ABDM] No credentials configured — using sandbox mock mode');
+      this.logger.warn(
+        '[ABDM] No credentials configured — using sandbox mock mode',
+      );
       this.abdmAccessToken = 'mock-token';
       this.tokenExpiresAt = new Date(Date.now() + 3600 * 1000);
       return this.abdmAccessToken;
@@ -59,7 +80,9 @@ export class AbdmService {
     );
 
     this.abdmAccessToken = response.data.accessToken;
-    this.tokenExpiresAt = new Date(Date.now() + (response.data.expiresIn || 3600) * 1000);
+    this.tokenExpiresAt = new Date(
+      Date.now() + (response.data.expiresIn || 3600) * 1000,
+    );
     return this.abdmAccessToken!;
   }
 
@@ -70,7 +93,7 @@ export class AbdmService {
       'X-CM-ID': 'sbx', // Sandbox. Production: 'abdm'
       'X-HIP-ID': facilityId || '',
       'REQUEST-ID': uuidv4(),
-      'TIMESTAMP': new Date().toISOString(),
+      TIMESTAMP: new Date().toISOString(),
     };
   }
 
@@ -98,8 +121,13 @@ export class AbdmService {
     if (!this.clientId) {
       // Sandbox/dev mode — simulate
       const mockTxnId = uuidv4();
-      await this.abdmRepo.update(saved.id, { txnId: mockTxnId, status: AbdmStatus.OTP_SENT });
-      this.logger.debug(`[ABDM MOCK] M1 OTP sent for patient ${dto.patientId}, txnId: ${mockTxnId}`);
+      await this.abdmRepo.update(saved.id, {
+        txnId: mockTxnId,
+        status: AbdmStatus.OTP_SENT,
+      });
+      this.logger.debug(
+        `[ABDM MOCK] M1 OTP sent for patient ${dto.patientId}, txnId: ${mockTxnId}`,
+      );
       return {
         message: 'OTP sent to Aadhaar-linked mobile (sandbox mode)',
         txnId: mockTxnId,
@@ -117,20 +145,39 @@ export class AbdmService {
     );
 
     const txnId = response.data.txnId;
-    await this.abdmRepo.update(saved.id, { txnId, status: AbdmStatus.OTP_SENT, rawResponse: JSON.stringify(response.data) });
+    await this.abdmRepo.update(saved.id, {
+      txnId,
+      status: AbdmStatus.OTP_SENT,
+      rawResponse: JSON.stringify(response.data),
+    });
 
-    return { message: 'OTP sent to Aadhaar-linked mobile', txnId, abdmRecordId: saved.id };
+    return {
+      message: 'OTP sent to Aadhaar-linked mobile',
+      txnId,
+      abdmRecordId: saved.id,
+    };
   }
 
   /**
    * Step 2 of M1: Verify OTP → creates ABHA and links to patient
    * POST /v1/registration/aadhaar/verifyOTP
    */
-  async verifyAadhaarOtpAndCreateAbha(dto: VerifyAadhaarOtpDto, facilityId: string) {
+  async verifyAadhaarOtpAndCreateAbha(
+    dto: VerifyAadhaarOtpDto,
+    facilityId: string,
+  ) {
     const record = await this.abdmRepo.findOne({
-      where: { patientId: dto.patientId, facilityId, txnId: dto.txnId, flowType: AbdmFlowType.M1_ABHA_CREATION },
+      where: {
+        patientId: dto.patientId,
+        facilityId,
+        txnId: dto.txnId,
+        flowType: AbdmFlowType.M1_ABHA_CREATION,
+      },
     });
-    if (!record) throw new BadRequestException('Invalid transaction — initiate M1 flow first');
+    if (!record)
+      throw new BadRequestException(
+        'Invalid transaction — initiate M1 flow first',
+      );
 
     if (!this.clientId) {
       // Sandbox mode — simulate ABHA creation
@@ -154,8 +201,14 @@ export class AbdmService {
         abhaLinkedAt: new Date().toISOString(),
       });
 
-      this.logger.debug(`[ABDM MOCK] ABHA created: ${mockAbha} for patient ${dto.patientId}`);
-      return { message: 'ABHA created successfully (sandbox)', abhaNumber: mockAbha, abhaAddress: mockAddress };
+      this.logger.debug(
+        `[ABDM MOCK] ABHA created: ${mockAbha} for patient ${dto.patientId}`,
+      );
+      return {
+        message: 'ABHA created successfully (sandbox)',
+        abhaNumber: mockAbha,
+        abhaAddress: mockAddress,
+      };
     }
 
     const token = await this.getGatewayToken();
@@ -189,7 +242,11 @@ export class AbdmService {
       abhaLinkedAt: new Date().toISOString(),
     });
 
-    return { message: 'ABHA created and linked', abhaNumber: healthIdNumber, abhaAddress: healthId };
+    return {
+      message: 'ABHA created and linked',
+      abhaNumber: healthIdNumber,
+      abhaAddress: healthId,
+    };
   }
 
   // ─── M2: KYC & Record Linking ──────────────────────────────────────────────
@@ -199,7 +256,9 @@ export class AbdmService {
    * POST /v0.5/hip/link/user-auth/init
    */
   async initiateM2Link(dto: InitM2LinkDto, facilityId: string) {
-    const patient = await this.patientRepo.findOne({ where: { id: dto.patientId, facilityId } });
+    const patient = await this.patientRepo.findOne({
+      where: { id: dto.patientId, facilityId },
+    });
     if (!patient) throw new NotFoundException('Patient not found');
 
     const record = this.abdmRepo.create({
@@ -213,8 +272,15 @@ export class AbdmService {
 
     if (!this.clientId) {
       const mockTxnId = uuidv4();
-      await this.abdmRepo.update(saved.id, { txnId: mockTxnId, status: AbdmStatus.OTP_SENT });
-      return { message: 'M2 link OTP sent (sandbox)', txnId: mockTxnId, abdmRecordId: saved.id };
+      await this.abdmRepo.update(saved.id, {
+        txnId: mockTxnId,
+        status: AbdmStatus.OTP_SENT,
+      });
+      return {
+        message: 'M2 link OTP sent (sandbox)',
+        txnId: mockTxnId,
+        abdmRecordId: saved.id,
+      };
     }
 
     const token = await this.getGatewayToken();
@@ -237,8 +303,15 @@ export class AbdmService {
       ),
     );
 
-    await this.abdmRepo.update(saved.id, { txnId: requestId, status: AbdmStatus.OTP_SENT });
-    return { message: 'M2 link OTP sent to patient', txnId: requestId, abdmRecordId: saved.id };
+    await this.abdmRepo.update(saved.id, {
+      txnId: requestId,
+      status: AbdmStatus.OTP_SENT,
+    });
+    return {
+      message: 'M2 link OTP sent to patient',
+      txnId: requestId,
+      abdmRecordId: saved.id,
+    };
   }
 
   /**
@@ -247,7 +320,12 @@ export class AbdmService {
    */
   async confirmM2Link(dto: ConfirmM2LinkDto, facilityId: string) {
     const record = await this.abdmRepo.findOne({
-      where: { patientId: dto.patientId, facilityId, txnId: dto.txnId, flowType: AbdmFlowType.M2_KYC_LINK },
+      where: {
+        patientId: dto.patientId,
+        facilityId,
+        txnId: dto.txnId,
+        flowType: AbdmFlowType.M2_KYC_LINK,
+      },
     });
     if (!record) throw new BadRequestException('Invalid transaction');
 
@@ -299,9 +377,14 @@ export class AbdmService {
    * POST /v0.5/consent-requests/init
    */
   async requestConsent(dto: RequestM3ConsentDto, facilityId: string) {
-    const patient = await this.patientRepo.findOne({ where: { id: dto.patientId, facilityId } });
+    const patient = await this.patientRepo.findOne({
+      where: { id: dto.patientId, facilityId },
+    });
     if (!patient) throw new NotFoundException('Patient not found');
-    if (!patient.abhaNumber) throw new BadRequestException('Patient ABHA not linked — complete M1/M2 first');
+    if (!patient.abhaNumber)
+      throw new BadRequestException(
+        'Patient ABHA not linked — complete M1/M2 first',
+      );
 
     const record = this.abdmRepo.create({
       patientId: dto.patientId,
@@ -339,15 +422,33 @@ export class AbdmService {
           requestId: consentRequestId,
           timestamp: now.toISOString(),
           consent: {
-            purpose: { text: dto.purpose, code: dto.purpose, refUri: 'http://terminology.hl7.org/ValueSet/v3-PurposeOfUse' },
+            purpose: {
+              text: dto.purpose,
+              code: dto.purpose,
+              refUri: 'http://terminology.hl7.org/ValueSet/v3-PurposeOfUse',
+            },
             patient: { id: patient.abhaAddress || patient.abhaNumber },
             hiu: { id: facilityId },
-            requester: { name: 'SmartOPD', identifier: { type: 'REGNO', value: facilityId, system: 'https://smartopd.in' } },
-            hiTypes: dto.hiTypes || ['DiagnosticReport', 'Prescription', 'OPConsultation', 'DischargeSummary'],
+            requester: {
+              name: 'SmartOPD',
+              identifier: {
+                type: 'REGNO',
+                value: facilityId,
+                system: 'https://smartopd.in',
+              },
+            },
+            hiTypes: dto.hiTypes || [
+              'DiagnosticReport',
+              'Prescription',
+              'OPConsultation',
+              'DischargeSummary',
+            ],
             permission: {
               accessMode: 'VIEW',
               dateRange: { from, to },
-              dataEraseAt: new Date(now.getTime() + 30 * 86400000).toISOString(),
+              dataEraseAt: new Date(
+                now.getTime() + 30 * 86400000,
+              ).toISOString(),
               frequency: { unit: 'HOUR', value: 1, repeats: 0 },
             },
           },
@@ -357,13 +458,21 @@ export class AbdmService {
     );
 
     await this.abdmRepo.update(saved.id, { txnId: consentRequestId });
-    return { message: 'Consent request sent to patient', abdmRecordId: saved.id, status: 'PENDING_PATIENT_APPROVAL' };
+    return {
+      message: 'Consent request sent to patient',
+      abdmRecordId: saved.id,
+      status: 'PENDING_PATIENT_APPROVAL',
+    };
   }
 
   /** ABDM webhook: consent granted callback */
   async handleConsentGranted(consentArtefactId: string, facilityId: string) {
     const record = await this.abdmRepo.findOne({
-      where: { facilityId, flowType: AbdmFlowType.M3_HIU_CONSENT, status: AbdmStatus.CONSENT_REQUESTED },
+      where: {
+        facilityId,
+        flowType: AbdmFlowType.M3_HIU_CONSENT,
+        status: AbdmStatus.CONSENT_REQUESTED,
+      },
     });
     if (record) {
       await this.abdmRepo.update(record.id, {

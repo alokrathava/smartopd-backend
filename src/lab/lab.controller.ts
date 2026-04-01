@@ -1,9 +1,22 @@
 import {
-  Controller, Post, Get, Delete, Body, Param, Query, UseGuards, HttpCode, HttpStatus,
+  Controller,
+  Post,
+  Get,
+  Delete,
+  Body,
+  Param,
+  Query,
+  UseGuards,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { LabService } from './lab.service';
-import { CreateLabOrderDto, AddLabResultDto, LabOrderFilterDto } from './dto/lab.dto';
+import {
+  CreateLabOrderDto,
+  AddLabResultDto,
+  LabOrderFilterDto,
+} from './dto/lab.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -38,14 +51,29 @@ export class LabController {
   }
 
   @Get('orders')
-  @Roles(Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST, Role.FACILITY_ADMIN, Role.SUPER_ADMIN)
+  @Roles(
+    Role.DOCTOR,
+    Role.NURSE,
+    Role.RECEPTIONIST,
+    Role.FACILITY_ADMIN,
+    Role.SUPER_ADMIN,
+  )
   @ApiOperation({ summary: 'List lab orders with filters' })
-  getOrders(@Query() filters: LabOrderFilterDto, @CurrentUser() user: JwtPayload) {
+  getOrders(
+    @Query() filters: LabOrderFilterDto,
+    @CurrentUser() user: JwtPayload,
+  ) {
     return this.labService.getOrders(user.facilityId!, filters);
   }
 
   @Get('orders/:id')
-  @Roles(Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST, Role.FACILITY_ADMIN, Role.SUPER_ADMIN)
+  @Roles(
+    Role.DOCTOR,
+    Role.NURSE,
+    Role.RECEPTIONIST,
+    Role.FACILITY_ADMIN,
+    Role.SUPER_ADMIN,
+  )
   @ApiOperation({ summary: 'Get lab order details' })
   getOrder(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
     return this.labService.getOrder(id, user.facilityId!);
@@ -81,11 +109,17 @@ export class LabController {
   @Public()
   @Post('webhook/:facilityId')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Lab partner webhook: receive results from external lab' })
+  @ApiOperation({
+    summary: 'Lab partner webhook: receive results from external lab',
+  })
   handleWebhook(
     @Param('facilityId') facilityId: string,
     @Body() body: { externalOrderId: string; results: AddLabResultDto[] },
   ) {
-    return this.labService.handlePartnerWebhook(body.externalOrderId, body.results, facilityId);
+    return this.labService.handlePartnerWebhook(
+      body.externalOrderId,
+      body.results,
+      facilityId,
+    );
   }
 }

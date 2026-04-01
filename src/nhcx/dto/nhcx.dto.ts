@@ -1,8 +1,17 @@
 import {
-  IsUUID, IsEnum, IsString, IsOptional, IsNumber, Min, IsNotEmpty,
+  IsUUID,
+  IsEnum,
+  IsString,
+  IsOptional,
+  IsNumber,
+  Min,
+  IsNotEmpty,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { NhcxClaimType, NhcxClaimStatus } from '../entities/nhcx-claim-record.entity';
+import {
+  NhcxClaimType,
+  NhcxClaimStatus,
+} from '../entities/nhcx-claim-record.entity';
 
 export class CreateClaimDto {
   @ApiProperty({ description: 'Patient ID' })

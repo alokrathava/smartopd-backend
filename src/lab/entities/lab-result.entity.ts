@@ -1,5 +1,9 @@
 import {
-  Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, Index,
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  Index,
 } from 'typeorm';
 
 export enum ResultStatus {
@@ -40,7 +44,12 @@ export class LabResult {
   @Column({ type: 'varchar', length: 50, nullable: true })
   unit: string | null;
 
-  @Column({ type: 'varchar', length: 200, nullable: true, name: 'reference_range' })
+  @Column({
+    type: 'varchar',
+    length: 200,
+    nullable: true,
+    name: 'reference_range',
+  })
   referenceRange: string | null;
 
   @Column({ type: 'enum', enum: ResultStatus, default: ResultStatus.PENDING })
@@ -50,7 +59,12 @@ export class LabResult {
   @Column({ type: 'longtext', nullable: true, name: 'fhir_observation' })
   fhirObservation: string | null;
 
-  @Column({ type: 'varchar', length: 200, nullable: true, name: 'interpretation' })
+  @Column({
+    type: 'varchar',
+    length: 200,
+    nullable: true,
+    name: 'interpretation',
+  })
   interpretation: string | null;
 
   @CreateDateColumn({ name: 'created_at' })

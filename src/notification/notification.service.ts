@@ -67,7 +67,9 @@ export class NotificationService {
       case NotificationChannel.EMAIL:
         await this.queueService.enqueueEmail({
           to: recipient,
-          subject: templateCode ? `SmartOPD - ${templateCode}` : 'SmartOPD Notification',
+          subject: templateCode
+            ? `SmartOPD - ${templateCode}`
+            : 'SmartOPD Notification',
           body,
           facilityId: facilityId || 'system',
           notificationLogId: saved.id,

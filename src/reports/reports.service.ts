@@ -66,9 +66,18 @@ export class ReportsService {
       .andWhere('b.billDate BETWEEN :start AND :end', { start, end })
       .getMany();
 
-    const totalBilled = bills.reduce((s, b) => s + Number(b.totalAmount || 0), 0);
-    const totalCollected = bills.reduce((s, b) => s + Number(b.paidAmount || 0), 0);
-    const totalOutstanding = bills.reduce((s, b) => s + Number(b.dueAmount || 0), 0);
+    const totalBilled = bills.reduce(
+      (s, b) => s + Number(b.totalAmount || 0),
+      0,
+    );
+    const totalCollected = bills.reduce(
+      (s, b) => s + Number(b.paidAmount || 0),
+      0,
+    );
+    const totalOutstanding = bills.reduce(
+      (s, b) => s + Number(b.dueAmount || 0),
+      0,
+    );
 
     const byStatus = await this.billRepo
       .createQueryBuilder('b')
@@ -80,7 +89,13 @@ export class ReportsService {
       .groupBy('b.status')
       .getRawMany();
 
-    return { totalBilled, totalCollected, totalOutstanding, billCount: bills.length, byStatus };
+    return {
+      totalBilled,
+      totalCollected,
+      totalOutstanding,
+      billCount: bills.length,
+      byStatus,
+    };
   }
 
   async getEquipmentUtilisation(facilityId: string) {
@@ -92,15 +107,21 @@ export class ReportsService {
       .where('e.facilityId = :facilityId', { facilityId })
       .groupBy('e.status')
       .getRawMany();
-    const activeLeases = await this.leaseRepo.count({ where: { facilityId, status: 'ACTIVE' as any } });
-    const overdue = await this.leaseRepo.count({ where: { facilityId, status: 'OVERDUE' as any } });
+    const activeLeases = await this.leaseRepo.count({
+      where: { facilityId, status: 'ACTIVE' as any },
+    });
+    const overdue = await this.leaseRepo.count({
+      where: { facilityId, status: 'OVERDUE' as any },
+    });
     return { total, byStatus, activeLeases, overdue };
   }
 
   async getPatientStats(facilityId: string, from: string, to: string) {
     const start = new Date(from);
     const end = dayjs(to).endOf('day').toDate();
-    const totalPatients = await this.patientRepo.count({ where: { facilityId } });
+    const totalPatients = await this.patientRepo.count({
+      where: { facilityId },
+    });
     const newPatientsInRange = await this.patientRepo
       .createQueryBuilder('p')
       .where('p.facilityId = :facilityId', { facilityId })
@@ -145,7 +166,11 @@ export class ReportsService {
     // OPD visits this month where patient has ABHA
     const abdmLinkedVisits = await this.visitRepo
       .createQueryBuilder('v')
-      .innerJoin(Patient, 'p', 'p.id = v.patientId AND p.facilityId = v.facilityId')
+      .innerJoin(
+        Patient,
+        'p',
+        'p.id = v.patientId AND p.facilityId = v.facilityId',
+      )
       .where('v.facilityId = :facilityId', { facilityId })
       .andWhere('v.checkedInAt BETWEEN :start AND :end', {
         start: monthStart,
@@ -155,7 +180,10 @@ export class ReportsService {
       .getCount();
 
     // DHIS incentive calculation
-    const eligibleLinkages = Math.max(0, linkedThisMonth - DHIS_THRESHOLD_PER_MONTH);
+    const eligibleLinkages = Math.max(
+      0,
+      linkedThisMonth - DHIS_THRESHOLD_PER_MONTH,
+    );
     const dhisIncomeInr = eligibleLinkages * DHIS_INCENTIVE_PER_LINKAGE_INR;
 
     // Monthly-to-date totals
@@ -174,13 +202,21 @@ export class ReportsService {
       incentivePerLinkageInr: DHIS_INCENTIVE_PER_LINKAGE_INR,
       dhisIncomeInr,
       isEligible: linkedThisMonth >= DHIS_THRESHOLD_PER_MONTH,
-      linkagesNeededForEligibility: Math.max(0, DHIS_THRESHOLD_PER_MONTH - linkedThisMonth),
+      linkagesNeededForEligibility: Math.max(
+        0,
+        DHIS_THRESHOLD_PER_MONTH - linkedThisMonth,
+      ),
       last6Months,
     };
   }
 
   private async getMonthlyDhisBreakdown(facilityId: string, months: number) {
-    const results = [];
+    const results: {
+      month: string;
+      linkedCount: number;
+      eligibleCount: number;
+      incomeInr: number;
+    }[] = [];
     for (let i = 0; i < months; i++) {
       const month = dayjs().subtract(i, 'month');
       const start = month.startOf('month').toDate();

@@ -24,7 +24,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   async validate(payload: JwtPayload) {
     // Check JWT blacklist (token was explicitly revoked via logout)
     if (payload.jti) {
-      const blacklisted = await this.redisService.isTokenBlacklisted(payload.jti);
+      const blacklisted = await this.redisService.isTokenBlacklisted(
+        payload.jti,
+      );
       if (blacklisted) {
         throw new UnauthorizedException('Token has been revoked');
       }
