@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Like } from 'typeorm';
 import { Consultation } from './entities/consultation.entity';
@@ -8,6 +8,7 @@ import {
 } from './entities/prescription.entity';
 import { PrescriptionItem } from './entities/prescription-item.entity';
 import { Icd10 } from './entities/icd10.entity';
+import { Visit } from '../visits/entities/visit.entity';
 import { CreateConsultationDto } from './dto/create-consultation.dto';
 import { CreatePrescriptionDto } from './dto/create-prescription.dto';
 import { CreatePrescriptionItemDto } from './dto/create-prescription-item.dto';
@@ -24,6 +25,8 @@ export class DoctorService {
     private readonly prescriptionItemRepo: Repository<PrescriptionItem>,
     @InjectRepository(Icd10)
     private readonly icd10Repo: Repository<Icd10>,
+    @InjectRepository(Visit)
+    private readonly visitRepo: Repository<Visit>,
   ) {}
 
   async createConsultation(
@@ -31,6 +34,11 @@ export class DoctorService {
     facilityId: string,
     doctorId: string,
   ): Promise<Consultation> {
+    if (!dto.visitId) throw new BadRequestException('visitId is required');
+    const visit = await this.visitRepo.findOne({
+      where: { id: dto.visitId, facilityId },
+    });
+    if (!visit) throw new NotFoundException(`Visit ${dto.visitId} not found`);
     const consultation = this.consultationRepo.create({
       ...dto,
       facilityId,
@@ -104,6 +112,14 @@ export class DoctorService {
     dto: CreatePrescriptionItemDto,
     facilityId: string,
   ): Promise<PrescriptionItem> {
+    const prescription = await this.prescriptionRepo.findOne({
+      where: { id: dto.prescriptionId, facilityId },
+    });
+    if (!prescription)
+      throw new NotFoundException(`Prescription ${dto.prescriptionId} not found`);
+    if (prescription.status === PrescriptionStatus.FINALIZED) {
+      throw new BadRequestException('Cannot add items to a finalized prescription');
+    }
     const item = this.prescriptionItemRepo.create({ ...dto, facilityId });
     return this.prescriptionItemRepo.save(item);
   }
@@ -124,7 +140,8 @@ export class DoctorService {
     const prescription = await this.prescriptionRepo.findOne({
       where: { visitId, facilityId },
     });
-    if (!prescription) return null;
+    if (!prescription)
+      throw new NotFoundException(`Prescription for visit ${visitId} not found`);
     const items = await this.prescriptionItemRepo.find({
       where: { prescriptionId: prescription.id, facilityId },
     });

@@ -12,6 +12,7 @@ import {
   HttpCode,
   HttpStatus,
   BadRequestException,
+  ForbiddenException,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -58,7 +59,11 @@ export class UsersController {
 
   @Get('facilities/:id')
   @Roles(Role.SUPER_ADMIN, Role.FACILITY_ADMIN)
-  findFacility(@Param('id') id: string) {
+  findFacility(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
+    // FACILITY_ADMIN may only access their own facility; SUPER_ADMIN is unrestricted
+    if (user.role !== Role.SUPER_ADMIN && id !== user.facilityId) {
+      throw new ForbiddenException('Access to this facility is not permitted');
+    }
     return this.usersService.findFacilityById(id);
   }
 
@@ -87,7 +92,10 @@ export class UsersController {
 
   @Get('facilities/:id/settings')
   @Roles(Role.SUPER_ADMIN, Role.FACILITY_ADMIN)
-  getFacilitySettings(@Param('id') id: string) {
+  getFacilitySettings(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
+    if (user.role !== Role.SUPER_ADMIN && id !== user.facilityId) {
+      throw new ForbiddenException('Access to this facility is not permitted');
+    }
     return this.usersService.getFacilitySettings(id);
   }
 
@@ -96,7 +104,11 @@ export class UsersController {
   updateFacilitySettings(
     @Param('id') id: string,
     @Body() dto: UpdateFacilitySettingsDto,
+    @CurrentUser() user: JwtPayload,
   ) {
+    if (user.role !== Role.SUPER_ADMIN && id !== user.facilityId) {
+      throw new ForbiddenException('Access to this facility is not permitted');
+    }
     return this.usersService.updateFacilitySettings(id, dto);
   }
 

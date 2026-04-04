@@ -1,14 +1,15 @@
 import { IsUUID, IsOptional, IsString } from 'class-validator';
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreatePrescriptionDto {
-  @ApiProperty()
+  @ApiPropertyOptional()
   @IsUUID()
   visitId: string;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
+  @IsOptional()
   @IsUUID()
-  patientId: string;
+  patientId?: string;
 
   @ApiPropertyOptional()
   @IsOptional()

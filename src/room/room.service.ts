@@ -25,7 +25,8 @@ export class RoomService {
   ) {}
 
   async createRoom(dto: CreateRoomDto, facilityId: string): Promise<Room> {
-    const room = this.roomRepo.create({ ...dto, facilityId });
+    const sanitizedName = dto.name.replace(/<[^>]*>/g, '').trim();
+    const room = this.roomRepo.create({ ...dto, name: sanitizedName, facilityId });
     return this.roomRepo.save(room);
   }
 

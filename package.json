@@ -17,7 +17,9 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "test:all": "jest --config jest.all.config.js",
+    "test:all:cov": "jest --config jest.all.config.js --coverage"
   },
   "dependencies": {
     "@nestjs/axios": "^4.0.1",
@@ -110,6 +112,12 @@
       "**/*.(t|j)s"
     ],
     "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "reporters": [
+      "default",
+      ["<rootDir>/../test-reporter.js", {}]
+    ],
+    "forceExit": true,
+    "detectOpenHandles": false
   }
 }

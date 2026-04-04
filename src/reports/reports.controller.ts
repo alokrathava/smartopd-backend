@@ -1,4 +1,4 @@
-import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Query, UseGuards, BadRequestException } from '@nestjs/common';
 import {
   ApiTags,
   ApiBearerAuth,
@@ -39,10 +39,16 @@ export class ReportsController {
     @Query('to') to?: string,
   ) {
     const range = this.defaultRange();
+    const resolvedFrom = from || range.from;
+    const resolvedTo = to || range.to;
+    if (from && isNaN(new Date(from).getTime()))
+      throw new BadRequestException('Invalid from date');
+    if (to && isNaN(new Date(to).getTime()))
+      throw new BadRequestException('Invalid to date');
     return this.reportsService.getVisitStats(
       user.facilityId!,
-      from || range.from,
-      to || range.to,
+      resolvedFrom,
+      resolvedTo,
     );
   }
 

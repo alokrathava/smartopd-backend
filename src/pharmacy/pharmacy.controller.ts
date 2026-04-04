@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Query, UseGuards, BadRequestException } from '@nestjs/common';
 import {
   ApiTags,
   ApiBearerAuth,
@@ -49,6 +49,8 @@ export class PharmacyController {
     @Query('drugName') drugName: string,
     @CurrentUser() user: JwtPayload,
   ) {
+    if (!patientId) throw new BadRequestException('patientId is required');
+    if (!drugName) throw new BadRequestException('drugName is required');
     return this.pharmacyService.checkAllergy(
       patientId,
       drugName,
@@ -72,6 +74,7 @@ export class PharmacyController {
     @Query('drugs') drugs: string,
     @CurrentUser() user: JwtPayload,
   ) {
+    if (!drugs) throw new BadRequestException('drugs param is required');
     const drugList = drugs
       .split(',')
       .map((d) => d.trim())

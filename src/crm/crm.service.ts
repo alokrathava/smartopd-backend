@@ -1,9 +1,14 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { FollowUp, FollowUpStatus } from './entities/follow-up.entity';
 import { PatientSegment } from './entities/patient-segment.entity';
 import { CrmCampaign } from './entities/crm-campaign.entity';
+import { Patient } from '../patients/entities/patient.entity';
 import { CreateFollowUpDto } from './dto/create-follow-up.dto';
 import { CreateSegmentDto } from './dto/create-segment.dto';
 import { CreateCampaignDto } from './dto/create-campaign.dto';
@@ -17,16 +22,35 @@ export class CrmService {
     private readonly segmentRepo: Repository<PatientSegment>,
     @InjectRepository(CrmCampaign)
     private readonly campaignRepo: Repository<CrmCampaign>,
+    @InjectRepository(Patient)
+    private readonly patientRepo: Repository<Patient>,
   ) {}
 
   async createFollowUp(
     dto: CreateFollowUpDto,
     facilityId: string,
   ): Promise<FollowUp> {
+    const patient = await this.patientRepo.findOne({
+      where: { id: dto.patientId, facilityId },
+    });
+    if (!patient) throw new NotFoundException(`Patient ${dto.patientId} not found`);
+
+    const scheduledDate = new Date(dto.scheduledDate);
+    const now = new Date();
+    now.setSeconds(0, 0);
+    if (scheduledDate < now) {
+      throw new BadRequestException('scheduledDate must be in the future');
+    }
+
     const followUp = this.followUpRepo.create({
-      ...dto,
+      patientId: dto.patientId,
+      visitId: dto.visitId,
+      assignedToId: dto.assignedToId,
+      reason: dto.reason,
+      notes: dto.notes,
+      priority: dto.priority,
       facilityId,
-      followUpDate: dto.followUpDate ? new Date(dto.followUpDate) : new Date(),
+      followUpDate: scheduledDate,
     });
     return this.followUpRepo.save(followUp);
   }
@@ -89,7 +113,7 @@ export class CrmService {
     if (!followUp) throw new NotFoundException(`Follow-up ${id} not found`);
 
     Object.assign(followUp, dto);
-    if (dto.followUpDate) followUp.followUpDate = new Date(dto.followUpDate);
+    if (dto.scheduledDate) followUp.followUpDate = new Date(dto.scheduledDate);
     if (dto.status === FollowUpStatus.COMPLETED) {
       followUp.completedAt = new Date();
     }
@@ -100,10 +124,18 @@ export class CrmService {
     dto: CreateSegmentDto,
     facilityId: string,
   ): Promise<PatientSegment> {
+    let criteriaStr = '{}';
+    if (dto.criteria !== undefined) {
+      criteriaStr =
+        typeof dto.criteria === 'string'
+          ? dto.criteria
+          : JSON.stringify(dto.criteria);
+    }
     const segment = this.segmentRepo.create({
-      ...dto,
+      name: dto.name,
+      description: dto.description,
       facilityId,
-      criteria: dto.criteria ?? '{}',
+      criteria: criteriaStr,
     });
     return this.segmentRepo.save(segment);
   }
@@ -119,6 +151,11 @@ export class CrmService {
     dto: CreateCampaignDto,
     facilityId: string,
   ): Promise<CrmCampaign> {
+    const segment = await this.segmentRepo.findOne({
+      where: { id: dto.segmentId, facilityId },
+    });
+    if (!segment) throw new NotFoundException(`Segment ${dto.segmentId} not found`);
+
     const campaign = this.campaignRepo.create({
       ...dto,
       facilityId,

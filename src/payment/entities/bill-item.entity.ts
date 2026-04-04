@@ -11,6 +11,9 @@ export enum ItemType {
   PROCEDURE = 'PROCEDURE',
   DIAGNOSTIC = 'DIAGNOSTIC',
   MISC = 'MISC',
+  PHARMACY = 'PHARMACY',
+  LAB = 'LAB',
+  OTHER = 'OTHER',
 }
 
 @Entity('bill_items')

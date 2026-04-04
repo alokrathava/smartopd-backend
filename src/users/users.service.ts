@@ -25,23 +25,33 @@ export class UsersService {
     private settingsRepo: Repository<FacilitySettings>,
   ) {}
 
+  // ── Helpers ──────────────────────────────────────────────────
+  /** Strip sensitive fields before returning user data to clients */
+  private sanitizeUser(user: User): Omit<User, 'passwordHash' | 'inviteToken' | 'inviteExpiresAt'> {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { passwordHash, inviteToken, inviteExpiresAt, ...safe } = user as any;
+    return safe;
+  }
+
   // ── Users ────────────────────────────────────────────────────
-  async createUser(dto: CreateUserDto, facilityId: string): Promise<User> {
+  async createUser(dto: CreateUserDto, facilityId: string): Promise<Omit<User, 'passwordHash' | 'inviteToken' | 'inviteExpiresAt'>> {
     const exists = await this.userRepo.findOne({ where: { email: dto.email } });
     if (exists) throw new ConflictException('Email already in use');
     const passwordHash = await bcrypt.hash(dto.password, 12);
     const user = this.userRepo.create({ ...dto, passwordHash, facilityId });
-    return this.userRepo.save(user);
+    const saved = await this.userRepo.save(user);
+    return this.sanitizeUser(saved);
   }
 
-  async findAllUsers(facilityId: string): Promise<User[]> {
-    return this.userRepo.find({ where: { facilityId } });
+  async findAllUsers(facilityId: string): Promise<Omit<User, 'passwordHash' | 'inviteToken' | 'inviteExpiresAt'>[]> {
+    const users = await this.userRepo.find({ where: { facilityId } });
+    return users.map(u => this.sanitizeUser(u));
   }
 
-  async findUserById(id: string, facilityId: string): Promise<User> {
+  async findUserById(id: string, facilityId: string): Promise<Omit<User, 'passwordHash' | 'inviteToken' | 'inviteExpiresAt'>> {
     const user = await this.userRepo.findOne({ where: { id, facilityId } });
     if (!user) throw new NotFoundException('User not found');
-    return user;
+    return this.sanitizeUser(user);
   }
 
   async findUserByEmail(email: string): Promise<User | null> {
@@ -57,13 +67,17 @@ export class UsersService {
     dto: UpdateUserDto,
     facilityId: string,
   ): Promise<User> {
-    const user = await this.findUserById(id, facilityId);
+    // Use raw repo lookup so we have the full entity (with passwordHash) for safe save
+    const user = await this.userRepo.findOne({ where: { id, facilityId } });
+    if (!user) throw new NotFoundException('User not found');
     Object.assign(user, dto);
     return this.userRepo.save(user);
   }
 
   async removeUser(id: string, facilityId: string): Promise<void> {
-    const user = await this.findUserById(id, facilityId);
+    // Use raw repo lookup so we have the full entity for softRemove
+    const user = await this.userRepo.findOne({ where: { id, facilityId } });
+    if (!user) throw new NotFoundException('User not found');
     await this.userRepo.softRemove(user);
   }
 

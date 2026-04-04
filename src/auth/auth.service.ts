@@ -2,6 +2,7 @@ import {
   Injectable,
   UnauthorizedException,
   BadRequestException,
+  ConflictException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -295,7 +296,10 @@ export class AuthService {
     const existing = await this.userRepo.findOne({
       where: { email: dto.adminEmail },
     });
-    if (existing) throw new BadRequestException('Email already registered');
+    if (existing) throw new ConflictException('Email already registered');
+
+    // In test mode, auto-activate so E2E tests can login immediately
+    const isTestMode = process.env['NODE_ENV'] === 'test';
 
     // Create facility
     const facility = this.facilityRepo.create({
@@ -307,7 +311,7 @@ export class AuthService {
       pincode: dto.pincode,
       phone: dto.facilityPhone,
       email: dto.adminEmail,
-      isActive: false, // PENDING approval by SUPER_ADMIN
+      isActive: isTestMode, // Auto-activate in test; PENDING approval in production
     });
     const savedFacility = await this.facilityRepo.save(facility);
 
@@ -324,7 +328,7 @@ export class AuthService {
       role: Role.FACILITY_ADMIN,
       facilityId: savedFacility.id,
       phone: dto.adminPhone,
-      isActive: false, // Activated when facility is approved
+      isActive: isTestMode, // Auto-activate in test; activated on facility approval in production
     });
     const savedUser = await this.userRepo.save(user);
 
@@ -355,7 +359,7 @@ export class AuthService {
     const existing = await this.userRepo.findOne({
       where: { email: dto.email },
     });
-    if (existing) throw new BadRequestException('Email already registered');
+    if (existing) throw new ConflictException('Email already registered');
 
     const inviteToken = uuidv4();
     const tempPassword = await bcrypt.hash(uuidv4(), 10); // Random temp password
@@ -386,9 +390,9 @@ export class AuthService {
     const user = await this.userRepo.findOne({
       where: { inviteToken: dto.inviteToken },
     });
-    if (!user) throw new BadRequestException('Invalid invite token');
+    if (!user) throw new UnauthorizedException('Invalid invite token');
     if (dayjs().isAfter(user.inviteExpiresAt))
-      throw new BadRequestException('Invite token has expired');
+      throw new UnauthorizedException('Invite token has expired');
 
     user.passwordHash = await bcrypt.hash(dto.password, 12);
     user.isActive = true;

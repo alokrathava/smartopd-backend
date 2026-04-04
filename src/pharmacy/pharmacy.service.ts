@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, LessThanOrEqual } from 'typeorm';
 import { HttpService } from '@nestjs/axios';
@@ -71,7 +71,7 @@ export class PharmacyService {
     });
 
     if (!patient) {
-      return { hasAllergy: false, matchedAllergens: [] };
+      throw new NotFoundException(`Patient ${patientId} not found`);
     }
 
     const matchedAllergens: string[] = [];
@@ -202,9 +202,21 @@ export class PharmacyService {
     facilityId: string,
   ): Promise<PharmacyInventory> {
     const item = this.inventoryRepo.create({
-      ...dto,
-      facilityId,
+      drugName: dto.drugName,
+      genericName: dto.genericName,
+      form: dto.form ?? 'TABLET',
+      strength: dto.strength,
+      manufacturer: dto.manufacturer,
+      batchNumber: dto.batchNo ?? `BATCH-${Date.now()}`,
       expiryDate: new Date(dto.expiryDate),
+      quantityInStock: dto.quantity ?? 0,
+      reorderLevel: dto.reorderLevel,
+      unitPrice: dto.unitCost ?? dto.mrp ?? 0,
+      mrp: dto.mrp ?? dto.unitCost ?? 0,
+      hsnCode: dto.hsnCode,
+      gstPercent: dto.gstPercent,
+      storageLocation: dto.storageLocation,
+      facilityId,
     });
     return this.inventoryRepo.save(item);
   }

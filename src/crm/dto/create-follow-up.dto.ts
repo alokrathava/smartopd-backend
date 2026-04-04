@@ -23,15 +23,19 @@ export class CreateFollowUpDto {
   @IsUUID()
   assignedToId?: string;
 
-  @ApiPropertyOptional()
-  @IsOptional()
+  @ApiProperty()
   @IsDateString()
-  followUpDate?: string;
+  scheduledDate: string;
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
   reason?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  notes?: string;
 
   @ApiPropertyOptional({ enum: FollowUpPriority })
   @IsOptional()

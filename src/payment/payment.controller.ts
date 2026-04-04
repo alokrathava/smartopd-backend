@@ -7,6 +7,7 @@ import {
   Query,
   UseGuards,
   ParseUUIDPipe,
+  BadRequestException,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -101,9 +102,10 @@ export class PaymentController {
     @CurrentUser() user: JwtPayload,
     @Query('date') date?: string,
   ) {
-    return this.paymentService.getDailyRevenue(
-      user.facilityId!,
-      date || new Date().toISOString().slice(0, 10),
-    );
+    const resolvedDate = date || new Date().toISOString().slice(0, 10);
+    if (isNaN(new Date(resolvedDate).getTime())) {
+      throw new BadRequestException('Invalid date format');
+    }
+    return this.paymentService.getDailyRevenue(user.facilityId!, resolvedDate);
   }
 }
