@@ -11,10 +11,9 @@ import { Type } from 'class-transformer';
 import { PaymentMode } from '../entities/payment-transaction.entity';
 
 export class RecordPaymentDto {
-  @ApiPropertyOptional()
-  @IsOptional()
+  @ApiProperty()
   @IsUUID()
-  billId?: string;
+  billId: string;
 
   @ApiProperty()
   @IsNumber()
