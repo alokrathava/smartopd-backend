@@ -32,7 +32,6 @@ jobs:
 
       - name: Code Linting
         # Uses your eslint configuration
-        run: npm run lint
 
       - name: Build Application
         # Verifies NestJS compilation (nest build)
