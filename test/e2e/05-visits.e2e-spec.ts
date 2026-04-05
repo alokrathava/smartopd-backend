@@ -421,23 +421,34 @@ describe('Visits (E2E)', () => {
         .post('/api/v1/visits')
         .set('Authorization', `Bearer ${ctx.adminToken}`)
         .send({ patientId: ctx.patientId, visitType: 'OPD' });
+
+      expect(newVisit.status).toBe(201);
+
       const res = await request(ctx.app.getHttpServer())
         .patch(`/api/v1/visits/${newVisit.body.id}/assign-doctor`)
         .set('Authorization', `Bearer ${ctx.receptionToken}`)
         .send({ doctorId: ctx.doctorId });
+
       expect(res.status).toBe(200);
       expect(res.body.doctorId).toBe(ctx.doctorId);
     });
 
     it('❌ 400/404 – non-existent doctor', async () => {
+      const freshVisit = await request(ctx.app.getHttpServer())
+        .post('/api/v1/visits')
+        .set('Authorization', `Bearer ${ctx.adminToken}`)
+        .send({ patientId: ctx.patientId, visitType: 'OPD' });
+
+      expect(freshVisit.status).toBe(201);
+
       const res = await request(ctx.app.getHttpServer())
-        .patch(`/api/v1/visits/${visitId}/assign-doctor`)
+        .patch(`/api/v1/visits/${freshVisit.body.id}/assign-doctor`)
         .set('Authorization', `Bearer ${ctx.receptionToken}`)
         .send({ doctorId: '00000000-0000-0000-0000-000000000000' });
+
       expect([400, 404]).toContain(res.status);
     });
   });
-
   // ── PATCH /visits/:id/no-show ────────────────────────────────────────────
 
   describe('PATCH /api/v1/visits/:id/no-show', () => {

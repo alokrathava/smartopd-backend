@@ -12,11 +12,7 @@
  */
 
 import { Test, TestingModule } from '@nestjs/testing';
-import {
-  INestApplication,
-  ValidationPipe,
-  VersioningType,
-} from '@nestjs/common';
+import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import supertestLib from 'supertest';
 import type { SuperTest, Test as SupertestTest } from 'supertest';
@@ -24,19 +20,25 @@ import { join } from 'path';
 import { mkdirSync } from 'fs';
 import helmet from 'helmet';
 import compression from 'compression';
+import * as dotenv from 'dotenv';
+import { GlobalExceptionFilter } from '../../src/common/filters/global-exception.filter';
 
 // ──────────────────────────────────────────────────────────────────────────────
-// Inject test environment variables BEFORE AppModule is imported/compiled so
-// that ConfigService picks them up without needing a real .env.test file on disk.
+// Load env BEFORE AppModule is imported/compiled so ConfigService sees the
+// correct values. Do not silently force localhost DB values if .env exists.
 // ──────────────────────────────────────────────────────────────────────────────
 function applyTestEnv(): void {
+  dotenv.config();
+
   process.env.NODE_ENV = process.env.NODE_ENV || 'test';
 
-  process.env.DB_HOST = process.env.DB_HOST || 'localhost';
-  process.env.DB_PORT = process.env.DB_PORT || '3306';
-  process.env.DB_USERNAME = process.env.DB_USERNAME || 'root';
-  process.env.DB_PASSWORD = process.env.DB_PASSWORD || '';
-  process.env.DB_NAME = process.env.DB_NAME || 'smartopd_test';
+  process.env.DB_HOST = process.env.DB_HOST || process.env.DATABASE_HOST || '';
+  process.env.DB_PORT = process.env.DB_PORT || process.env.DATABASE_PORT || '';
+  process.env.DB_USERNAME =
+    process.env.DB_USERNAME || process.env.DATABASE_USERNAME || '';
+  process.env.DB_PASSWORD =
+    process.env.DB_PASSWORD || process.env.DATABASE_PASSWORD || '';
+  process.env.DB_NAME = process.env.DB_NAME || process.env.DATABASE_NAME || '';
 
   process.env.JWT_SECRET =
     process.env.JWT_SECRET || 'test-secret-key-for-testing-only';
@@ -52,13 +54,23 @@ function applyTestEnv(): void {
   process.env.NHCX_CLIENT_ID = process.env.NHCX_CLIENT_ID || '';
   process.env.LAB_SRL_API_KEY = process.env.LAB_SRL_API_KEY || '';
   process.env.LAB_THYROCARE_API_KEY = process.env.LAB_THYROCARE_API_KEY || '';
+
+  if (
+    !process.env.DB_HOST ||
+    !process.env.DB_PORT ||
+    !process.env.DB_USERNAME ||
+    !process.env.DB_NAME
+  ) {
+    throw new Error(
+      '[app.setup] Missing DB environment variables after dotenv load. Check your .env file and variable names.',
+    );
+  }
 }
 
 // Apply immediately when this module is first imported
 applyTestEnv();
 
-// Lazy import AFTER env is set so ConfigService gets the right values
-
+// Import AppModule only after env is ready
 const { AppModule } = require('../../src/app.module') as {
   AppModule: any;
 };
@@ -80,8 +92,15 @@ let moduleRef: TestingModule | null = null;
 export async function initApp(): Promise<INestApplication> {
   if (app) return app;
 
-  // Ensure upload directories exist (same as main.ts)
   mkdirSync(join(process.cwd(), 'uploads', 'logos'), { recursive: true });
+
+  console.log('[E2E DB CONFIG]', {
+    host: process.env.DB_HOST,
+    port: process.env.DB_PORT,
+    user: process.env.DB_USERNAME,
+    db: process.env.DB_NAME,
+    nodeEnv: process.env.NODE_ENV,
+  });
 
   moduleRef = await Test.createTestingModule({
     imports: [AppModule],
@@ -89,12 +108,10 @@ export async function initApp(): Promise<INestApplication> {
 
   const nestApp = moduleRef.createNestApplication<NestExpressApplication>();
 
-  // Mirror the production bootstrap configuration so E2E tests exercise the
-  // full middleware stack.
   nestApp.use(
     helmet({
       crossOriginResourcePolicy: { policy: 'cross-origin' },
-      contentSecurityPolicy: false, // relax for test responses
+      contentSecurityPolicy: false,
     }),
   );
   nestApp.use(compression());
@@ -103,7 +120,6 @@ export async function initApp(): Promise<INestApplication> {
   });
 
   nestApp.setGlobalPrefix('api/v1');
-
   nestApp.enableCors({ origin: true, credentials: true });
 
   nestApp.useGlobalPipes(
@@ -116,9 +132,6 @@ export async function initApp(): Promise<INestApplication> {
     }),
   );
 
-  // Import the global exception filter the same way main.ts does
-  const { GlobalExceptionFilter } =
-    await import('../../src/common/filters/global-exception.filter.js');
   nestApp.useGlobalFilters(new GlobalExceptionFilter());
 
   await nestApp.init();
@@ -128,7 +141,7 @@ export async function initApp(): Promise<INestApplication> {
 }
 
 /**
- * Shut down the test application and release all resources (DB pool, Redis, etc.).
+ * Shut down the test application and release all resources.
  */
 export async function closeApp(): Promise<void> {
   if (app) {
@@ -140,13 +153,11 @@ export async function closeApp(): Promise<void> {
 
 /**
  * Returns the live NestJS application instance.
- * Throws if {@link initApp} has not been called first.
  */
 export function getApp(): INestApplication {
   if (!app) {
     throw new Error(
-      '[app.setup] getApp() called before initApp(). ' +
-        'Make sure globalSetup has been run.',
+      '[app.setup] getApp() called before initApp(). Make sure initApp() has been run.',
     );
   }
   return app;
@@ -161,16 +172,9 @@ export function getHttpServer(): ReturnType<INestApplication['getHttpServer']> {
 
 /**
  * Returns a bound supertest agent for the test HTTP server.
- *
- * Usage:
- *   const res = await request().get('/api/v1/auth/me').set('Authorization', `Bearer ${token}`);
  */
 export function request(): SuperTest<SupertestTest> {
   return supertestLib(getHttpServer()) as unknown as SuperTest<SupertestTest>;
 }
 
-/**
- * Convenience re-export so specs can do:
- *   import { initApp, closeApp, request } from '../helpers/app.setup.js';
- */
 export { applyTestEnv };
