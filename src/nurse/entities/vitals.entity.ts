@@ -16,7 +16,7 @@ export class Vitals {
   @Column({ type: 'varchar', name: 'visit_id' })
   visitId: string;
 
-  @Column({ type: 'varchar', name: 'patient_id' })
+  @Column({ type: 'varchar', name: 'patient_id', nullable: true })
   patientId: string;
 
   @Column({ type: 'varchar', name: 'recorded_by_id' })

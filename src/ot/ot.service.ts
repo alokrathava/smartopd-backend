@@ -256,7 +256,7 @@ export class OtService {
     // Average duration in minutes
     const durationsMinutes = completed
       .filter((b) => b.actualStart && b.actualEnd)
-      .map((b) => dayjs(b.actualEnd!).diff(dayjs(b.actualStart!), 'minute'));
+      .map((b) => dayjs(b.actualEnd).diff(dayjs(b.actualStart), 'minute'));
 
     const avgDuration =
       durationsMinutes.length > 0

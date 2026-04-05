@@ -27,13 +27,14 @@ import { UsersModule } from '../users/users.module';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
-        secret: config.get<string>('JWT_SECRET') || 'smartopd-secret-key',
+        secret: config.get<string>('JWT_SECRET', 'smartopd-secret-key'),
         signOptions: {
-          expiresIn: (config.get<string>('JWT_EXPIRES_IN') || '15m') as any,
+          expiresIn: config.get<string>('JWT_EXPIRES_IN', '15m') as any,
         },
       }),
     }),
     UsersModule,
+    // RedisModule and QueueModule are @Global() — no explicit import needed
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy],

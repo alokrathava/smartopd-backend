@@ -3,7 +3,7 @@ import {
   IsNumber,
   IsOptional,
   IsDateString,
-  IsBoolean,
+  Min,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
@@ -18,9 +18,10 @@ export class CreateInventoryDto {
   @IsString()
   genericName?: string;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
+  @IsOptional()
   @IsString()
-  form: string;
+  form?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
@@ -32,18 +33,21 @@ export class CreateInventoryDto {
   @IsString()
   manufacturer?: string;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
+  @IsOptional()
   @IsString()
-  batchNumber: string;
+  batchNo?: string;
 
   @ApiProperty()
   @IsDateString()
   expiryDate: string;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
+  @IsOptional()
   @IsNumber()
+  @Min(0)
   @Type(() => Number)
-  quantityInStock: number;
+  quantity?: number;
 
   @ApiPropertyOptional()
   @IsOptional()
@@ -51,15 +55,17 @@ export class CreateInventoryDto {
   @Type(() => Number)
   reorderLevel?: number;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
+  @IsOptional()
   @IsNumber()
   @Type(() => Number)
-  unitPrice: number;
+  unitCost?: number;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
+  @IsOptional()
   @IsNumber()
   @Type(() => Number)
-  mrp: number;
+  mrp?: number;
 
   @ApiPropertyOptional()
   @IsOptional()

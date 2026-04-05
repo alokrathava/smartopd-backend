@@ -28,7 +28,7 @@ export class Prescription {
   @Column({ type: 'varchar', nullable: true, name: 'consultation_id' })
   consultationId: string;
 
-  @Column({ type: 'varchar', name: 'patient_id' })
+  @Column({ type: 'varchar', name: 'patient_id', nullable: true })
   patientId: string;
 
   @Column({ type: 'varchar', name: 'prescribed_by_id' })

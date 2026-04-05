@@ -8,6 +8,7 @@ import {
 } from './entities/notification-log.entity';
 import { NotificationTemplate } from './entities/notification-template.entity';
 import { CreateTemplateDto } from './dto/create-template.dto';
+import { QueueService } from '../queue/queue.service';
 
 @Injectable()
 export class NotificationService {
@@ -16,6 +17,7 @@ export class NotificationService {
     private readonly logRepo: Repository<NotificationLog>,
     @InjectRepository(NotificationTemplate)
     private readonly templateRepo: Repository<NotificationTemplate>,
+    private readonly queueService: QueueService,
   ) {}
 
   renderTemplate(template: string, vars: Record<string, string>): string {
@@ -25,6 +27,10 @@ export class NotificationService {
     );
   }
 
+  /**
+   * Enqueue a notification via BullMQ.
+   * Creates a log record immediately (QUEUED), actual send happens in the worker.
+   */
   async send(
     channel: NotificationChannel,
     recipient: string,
@@ -47,34 +53,48 @@ export class NotificationService {
 
     const saved = await this.logRepo.save(log);
 
-    // Stub: log to console. Replace with actual SMS/WhatsApp/Email provider.
-    try {
-      switch (channel) {
-        case NotificationChannel.SMS:
-          console.log(`[SMS] To: ${recipient}, Body: ${body}`);
-          break;
-        case NotificationChannel.WHATSAPP:
-          console.log(`[WhatsApp] To: ${recipient}, Body: ${body}`);
-          break;
-        case NotificationChannel.EMAIL:
-          console.log(`[Email] To: ${recipient}, Body: ${body}`);
-          break;
-        case NotificationChannel.PUSH:
-          console.log(`[Push] To: ${recipient}, Body: ${body}`);
-          break;
-      }
+    // Route to the correct BullMQ worker based on channel
+    switch (channel) {
+      case NotificationChannel.SMS:
+        await this.queueService.enqueueSms({
+          to: recipient,
+          message: body,
+          facilityId: facilityId || 'system',
+          notificationLogId: saved.id,
+        });
+        break;
 
-      await this.logRepo.update(saved.id, {
-        status: NotificationStatus.SENT,
-        sentAt: new Date(),
-      });
-      saved.status = NotificationStatus.SENT;
-    } catch (err) {
-      await this.logRepo.update(saved.id, {
-        status: NotificationStatus.FAILED,
-        errorMessage: err.message,
-      });
-      saved.status = NotificationStatus.FAILED;
+      case NotificationChannel.EMAIL:
+        await this.queueService.enqueueEmail({
+          to: recipient,
+          subject: templateCode
+            ? `SmartOPD - ${templateCode}`
+            : 'SmartOPD Notification',
+          body,
+          facilityId: facilityId || 'system',
+          notificationLogId: saved.id,
+        });
+        break;
+
+      case NotificationChannel.WHATSAPP:
+        await this.queueService.enqueueWhatsApp({
+          to: recipient,
+          templateCode: templateCode || 'general_notification',
+          variables: { message: body },
+          facilityId: facilityId || 'system',
+          notificationLogId: saved.id,
+        });
+        break;
+
+      case NotificationChannel.PUSH:
+        // Push notifications handled via FCM — log to console in dev
+        // TODO: Firebase Cloud Messaging integration
+        console.log(`[PUSH DEV] To: ${recipient}, Body: ${body}`);
+        await this.logRepo.update(saved.id, {
+          status: NotificationStatus.SENT,
+          sentAt: new Date(),
+        });
+        break;
     }
 
     return saved;

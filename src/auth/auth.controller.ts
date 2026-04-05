@@ -259,14 +259,22 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Logout',
-    description: 'Revokes all active refresh tokens for the current user.',
+    description:
+      'Revokes all active refresh tokens and blacklists the current access token in Redis. Subsequent requests with the same access token will be rejected immediately.',
   })
   @ApiOkResponse({
     description: 'Logged out successfully',
     schema: { example: { message: 'Logged out successfully' } },
   })
   @ApiUnauthorizedResponse({ description: 'Missing or invalid bearer token' })
-  logout(@CurrentUser() user: JwtPayload) {
-    return this.authService.logout(user.sub);
+  logout(@CurrentUser() user: JwtPayload, @Req() req: Request) {
+    // Extract raw access token for blacklisting
+    const authHeader = (req as any).headers?.authorization as
+      | string
+      | undefined;
+    const accessToken = authHeader?.startsWith('Bearer ')
+      ? authHeader.slice(7)
+      : undefined;
+    return this.authService.logout(user.sub, accessToken);
   }
 }

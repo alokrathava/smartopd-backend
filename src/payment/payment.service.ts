@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Bill, BillStatus } from './entities/bill.entity';
@@ -7,6 +11,7 @@ import {
   PaymentTransaction,
   TransactionStatus,
 } from './entities/payment-transaction.entity';
+import { Patient } from '../patients/entities/patient.entity';
 import { CreateBillDto } from './dto/create-bill.dto';
 import { AddBillItemDto } from './dto/add-bill-item.dto';
 import { RecordPaymentDto } from './dto/record-payment.dto';
@@ -20,6 +25,8 @@ export class PaymentService {
     private readonly billItemRepo: Repository<BillItem>,
     @InjectRepository(PaymentTransaction)
     private readonly transactionRepo: Repository<PaymentTransaction>,
+    @InjectRepository(Patient)
+    private readonly patientRepo: Repository<Patient>,
   ) {}
 
   private async generateBillNumber(facilityId: string): Promise<string> {
@@ -49,6 +56,12 @@ export class PaymentService {
     facilityId: string,
     userId: string,
   ): Promise<Bill> {
+    const patient = await this.patientRepo.findOne({
+      where: { id: dto.patientId, facilityId },
+    });
+    if (!patient)
+      throw new NotFoundException(`Patient ${dto.patientId} not found`);
+
     const billNumber = await this.generateBillNumber(facilityId);
     const bill = this.billRepo.create({
       ...dto,
@@ -61,9 +74,29 @@ export class PaymentService {
   }
 
   async addItem(dto: AddBillItemDto, facilityId: string): Promise<BillItem> {
-    const bill = await this.getBill(dto.billId, facilityId);
-    const amount = dto.quantity * dto.unitPrice;
-    const item = this.billItemRepo.create({ ...dto, facilityId, amount });
+    const bill = await this.getBill(dto.billId!, facilityId);
+    if (
+      bill.status === BillStatus.FINALIZED ||
+      bill.status === BillStatus.PAID
+    ) {
+      throw new BadRequestException(
+        'Cannot add items to a finalized or paid bill',
+      );
+    }
+    const qty = dto.quantity ?? 1;
+    const unitPrice = dto.unitPrice ?? (dto.amount ? dto.amount / qty : 0);
+    const amount = dto.amount ?? qty * unitPrice;
+    const item = this.billItemRepo.create({
+      billId: dto.billId,
+      description: dto.description,
+      itemType: dto.itemType,
+      quantity: qty,
+      unitPrice,
+      gstPercent: dto.gstPercent ?? 0,
+      hsnSacCode: dto.hsnSacCode,
+      facilityId,
+      amount,
+    });
     const saved = await this.billItemRepo.save(item);
 
     // Recalculate subtotal
@@ -104,15 +137,20 @@ export class PaymentService {
     facilityId: string,
     userId: string,
   ): Promise<PaymentTransaction> {
-    const bill = await this.getBill(dto.billId, facilityId);
+    if (!dto.billId) {
+      throw new BadRequestException('billId is required');
+    }
+
+    const billId = dto.billId;
+    const bill = await this.getBill(billId, facilityId);
 
     const transaction = this.transactionRepo.create({
-      billId: dto.billId,
+      billId,
       patientId: bill.patientId,
       facilityId,
       amount: dto.amount,
-      paymentMode: dto.paymentMode,
-      upiTransactionId: dto.upiTransactionId,
+      paymentMode: dto.method,
+      upiTransactionId: dto.transactionRef,
       notes: dto.notes,
       receivedById: userId,
       status: TransactionStatus.SUCCESS,
@@ -127,7 +165,7 @@ export class PaymentService {
     if (newDue <= 0) newStatus = BillStatus.PAID;
     else if (newPaid > 0) newStatus = BillStatus.PARTIAL;
 
-    await this.billRepo.update(dto.billId, {
+    await this.billRepo.update(billId, {
       paidAmount: newPaid,
       dueAmount: Math.max(0, newDue),
       status: newStatus,
@@ -141,7 +179,7 @@ export class PaymentService {
     const next = new Date(d);
     next.setDate(next.getDate() + 1);
 
-    const result = await this.transactionRepo
+    const byMode = await this.transactionRepo
       .createQueryBuilder('t')
       .select('SUM(t.amount)', 'total')
       .addSelect('t.paymentMode', 'mode')
@@ -151,7 +189,12 @@ export class PaymentService {
       .groupBy('t.paymentMode')
       .getRawMany();
 
-    return result;
+    const totalRevenue = byMode.reduce(
+      (sum, row) => sum + Number(row.total || 0),
+      0,
+    );
+
+    return { totalRevenue, byMode, date };
   }
 
   async getBill(id: string, facilityId: string): Promise<Bill> {

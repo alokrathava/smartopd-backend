@@ -5,16 +5,18 @@ import {
   IsDateString,
   IsArray,
 } from 'class-validator';
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateConsultationDto {
-  @ApiProperty()
+  @ApiPropertyOptional()
+  @IsOptional()
   @IsUUID()
-  visitId: string;
+  visitId?: string;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
+  @IsOptional()
   @IsUUID()
-  patientId: string;
+  patientId?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
@@ -52,6 +54,16 @@ export class CreateConsultationDto {
   })
   @IsOptional()
   diagnoses?: any[];
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  findings?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  plan?: string;
 
   @ApiPropertyOptional()
   @IsOptional()

@@ -4,6 +4,7 @@ import { Consultation } from './entities/consultation.entity';
 import { Prescription } from './entities/prescription.entity';
 import { PrescriptionItem } from './entities/prescription-item.entity';
 import { Icd10 } from './entities/icd10.entity';
+import { Visit } from '../visits/entities/visit.entity';
 import { DoctorService } from './doctor.service';
 import { DoctorController } from './doctor.controller';
 
@@ -14,6 +15,7 @@ import { DoctorController } from './doctor.controller';
       Prescription,
       PrescriptionItem,
       Icd10,
+      Visit,
     ]),
   ],
   controllers: [DoctorController],

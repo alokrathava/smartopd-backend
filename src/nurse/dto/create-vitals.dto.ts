@@ -5,25 +5,25 @@ import {
   IsString,
   Min,
   Max,
-  IsNotEmpty,
 } from 'class-validator';
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 
 export class CreateVitalsDto {
-  @ApiProperty()
+  @ApiPropertyOptional()
   @IsUUID()
   visitId: string;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
+  @IsOptional()
   @IsUUID()
-  patientId: string;
+  patientId?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsNumber()
   @Type(() => Number)
-  temperatureCelsius?: number;
+  temperature?: number;
 
   @ApiPropertyOptional()
   @IsOptional()
@@ -33,44 +33,55 @@ export class CreateVitalsDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsNumber()
+  @Min(0)
+  @Max(300)
   @Type(() => Number)
-  pulseBpm?: number;
+  pulse?: number;
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsNumber()
+  @Min(0)
   @Type(() => Number)
-  respiratoryRate?: number;
+  respiration?: number;
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsNumber()
+  @Min(0)
+  @Max(300)
   @Type(() => Number)
-  systolicBp?: number;
+  systolic?: number;
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsNumber()
+  @Min(0)
+  @Max(200)
   @Type(() => Number)
-  diastolicBp?: number;
+  diastolic?: number;
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsNumber()
+  @Min(0)
+  @Max(100)
   @Type(() => Number)
   spO2?: number;
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsNumber()
+  @Min(0)
   @Type(() => Number)
-  heightCm?: number;
+  height?: number;
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsNumber()
+  @Min(0)
   @Type(() => Number)
-  weightKg?: number;
+  weight?: number;
 
   @ApiPropertyOptional({ minimum: 0, maximum: 10 })
   @IsOptional()

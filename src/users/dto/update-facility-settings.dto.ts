@@ -49,6 +49,13 @@ export class UpdateFacilitySettingsDto {
   @IsOptional()
   @IsString()
   brandName?: string;
+  @ApiPropertyOptional({
+    example: 'City Hospital',
+    description: 'Alias for brandName',
+  })
+  @IsOptional()
+  @IsString()
+  hospitalName?: string;
   @ApiPropertyOptional({ example: '#2563EB', description: 'Hex color code' })
   @IsOptional()
   @Matches(/^#[0-9A-Fa-f]{6}$/, {

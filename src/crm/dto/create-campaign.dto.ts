@@ -10,10 +10,9 @@ export class CreateCampaignDto {
   @IsString()
   channel: string;
 
-  @ApiPropertyOptional()
-  @IsOptional()
+  @ApiProperty()
   @IsUUID()
-  segmentId?: string;
+  segmentId: string;
 
   @ApiPropertyOptional()
   @IsOptional()

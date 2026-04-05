@@ -1,4 +1,4 @@
-import { IsString, IsOptional } from 'class-validator';
+import { IsString, IsOptional, Allow } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateSegmentDto {
@@ -13,6 +13,6 @@ export class CreateSegmentDto {
 
   @ApiPropertyOptional()
   @IsOptional()
-  @IsString()
-  criteria?: string;
+  @Allow()
+  criteria?: any;
 }

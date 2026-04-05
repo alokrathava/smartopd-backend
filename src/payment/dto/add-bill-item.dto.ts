@@ -4,15 +4,17 @@ import {
   IsString,
   IsNumber,
   IsOptional,
+  Min,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { ItemType } from '../entities/bill-item.entity';
 
 export class AddBillItemDto {
-  @ApiProperty()
+  @ApiPropertyOptional()
+  @IsOptional()
   @IsUUID()
-  billId: string;
+  billId?: string;
 
   @ApiProperty()
   @IsString()
@@ -22,15 +24,26 @@ export class AddBillItemDto {
   @IsEnum(ItemType)
   itemType: ItemType;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
+  @IsOptional()
   @IsNumber()
+  @Min(1)
   @Type(() => Number)
-  quantity: number;
+  quantity?: number;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
+  @IsOptional()
   @IsNumber()
+  @Min(0)
   @Type(() => Number)
-  unitPrice: number;
+  unitPrice?: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  @Type(() => Number)
+  amount?: number;
 
   @ApiPropertyOptional()
   @IsOptional()

@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, Query, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Query,
+  UseGuards,
+  BadRequestException,
+} from '@nestjs/common';
 import {
   ApiTags,
   ApiBearerAuth,
@@ -38,7 +46,10 @@ export class PharmacyController {
 
   @Get('allergy-check')
   @Roles(Role.PHARMACIST, Role.DOCTOR, Role.NURSE, Role.FACILITY_ADMIN)
-  @ApiOperation({ summary: 'Check patient allergy against drug' })
+  @ApiOperation({
+    summary:
+      'Check patient allergy against a drug — looks up patient allergy record',
+  })
   @ApiQuery({ name: 'patientId', required: true })
   @ApiQuery({ name: 'drugName', required: true })
   checkAllergy(
@@ -46,9 +57,38 @@ export class PharmacyController {
     @Query('drugName') drugName: string,
     @CurrentUser() user: JwtPayload,
   ) {
+    if (!patientId) throw new BadRequestException('patientId is required');
+    if (!drugName) throw new BadRequestException('drugName is required');
     return this.pharmacyService.checkAllergy(
       patientId,
       drugName,
+      user.facilityId!,
+    );
+  }
+
+  @Get('drug-interactions')
+  @Roles(Role.PHARMACIST, Role.DOCTOR, Role.FACILITY_ADMIN)
+  @ApiOperation({
+    summary:
+      'Check drug-drug interactions via OpenFDA — pass comma-separated drug names',
+  })
+  @ApiQuery({
+    name: 'drugs',
+    required: true,
+    description: 'Comma-separated drug names',
+    example: 'warfarin,aspirin',
+  })
+  checkInteractions(
+    @Query('drugs') drugs: string,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    if (!drugs) throw new BadRequestException('drugs param is required');
+    const drugList = drugs
+      .split(',')
+      .map((d) => d.trim())
+      .filter(Boolean);
+    return this.pharmacyService.checkDrugInteractions(
+      drugList,
       user.facilityId!,
     );
   }

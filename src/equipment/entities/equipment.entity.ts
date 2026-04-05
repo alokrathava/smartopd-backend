@@ -14,6 +14,8 @@ export enum EquipmentCategory {
   IT = 'IT',
   FURNITURE = 'FURNITURE',
   OTHER = 'OTHER',
+  WHEELCHAIR = 'WHEELCHAIR',
+  OXYGEN_CYLINDER = 'OXYGEN_CYLINDER',
 }
 
 export enum EquipmentStatus {

@@ -20,7 +20,7 @@ export class Consultation {
   @Column({ type: 'varchar', name: 'doctor_id' })
   doctorId: string;
 
-  @Column({ type: 'varchar', name: 'patient_id' })
+  @Column({ type: 'varchar', name: 'patient_id', nullable: true })
   patientId: string;
 
   @Column({ type: 'text', nullable: true, name: 'chief_complaint' })
