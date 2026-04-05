@@ -70,8 +70,14 @@ describe('EquipmentService', () => {
       providers: [
         EquipmentService,
         { provide: getRepositoryToken(Equipment), useValue: mockEquipmentRepo },
-        { provide: getRepositoryToken(EquipmentLease), useValue: mockLeaseRepo },
-        { provide: getRepositoryToken(MaintenanceLog), useValue: mockMaintenanceRepo },
+        {
+          provide: getRepositoryToken(EquipmentLease),
+          useValue: mockLeaseRepo,
+        },
+        {
+          provide: getRepositoryToken(MaintenanceLog),
+          useValue: mockMaintenanceRepo,
+        },
       ],
     }).compile();
 
@@ -82,7 +88,11 @@ describe('EquipmentService', () => {
 
   describe('create()', () => {
     it('creates and saves equipment with facilityId', async () => {
-      const dto = { name: 'Ventilator', category: 'ICU', serialNumber: 'SN001' };
+      const dto = {
+        name: 'Ventilator',
+        category: 'ICU',
+        serialNumber: 'SN001',
+      };
       const saved = { id: 'eq-1', ...dto, facilityId };
       mockEquipmentRepo.create.mockReturnValue(saved);
       mockEquipmentRepo.save.mockResolvedValue(saved);
@@ -99,7 +109,9 @@ describe('EquipmentService', () => {
     it('converts purchaseDate string to Date object', async () => {
       const dto = { name: 'ECG Machine', purchaseDate: '2024-01-15' };
       mockEquipmentRepo.create.mockImplementation((data) => data);
-      mockEquipmentRepo.save.mockImplementation((data) => Promise.resolve(data));
+      mockEquipmentRepo.save.mockImplementation((data) =>
+        Promise.resolve(data),
+      );
 
       await service.create(dto as any, facilityId);
 
@@ -110,7 +122,9 @@ describe('EquipmentService', () => {
     it('converts warrantyExpiresAt string to Date object', async () => {
       const dto = { name: 'Defibrillator', warrantyExpiresAt: '2027-12-31' };
       mockEquipmentRepo.create.mockImplementation((data) => data);
-      mockEquipmentRepo.save.mockImplementation((data) => Promise.resolve(data));
+      mockEquipmentRepo.save.mockImplementation((data) =>
+        Promise.resolve(data),
+      );
 
       await service.create(dto as any, facilityId);
 
@@ -197,14 +211,25 @@ describe('EquipmentService', () => {
     it('creates a lease and updates equipment status to LEASED_OUT', async () => {
       const eq = { id: 'eq-1', status: EquipmentStatus.AVAILABLE, facilityId };
       mockEquipmentRepo.findOne.mockResolvedValue(eq);
-      mockEquipmentRepo.save.mockResolvedValue({ ...eq, status: EquipmentStatus.LEASED_OUT });
+      mockEquipmentRepo.save.mockResolvedValue({
+        ...eq,
+        status: EquipmentStatus.LEASED_OUT,
+      });
 
       const lease = { id: 'lease-1' };
       mockLeaseRepo.create.mockReturnValue(lease);
       mockLeaseRepo.save.mockResolvedValue(lease);
 
-      const dto = { equipmentId: 'eq-1', patientId: 'p1', dueDate: '2026-04-30' };
-      const result = await service.issueToPatient(dto as any, facilityId, userId);
+      const dto = {
+        equipmentId: 'eq-1',
+        patientId: 'p1',
+        dueDate: '2026-04-30',
+      };
+      const result = await service.issueToPatient(
+        dto as any,
+        facilityId,
+        userId,
+      );
 
       expect(mockEquipmentRepo.save).toHaveBeenCalledWith(
         expect.objectContaining({ status: EquipmentStatus.LEASED_OUT }),
@@ -218,10 +243,14 @@ describe('EquipmentService', () => {
     it('throws NotFoundException when equipment does not exist', async () => {
       mockEquipmentRepo.findOne.mockResolvedValue(null);
 
-      const dto = { equipmentId: 'ghost', patientId: 'p1', dueDate: '2026-04-30' };
-      await expect(service.issueToPatient(dto as any, facilityId, userId)).rejects.toThrow(
-        NotFoundException,
-      );
+      const dto = {
+        equipmentId: 'ghost',
+        patientId: 'p1',
+        dueDate: '2026-04-30',
+      };
+      await expect(
+        service.issueToPatient(dto as any, facilityId, userId),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -256,7 +285,9 @@ describe('EquipmentService', () => {
         performedDate: '2026-04-11',
       };
       mockMaintenanceRepo.create.mockImplementation((data) => data);
-      mockMaintenanceRepo.save.mockImplementation((data) => Promise.resolve(data));
+      mockMaintenanceRepo.save.mockImplementation((data) =>
+        Promise.resolve(data),
+      );
 
       await service.createMaintenanceLog(dto as any, facilityId);
 
@@ -267,7 +298,9 @@ describe('EquipmentService', () => {
     it('leaves performedDate undefined when not provided', async () => {
       const dto = { equipmentId: 'eq-1', scheduledDate: '2026-04-10' };
       mockMaintenanceRepo.create.mockImplementation((data) => data);
-      mockMaintenanceRepo.save.mockImplementation((data) => Promise.resolve(data));
+      mockMaintenanceRepo.save.mockImplementation((data) =>
+        Promise.resolve(data),
+      );
 
       await service.createMaintenanceLog(dto as any, facilityId);
 
@@ -290,11 +323,21 @@ describe('EquipmentService', () => {
 
       const eq = { id: 'eq-1', status: EquipmentStatus.LEASED_OUT };
       mockEquipmentRepo.findOne.mockResolvedValue(eq);
-      mockEquipmentRepo.save.mockResolvedValue({ ...eq, status: EquipmentStatus.AVAILABLE });
-      mockLeaseRepo.save.mockResolvedValue({ ...lease, status: PatientLeaseStatus.RETURNED });
+      mockEquipmentRepo.save.mockResolvedValue({
+        ...eq,
+        status: EquipmentStatus.AVAILABLE,
+      });
+      mockLeaseRepo.save.mockResolvedValue({
+        ...lease,
+        status: PatientLeaseStatus.RETURNED,
+      });
 
       const dto = { returnedCondition: 'GOOD' };
-      const result = await service.returnFromPatient('lease-1', dto as any, facilityId);
+      const result = await service.returnFromPatient(
+        'lease-1',
+        dto as any,
+        facilityId,
+      );
 
       expect(mockEquipmentRepo.save).toHaveBeenCalledWith(
         expect.objectContaining({ status: EquipmentStatus.AVAILABLE }),
@@ -306,7 +349,11 @@ describe('EquipmentService', () => {
       mockLeaseRepo.findOne.mockResolvedValue(null);
 
       await expect(
-        service.returnFromPatient('ghost-lease', { returnedCondition: 'GOOD' } as any, facilityId),
+        service.returnFromPatient(
+          'ghost-lease',
+          { returnedCondition: 'GOOD' } as any,
+          facilityId,
+        ),
       ).rejects.toThrow(NotFoundException);
     });
   });

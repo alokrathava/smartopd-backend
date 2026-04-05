@@ -4,7 +4,10 @@ import { NotFoundException, BadRequestException } from '@nestjs/common';
 import { RoomService } from './room.service';
 import { Room, RoomType } from './entities/room.entity';
 import { Bed, BedStatus, VALID_BED_TRANSITIONS } from './entities/bed.entity';
-import { HousekeepingLog, HousekeepingStatus } from './entities/housekeeping-log.entity';
+import {
+  HousekeepingLog,
+  HousekeepingStatus,
+} from './entities/housekeeping-log.entity';
 
 const makeQueryBuilder = () => ({
   where: jest.fn().mockReturnThis(),
@@ -68,7 +71,12 @@ describe('RoomService', () => {
 
   describe('createRoom', () => {
     it('creates a room with the provided facilityId', async () => {
-      const dto = { name: 'Ward A - Room 1', type: RoomType.GENERAL_WARD, floor: '1', ward: 'A' };
+      const dto = {
+        name: 'Ward A - Room 1',
+        type: RoomType.GENERAL_WARD,
+        floor: '1',
+        ward: 'A',
+      };
       const expected = { id: 'room-1', ...dto, facilityId: FACILITY_ID };
 
       mockRoomRepo.create.mockReturnValue(expected);
@@ -76,7 +84,10 @@ describe('RoomService', () => {
 
       const result = await service.createRoom(dto as any, FACILITY_ID);
 
-      expect(mockRoomRepo.create).toHaveBeenCalledWith({ ...dto, facilityId: FACILITY_ID });
+      expect(mockRoomRepo.create).toHaveBeenCalledWith({
+        ...dto,
+        facilityId: FACILITY_ID,
+      });
       expect(mockRoomRepo.save).toHaveBeenCalledWith(expected);
       expect(result.facilityId).toBe(FACILITY_ID);
     });
@@ -106,7 +117,9 @@ describe('RoomService', () => {
 
       const result = await service.findRooms(FACILITY_ID, { floor: '2' });
 
-      expect(qb.andWhere).toHaveBeenCalledWith('r.floor = :floor', { floor: '2' });
+      expect(qb.andWhere).toHaveBeenCalledWith('r.floor = :floor', {
+        floor: '2',
+      });
       expect(result).toEqual(rooms);
     });
 
@@ -117,7 +130,9 @@ describe('RoomService', () => {
 
       await service.findRooms(FACILITY_ID, { type: RoomType.ICU });
 
-      expect(qb.andWhere).toHaveBeenCalledWith('r.type = :type', { type: RoomType.ICU });
+      expect(qb.andWhere).toHaveBeenCalledWith('r.type = :type', {
+        type: RoomType.ICU,
+      });
     });
 
     it('applies ward filter when ward is provided', async () => {
@@ -127,7 +142,9 @@ describe('RoomService', () => {
 
       await service.findRooms(FACILITY_ID, { ward: 'Ward-B' });
 
-      expect(qb.andWhere).toHaveBeenCalledWith('r.ward = :ward', { ward: 'Ward-B' });
+      expect(qb.andWhere).toHaveBeenCalledWith('r.ward = :ward', {
+        ward: 'Ward-B',
+      });
     });
 
     it('returns all rooms when no filters are provided', async () => {
@@ -149,7 +166,10 @@ describe('RoomService', () => {
       mockRoomRepo.findOne.mockResolvedValue(null);
 
       await expect(
-        service.createBed({ roomId: 'no-room', bedNumber: 'A1' } as any, FACILITY_ID),
+        service.createBed(
+          { roomId: 'no-room', bedNumber: 'A1' } as any,
+          FACILITY_ID,
+        ),
       ).rejects.toThrow(NotFoundException);
     });
 
@@ -164,7 +184,10 @@ describe('RoomService', () => {
 
       const result = await service.createBed(dto as any, FACILITY_ID);
 
-      expect(mockBedRepo.create).toHaveBeenCalledWith({ ...dto, facilityId: FACILITY_ID });
+      expect(mockBedRepo.create).toHaveBeenCalledWith({
+        ...dto,
+        facilityId: FACILITY_ID,
+      });
       expect(result.facilityId).toBe(FACILITY_ID);
     });
   });
@@ -209,7 +232,12 @@ describe('RoomService', () => {
       mockBedRepo.findOne.mockResolvedValue(null);
 
       await expect(
-        service.updateBedStatus('no-bed', { status: BedStatus.OCCUPIED } as any, FACILITY_ID, STAFF_ID),
+        service.updateBedStatus(
+          'no-bed',
+          { status: BedStatus.OCCUPIED } as any,
+          FACILITY_ID,
+          STAFF_ID,
+        ),
       ).rejects.toThrow(NotFoundException);
     });
 
@@ -219,7 +247,12 @@ describe('RoomService', () => {
 
       // OCCUPIED -> AVAILABLE is not a valid transition per VALID_BED_TRANSITIONS
       await expect(
-        service.updateBedStatus('bed-1', { status: BedStatus.AVAILABLE } as any, FACILITY_ID, STAFF_ID),
+        service.updateBedStatus(
+          'bed-1',
+          { status: BedStatus.AVAILABLE } as any,
+          FACILITY_ID,
+          STAFF_ID,
+        ),
       ).rejects.toThrow(BadRequestException);
     });
 
@@ -244,17 +277,32 @@ describe('RoomService', () => {
 
     it('starts a housekeeping log when status transitions to CLEANING', async () => {
       const bed = { id: 'bed-1', status: BedStatus.OCCUPIED };
-      const hkLog = { id: 'hk-1', bedId: 'bed-1', status: HousekeepingStatus.IN_PROGRESS };
+      const hkLog = {
+        id: 'hk-1',
+        bedId: 'bed-1',
+        status: HousekeepingStatus.IN_PROGRESS,
+      };
 
       mockBedRepo.findOne.mockResolvedValue(bed);
-      mockBedRepo.save.mockResolvedValue({ ...bed, status: BedStatus.CLEANING });
+      mockBedRepo.save.mockResolvedValue({
+        ...bed,
+        status: BedStatus.CLEANING,
+      });
       mockHkRepo.create.mockReturnValue(hkLog);
       mockHkRepo.save.mockResolvedValue(hkLog);
 
-      await service.updateBedStatus('bed-1', { status: BedStatus.CLEANING } as any, FACILITY_ID, STAFF_ID);
+      await service.updateBedStatus(
+        'bed-1',
+        { status: BedStatus.CLEANING } as any,
+        FACILITY_ID,
+        STAFF_ID,
+      );
 
       expect(mockHkRepo.create).toHaveBeenCalledWith(
-        expect.objectContaining({ bedId: 'bed-1', status: HousekeepingStatus.IN_PROGRESS }),
+        expect.objectContaining({
+          bedId: 'bed-1',
+          status: HousekeepingStatus.IN_PROGRESS,
+        }),
       );
     });
   });
@@ -263,7 +311,10 @@ describe('RoomService', () => {
 
   describe('getBedsForRoom', () => {
     it('returns all beds for a given room ordered by bedNumber', async () => {
-      const beds = [{ id: 'b1', bedNumber: '1' }, { id: 'b2', bedNumber: '2' }];
+      const beds = [
+        { id: 'b1', bedNumber: '1' },
+        { id: 'b2', bedNumber: '2' },
+      ];
       mockBedRepo.find.mockResolvedValue(beds);
 
       const result = await service.getBedsForRoom('room-1', FACILITY_ID);
@@ -295,12 +346,21 @@ describe('RoomService', () => {
         completedAt: null,
         completedById: null,
       };
-      const saved = { ...log, status: HousekeepingStatus.COMPLETED, completedById: STAFF_ID };
+      const saved = {
+        ...log,
+        status: HousekeepingStatus.COMPLETED,
+        completedById: STAFF_ID,
+      };
 
       mockHkRepo.findOne.mockResolvedValue(log);
       mockHkRepo.save.mockResolvedValue(saved);
 
-      const result = await service.completeHousekeeping('bed-1', FACILITY_ID, STAFF_ID, 'Cleaned');
+      const result = await service.completeHousekeeping(
+        'bed-1',
+        FACILITY_ID,
+        STAFF_ID,
+        'Cleaned',
+      );
 
       expect(result.status).toBe(HousekeepingStatus.COMPLETED);
       expect(result.completedById).toBe(STAFF_ID);

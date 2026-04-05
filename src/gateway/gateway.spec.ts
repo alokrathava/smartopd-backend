@@ -129,7 +129,11 @@ describe('EventsGateway', () => {
     });
 
     it('accepts a client with a valid JWT and joins the facility room', () => {
-      const payload = { sub: 'user-1', facilityId: 'fac-1', email: 'doc@h.com' };
+      const payload = {
+        sub: 'user-1',
+        facilityId: 'fac-1',
+        email: 'doc@h.com',
+      };
       mockJwtService.verify.mockReturnValueOnce(payload);
       const socket = makeSocket('valid-jwt');
 
@@ -171,7 +175,10 @@ describe('EventsGateway', () => {
 
       gateway.handleConnection(socket);
 
-      expect(mockJwtService.verify).toHaveBeenCalledWith('query-token', expect.any(Object));
+      expect(mockJwtService.verify).toHaveBeenCalledWith(
+        'query-token',
+        expect.any(Object),
+      );
       expect(socket.disconnect).not.toHaveBeenCalled();
     });
   });
@@ -196,7 +203,10 @@ describe('EventsGateway', () => {
       const result = gateway.handleJoinQueue(socket, data);
 
       expect(socket.join).toHaveBeenCalledWith('queue:fac-1');
-      expect(result).toEqual({ event: 'queue:joined', data: { facilityId: 'fac-1' } });
+      expect(result).toEqual({
+        event: 'queue:joined',
+        data: { facilityId: 'fac-1' },
+      });
     });
   });
 
@@ -210,7 +220,10 @@ describe('EventsGateway', () => {
       const result = gateway.handleJoinBedBoard(socket, data);
 
       expect(socket.join).toHaveBeenCalledWith('beds:fac-1');
-      expect(result).toEqual({ event: 'beds:joined', data: { facilityId: 'fac-1' } });
+      expect(result).toEqual({
+        event: 'beds:joined',
+        data: { facilityId: 'fac-1' },
+      });
     });
   });
 
@@ -278,7 +291,10 @@ describe('EventsGateway', () => {
       gateway.emitTokenCalled('fac-1', payload);
 
       expect(mockServer.to).toHaveBeenCalledWith('facility:fac-1');
-      expect(mockServer._toEmit).toHaveBeenCalledWith('queue:token-called', payload);
+      expect(mockServer._toEmit).toHaveBeenCalledWith(
+        'queue:token-called',
+        payload,
+      );
     });
   });
 
@@ -297,7 +313,10 @@ describe('EventsGateway', () => {
       gateway.emitBedStatusChanged('fac-1', payload);
 
       expect(mockServer.to).toHaveBeenCalledWith('facility:fac-1');
-      expect(mockServer._toEmit).toHaveBeenCalledWith('beds:status-changed', payload);
+      expect(mockServer._toEmit).toHaveBeenCalledWith(
+        'beds:status-changed',
+        payload,
+      );
     });
   });
 
@@ -316,7 +335,10 @@ describe('EventsGateway', () => {
       gateway.emitCriticalAlert('fac-1', payload);
 
       expect(mockServer.to).toHaveBeenCalledWith('facility:fac-1');
-      expect(mockServer._toEmit).toHaveBeenCalledWith('alert:critical-vitals', payload);
+      expect(mockServer._toEmit).toHaveBeenCalledWith(
+        'alert:critical-vitals',
+        payload,
+      );
     });
   });
 
@@ -350,7 +372,10 @@ describe('EventsGateway', () => {
       gateway.emitUserNotification('user-42', payload);
 
       expect(mockServer.to).toHaveBeenCalledWith('user:user-42');
-      expect(mockServer._toEmit).toHaveBeenCalledWith('notification:received', payload);
+      expect(mockServer._toEmit).toHaveBeenCalledWith(
+        'notification:received',
+        payload,
+      );
     });
   });
 

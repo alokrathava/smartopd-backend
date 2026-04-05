@@ -100,7 +100,10 @@ describe('PaymentService', () => {
       qb.getOne.mockResolvedValue(null); // no previous bill
       mockBillRepo.createQueryBuilder.mockReturnValue(qb);
 
-      const createdBill = { id: 'bill-1', billNumber: expect.stringMatching(/^BILL-/) };
+      const createdBill = {
+        id: 'bill-1',
+        billNumber: expect.stringMatching(/^BILL-/),
+      };
       mockBillRepo.create.mockReturnValue(createdBill);
       mockBillRepo.save.mockResolvedValue(createdBill);
 
@@ -172,7 +175,13 @@ describe('PaymentService', () => {
       mockBillItemRepo.find.mockResolvedValue([{ amount: 200, gstPercent: 0 }]);
       mockBillRepo.update.mockResolvedValue({});
 
-      const dto = { billId: 'bill-1', description: 'Consultation', quantity: 2, unitPrice: 100, gstPercent: 0 };
+      const dto = {
+        billId: 'bill-1',
+        description: 'Consultation',
+        quantity: 2,
+        unitPrice: 100,
+        gstPercent: 0,
+      };
       const result = await service.addItem(dto as any, facilityId);
 
       expect(mockBillItemRepo.create).toHaveBeenCalledWith(
@@ -184,7 +193,12 @@ describe('PaymentService', () => {
     it('throws NotFoundException when bill does not exist', async () => {
       mockBillRepo.findOne.mockResolvedValue(null);
 
-      const dto = { billId: 'missing', quantity: 1, unitPrice: 50, gstPercent: 0 };
+      const dto = {
+        billId: 'missing',
+        quantity: 1,
+        unitPrice: 50,
+        gstPercent: 0,
+      };
       await expect(service.addItem(dto as any, facilityId)).rejects.toThrow(
         NotFoundException,
       );
@@ -201,13 +215,22 @@ describe('PaymentService', () => {
       ]);
       mockBillRepo.update.mockResolvedValue({});
 
-      const dto = { billId: 'bill-1', quantity: 1, unitPrice: 150, gstPercent: 0 };
+      const dto = {
+        billId: 'bill-1',
+        quantity: 1,
+        unitPrice: 150,
+        gstPercent: 0,
+      };
       await service.addItem(dto as any, facilityId);
 
       // subtotal = 150, taxAmount = 10, totalAmount = 160
       expect(mockBillRepo.update).toHaveBeenCalledWith(
         'bill-1',
-        expect.objectContaining({ subtotal: 150, taxAmount: 10, totalAmount: 160 }),
+        expect.objectContaining({
+          subtotal: 150,
+          taxAmount: 10,
+          totalAmount: 160,
+        }),
       );
     });
   });
@@ -216,7 +239,14 @@ describe('PaymentService', () => {
 
   describe('recordPayment()', () => {
     it('creates a SUCCESS transaction record', async () => {
-      const bill = { id: 'bill-1', facilityId, patientId: 'p1', totalAmount: 500, paidAmount: 0, status: BillStatus.FINALIZED };
+      const bill = {
+        id: 'bill-1',
+        facilityId,
+        patientId: 'p1',
+        totalAmount: 500,
+        paidAmount: 0,
+        status: BillStatus.FINALIZED,
+      };
       mockBillRepo.findOne.mockResolvedValue(bill);
 
       const savedTx = { id: 'tx-1', status: TransactionStatus.SUCCESS };
@@ -225,7 +255,11 @@ describe('PaymentService', () => {
       mockBillRepo.update.mockResolvedValue({});
 
       const dto = { billId: 'bill-1', amount: 200, paymentMode: 'CASH' };
-      const result = await service.recordPayment(dto as any, facilityId, userId);
+      const result = await service.recordPayment(
+        dto as any,
+        facilityId,
+        userId,
+      );
 
       expect(mockTransactionRepo.create).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -237,7 +271,14 @@ describe('PaymentService', () => {
     });
 
     it('marks bill as PAID when full amount is paid', async () => {
-      const bill = { id: 'bill-1', facilityId, patientId: 'p1', totalAmount: 300, paidAmount: 0, status: BillStatus.FINALIZED };
+      const bill = {
+        id: 'bill-1',
+        facilityId,
+        patientId: 'p1',
+        totalAmount: 300,
+        paidAmount: 0,
+        status: BillStatus.FINALIZED,
+      };
       mockBillRepo.findOne.mockResolvedValue(bill);
       mockTransactionRepo.create.mockReturnValue({ id: 'tx-1' });
       mockTransactionRepo.save.mockResolvedValue({ id: 'tx-1' });
@@ -253,7 +294,14 @@ describe('PaymentService', () => {
     });
 
     it('marks bill as PARTIAL when partial amount is paid', async () => {
-      const bill = { id: 'bill-1', facilityId, patientId: 'p1', totalAmount: 500, paidAmount: 0, status: BillStatus.FINALIZED };
+      const bill = {
+        id: 'bill-1',
+        facilityId,
+        patientId: 'p1',
+        totalAmount: 500,
+        paidAmount: 0,
+        status: BillStatus.FINALIZED,
+      };
       mockBillRepo.findOne.mockResolvedValue(bill);
       mockTransactionRepo.create.mockReturnValue({ id: 'tx-1' });
       mockTransactionRepo.save.mockResolvedValue({ id: 'tx-1' });

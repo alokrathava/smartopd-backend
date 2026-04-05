@@ -22,7 +22,9 @@ const buildVisit = (overrides: Record<string, any> = {}): Partial<Visit> => ({
   ...overrides,
 });
 
-const buildPatient = (overrides: Record<string, any> = {}): Partial<Patient> => ({
+const buildPatient = (
+  overrides: Record<string, any> = {},
+): Partial<Patient> => ({
   id: 'pat-1',
   facilityId: 'fac-1',
   firstName: 'Raj',
@@ -33,7 +35,9 @@ const buildPatient = (overrides: Record<string, any> = {}): Partial<Patient> => 
   ...overrides,
 });
 
-const buildConsultation = (overrides: Record<string, any> = {}): Partial<Consultation> => ({
+const buildConsultation = (
+  overrides: Record<string, any> = {},
+): Partial<Consultation> => ({
   id: 'consult-1',
   visitId: 'visit-1',
   facilityId: 'fac-1',
@@ -46,7 +50,9 @@ const buildConsultation = (overrides: Record<string, any> = {}): Partial<Consult
   ...overrides,
 });
 
-const buildPrescription = (overrides: Record<string, any> = {}): Partial<Prescription> => ({
+const buildPrescription = (
+  overrides: Record<string, any> = {},
+): Partial<Prescription> => ({
   id: 'rx-1',
   visitId: 'visit-1',
   facilityId: 'fac-1',
@@ -57,7 +63,9 @@ const buildPrescription = (overrides: Record<string, any> = {}): Partial<Prescri
   ...overrides,
 });
 
-const buildAdmission = (overrides: Record<string, any> = {}): Partial<Admission> => ({
+const buildAdmission = (
+  overrides: Record<string, any> = {},
+): Partial<Admission> => ({
   id: 'adm-1',
   facilityId: 'fac-1',
   patientId: 'pat-1',
@@ -67,7 +75,9 @@ const buildAdmission = (overrides: Record<string, any> = {}): Partial<Admission>
   ...overrides,
 });
 
-const buildDischargeSummary = (overrides: Record<string, any> = {}): Partial<DischargeSummary> => ({
+const buildDischargeSummary = (
+  overrides: Record<string, any> = {},
+): Partial<DischargeSummary> => ({
   id: 'ds-1',
   patientId: 'pat-1',
   summaryText: 'Patient recovered well.',
@@ -126,10 +136,16 @@ describe('FhirService', () => {
         FhirService,
         { provide: getRepositoryToken(Visit), useValue: visitRepo },
         { provide: getRepositoryToken(Consultation), useValue: consultRepo },
-        { provide: getRepositoryToken(Prescription), useValue: prescriptionRepo },
+        {
+          provide: getRepositoryToken(Prescription),
+          useValue: prescriptionRepo,
+        },
         { provide: getRepositoryToken(Patient), useValue: patientRepo },
         { provide: getRepositoryToken(Admission), useValue: admissionRepo },
-        { provide: getRepositoryToken(DischargeSummary), useValue: dischargeRepo },
+        {
+          provide: getRepositoryToken(DischargeSummary),
+          useValue: dischargeRepo,
+        },
         { provide: HttpService, useValue: mockHttpService },
         { provide: ConfigService, useValue: configService },
       ],
@@ -150,9 +166,9 @@ describe('FhirService', () => {
     it('throws when the visit is not found', async () => {
       visitRepo.findOne.mockResolvedValueOnce(null);
 
-      await expect(service.publishConsultation('v-999', 'fac-1')).rejects.toThrow(
-        'Visit not found',
-      );
+      await expect(
+        service.publishConsultation('v-999', 'fac-1'),
+      ).rejects.toThrow('Visit not found');
     });
 
     it('returns a FHIR Bundle of type "collection"', async () => {
@@ -174,7 +190,9 @@ describe('FhirService', () => {
       prescriptionRepo.find.mockResolvedValueOnce([buildPrescription()]);
 
       const bundle = await service.publishConsultation('visit-1', 'fac-1');
-      const types: string[] = bundle.entry.map((e: any) => e.resource.resourceType);
+      const types: string[] = bundle.entry.map(
+        (e: any) => e.resource.resourceType,
+      );
 
       expect(types).toContain('Patient');
       expect(types).toContain('Encounter');
@@ -189,7 +207,9 @@ describe('FhirService', () => {
       prescriptionRepo.find.mockResolvedValueOnce([]);
 
       const bundle = await service.publishConsultation('visit-1', 'fac-1');
-      const encounter = bundle.entry.find((e: any) => e.resource.resourceType === 'Encounter');
+      const encounter = bundle.entry.find(
+        (e: any) => e.resource.resourceType === 'Encounter',
+      );
 
       expect(encounter).toBeDefined();
       expect(encounter.resource.subject.reference).toBe('Patient/pat-1');
@@ -200,7 +220,9 @@ describe('FhirService', () => {
       visitRepo.findOne.mockResolvedValueOnce(buildVisit());
       patientRepo.findOne.mockResolvedValueOnce(buildPatient());
       consultRepo.findOne.mockResolvedValueOnce(null);
-      prescriptionRepo.find.mockResolvedValueOnce([buildPrescription({ status: 'FINALIZED' })]);
+      prescriptionRepo.find.mockResolvedValueOnce([
+        buildPrescription({ status: 'FINALIZED' }),
+      ]);
 
       const bundle = await service.publishConsultation('visit-1', 'fac-1');
       const medReq = bundle.entry.find(
@@ -214,7 +236,9 @@ describe('FhirService', () => {
       visitRepo.findOne.mockResolvedValueOnce(buildVisit());
       patientRepo.findOne.mockResolvedValueOnce(buildPatient());
       consultRepo.findOne.mockResolvedValueOnce(null);
-      prescriptionRepo.find.mockResolvedValueOnce([buildPrescription({ status: 'DRAFT' })]);
+      prescriptionRepo.find.mockResolvedValueOnce([
+        buildPrescription({ status: 'DRAFT' }),
+      ]);
 
       const bundle = await service.publishConsultation('visit-1', 'fac-1');
       const medReq = bundle.entry.find(
@@ -243,12 +267,18 @@ describe('FhirService', () => {
       consultRepo.findOne.mockResolvedValueOnce(null);
       prescriptionRepo.find.mockResolvedValueOnce([]);
 
-      mockHttpPost.mockReturnValueOnce(of({ data: { resourceType: 'Bundle' } }));
+      mockHttpPost.mockReturnValueOnce(
+        of({ data: { resourceType: 'Bundle' } }),
+      );
 
       await service.publishConsultation('visit-1', 'fac-1');
 
       expect(mockHttpPost).toHaveBeenCalledTimes(1);
-      const [url, , options] = mockHttpPost.mock.calls[0] as [string, any, { headers: Record<string, string> }];
+      const [url, , options] = mockHttpPost.mock.calls[0] as [
+        string,
+        any,
+        { headers: Record<string, string> },
+      ];
       expect(url).toBe('https://fhir.example.com/Bundle');
       expect(options.headers['Content-Type']).toBe('application/fhir+json');
       expect(options.headers['Authorization']).toBe('Bearer my-token');
@@ -266,7 +296,11 @@ describe('FhirService', () => {
 
       await service.publishConsultation('visit-1', 'fac-1');
 
-      const [, , options] = mockHttpPost.mock.calls[0] as [string, any, { headers: Record<string, string> }];
+      const [, , options] = mockHttpPost.mock.calls[0] as [
+        string,
+        any,
+        { headers: Record<string, string> },
+      ];
       expect(options.headers['Authorization']).toBeUndefined();
     });
 
@@ -278,7 +312,9 @@ describe('FhirService', () => {
       consultRepo.findOne.mockResolvedValueOnce(null);
       prescriptionRepo.find.mockResolvedValueOnce([]);
 
-      mockHttpPost.mockReturnValueOnce(throwError(() => new Error('Network error')));
+      mockHttpPost.mockReturnValueOnce(
+        throwError(() => new Error('Network error')),
+      );
 
       const bundle = await service.publishConsultation('visit-1', 'fac-1');
 
@@ -292,9 +328,9 @@ describe('FhirService', () => {
     it('throws when the admission is not found', async () => {
       admissionRepo.findOne.mockResolvedValueOnce(null);
 
-      await expect(service.publishDischarge('adm-999', 'fac-1')).rejects.toThrow(
-        'Admission not found',
-      );
+      await expect(
+        service.publishDischarge('adm-999', 'fac-1'),
+      ).rejects.toThrow('Admission not found');
     });
 
     it('returns a FHIR Bundle containing Patient and Encounter entries', async () => {
@@ -303,7 +339,9 @@ describe('FhirService', () => {
       dischargeRepo.findOne.mockResolvedValueOnce(buildDischargeSummary());
 
       const bundle = await service.publishDischarge('adm-1', 'fac-1');
-      const types: string[] = bundle.entry.map((e: any) => e.resource.resourceType);
+      const types: string[] = bundle.entry.map(
+        (e: any) => e.resource.resourceType,
+      );
 
       expect(bundle.resourceType).toBe('Bundle');
       expect(types).toContain('Patient');
@@ -316,7 +354,9 @@ describe('FhirService', () => {
       dischargeRepo.findOne.mockResolvedValueOnce(buildDischargeSummary());
 
       const bundle = await service.publishDischarge('adm-1', 'fac-1');
-      const types: string[] = bundle.entry.map((e: any) => e.resource.resourceType);
+      const types: string[] = bundle.entry.map(
+        (e: any) => e.resource.resourceType,
+      );
 
       expect(types).toContain('Composition');
     });
@@ -327,7 +367,9 @@ describe('FhirService', () => {
       dischargeRepo.findOne.mockResolvedValueOnce(null);
 
       const bundle = await service.publishDischarge('adm-1', 'fac-1');
-      const types: string[] = bundle.entry.map((e: any) => e.resource.resourceType);
+      const types: string[] = bundle.entry.map(
+        (e: any) => e.resource.resourceType,
+      );
 
       expect(types).not.toContain('Composition');
     });
@@ -365,9 +407,9 @@ describe('FhirService', () => {
     it('throws when the prescription is not found', async () => {
       prescriptionRepo.findOne.mockResolvedValueOnce(null);
 
-      await expect(service.publishPrescription('rx-999', 'fac-1')).rejects.toThrow(
-        'Prescription not found',
-      );
+      await expect(
+        service.publishPrescription('rx-999', 'fac-1'),
+      ).rejects.toThrow('Prescription not found');
     });
 
     it('returns a Bundle containing a MedicationRequest resource', async () => {
@@ -375,7 +417,9 @@ describe('FhirService', () => {
       patientRepo.findOne.mockResolvedValueOnce(buildPatient());
 
       const bundle = await service.publishPrescription('rx-1', 'fac-1');
-      const types: string[] = bundle.entry.map((e: any) => e.resource.resourceType);
+      const types: string[] = bundle.entry.map(
+        (e: any) => e.resource.resourceType,
+      );
 
       expect(bundle.resourceType).toBe('Bundle');
       expect(types).toContain('MedicationRequest');
@@ -386,7 +430,9 @@ describe('FhirService', () => {
       patientRepo.findOne.mockResolvedValueOnce(buildPatient());
 
       const bundle = await service.publishPrescription('rx-1', 'fac-1');
-      const types: string[] = bundle.entry.map((e: any) => e.resource.resourceType);
+      const types: string[] = bundle.entry.map(
+        (e: any) => e.resource.resourceType,
+      );
 
       expect(types).toContain('Patient');
     });
@@ -396,14 +442,18 @@ describe('FhirService', () => {
       patientRepo.findOne.mockResolvedValueOnce(null);
 
       const bundle = await service.publishPrescription('rx-1', 'fac-1');
-      const types: string[] = bundle.entry.map((e: any) => e.resource.resourceType);
+      const types: string[] = bundle.entry.map(
+        (e: any) => e.resource.resourceType,
+      );
 
       expect(types).not.toContain('Patient');
       expect(types).toContain('MedicationRequest');
     });
 
     it('sets MedicationRequest status "active" for FINALIZED prescription', async () => {
-      prescriptionRepo.findOne.mockResolvedValueOnce(buildPrescription({ status: 'FINALIZED' }));
+      prescriptionRepo.findOne.mockResolvedValueOnce(
+        buildPrescription({ status: 'FINALIZED' }),
+      );
       patientRepo.findOne.mockResolvedValueOnce(buildPatient());
 
       const bundle = await service.publishPrescription('rx-1', 'fac-1');
@@ -415,7 +465,9 @@ describe('FhirService', () => {
     });
 
     it('sets MedicationRequest status "draft" for non-FINALIZED prescription', async () => {
-      prescriptionRepo.findOne.mockResolvedValueOnce(buildPrescription({ status: 'PENDING' }));
+      prescriptionRepo.findOne.mockResolvedValueOnce(
+        buildPrescription({ status: 'PENDING' }),
+      );
       patientRepo.findOne.mockResolvedValueOnce(buildPatient());
 
       const bundle = await service.publishPrescription('rx-1', 'fac-1');
@@ -442,7 +494,10 @@ describe('FhirService', () => {
       await service.publishPrescription('rx-1', 'fac-1');
 
       expect(prescriptionRepo.update).toHaveBeenCalledTimes(1);
-      const [id, patch] = prescriptionRepo.update.mock.calls[0] as [string, Record<string, any>];
+      const [id, patch] = prescriptionRepo.update.mock.calls[0] as [
+        string,
+        Record<string, any>,
+      ];
       expect(id).toBe('rx-1');
       expect(patch.fhirMedicationRequestJson).toBeDefined();
       const parsed = JSON.parse(patch.fhirMedicationRequestJson);
@@ -460,7 +515,11 @@ describe('FhirService', () => {
       await service.publishPrescription('rx-1', 'fac-1');
 
       expect(mockHttpPost).toHaveBeenCalledTimes(1);
-      const [url, , options] = mockHttpPost.mock.calls[0] as [string, any, { headers: Record<string, string> }];
+      const [url, , options] = mockHttpPost.mock.calls[0] as [
+        string,
+        any,
+        { headers: Record<string, string> },
+      ];
       expect(url).toContain('/Bundle');
       expect(options.headers['Authorization']).toBe('Bearer bearer-token');
     });

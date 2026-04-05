@@ -6,7 +6,11 @@ import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 
 import { LabService } from './lab.service';
-import { LabOrder, LabOrderStatus, LabPartner } from './entities/lab-order.entity';
+import {
+  LabOrder,
+  LabOrderStatus,
+  LabPartner,
+} from './entities/lab-order.entity';
 import { LabResult, ResultStatus } from './entities/lab-result.entity';
 import { Patient } from '../patients/entities/patient.entity';
 import { NotificationService } from '../notification/notification.service';
@@ -92,7 +96,11 @@ describe('LabService', () => {
       patientRepo.findOne.mockResolvedValue(null);
 
       await expect(
-        service.createOrder({ patientId: 'ghost', testName: 'CBC', visitId: 'v-1' } as any, facilityId, doctorId),
+        service.createOrder(
+          { patientId: 'ghost', testName: 'CBC', visitId: 'v-1' } as any,
+          facilityId,
+          doctorId,
+        ),
       ).rejects.toThrow(NotFoundException);
     });
 
@@ -107,7 +115,11 @@ describe('LabService', () => {
       orderRepo.create.mockReturnValue(order);
       orderRepo.save.mockResolvedValue(order);
 
-      const dto: any = { patientId: 'patient-001', testName: 'Complete Blood Count', visitId: 'v-1' };
+      const dto: any = {
+        patientId: 'patient-001',
+        testName: 'Complete Blood Count',
+        visitId: 'v-1',
+      };
       const result = await service.createOrder(dto, facilityId, doctorId);
 
       expect(orderRepo.create).toHaveBeenCalledWith(
@@ -131,7 +143,12 @@ describe('LabService', () => {
       orderRepo.save.mockImplementation(async (d: any) => d);
 
       await service.createOrder(
-        { patientId: 'patient-001', testName: 'HbA1c', loincCode: '4548-4', visitId: 'v-1' } as any,
+        {
+          patientId: 'patient-001',
+          testName: 'HbA1c',
+          loincCode: '4548-4',
+          visitId: 'v-1',
+        } as any,
         facilityId,
         doctorId,
       );
@@ -145,13 +162,22 @@ describe('LabService', () => {
     it('routes to external lab partner in mock mode when partner != IN_HOUSE and no API key', async () => {
       patientRepo.findOne.mockResolvedValue(basePatient);
 
-      const order: any = { id: 'order-ext', partner: LabPartner.SRL, status: LabOrderStatus.ORDERED };
+      const order: any = {
+        id: 'order-ext',
+        partner: LabPartner.SRL,
+        status: LabOrderStatus.ORDERED,
+      };
       orderRepo.create.mockReturnValue(order);
       orderRepo.save.mockResolvedValue(order);
       orderRepo.update.mockResolvedValue({ affected: 1 });
 
       await service.createOrder(
-        { patientId: 'patient-001', testName: 'Thyroid Panel', partner: LabPartner.SRL, visitId: 'v-1' } as any,
+        {
+          patientId: 'patient-001',
+          testName: 'Thyroid Panel',
+          partner: LabPartner.SRL,
+          visitId: 'v-1',
+        } as any,
         facilityId,
         doctorId,
       );
@@ -179,7 +205,9 @@ describe('LabService', () => {
     it('throws NotFoundException when order not found', async () => {
       orderRepo.findOne.mockResolvedValue(null);
 
-      await expect(service.getOrder('ghost', facilityId)).rejects.toThrow(NotFoundException);
+      await expect(service.getOrder('ghost', facilityId)).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -190,7 +218,18 @@ describe('LabService', () => {
       orderRepo.findOne.mockResolvedValue(null);
 
       await expect(
-        service.addResults('ghost-order', [{ componentName: 'Hb', value: '12', unit: 'g/dL', status: ResultStatus.NORMAL } as any], facilityId),
+        service.addResults(
+          'ghost-order',
+          [
+            {
+              componentName: 'Hb',
+              value: '12',
+              unit: 'g/dL',
+              status: ResultStatus.NORMAL,
+            } as any,
+          ],
+          facilityId,
+        ),
       ).rejects.toThrow(NotFoundException);
     });
 
@@ -209,18 +248,37 @@ describe('LabService', () => {
       resultRepo.save.mockResolvedValue(savedResult);
       orderRepo.update.mockResolvedValue({ affected: 1 });
 
-      const results = [{ componentName: 'Haemoglobin', value: '13', unit: 'g/dL', status: ResultStatus.NORMAL }];
-      const saved = await service.addResults('order-001', results as any, facilityId);
+      const results = [
+        {
+          componentName: 'Haemoglobin',
+          value: '13',
+          unit: 'g/dL',
+          status: ResultStatus.NORMAL,
+        },
+      ];
+      const saved = await service.addResults(
+        'order-001',
+        results as any,
+        facilityId,
+      );
 
       expect(orderRepo.update).toHaveBeenCalledWith(
         'order-001',
-        expect.objectContaining({ status: LabOrderStatus.RESULTED, resultedAt: expect.any(Date) }),
+        expect.objectContaining({
+          status: LabOrderStatus.RESULTED,
+          resultedAt: expect.any(Date),
+        }),
       );
       expect(saved).toHaveLength(1);
     });
 
     it('sends SMS notification to patient after results are ready', async () => {
-      const order: any = { id: 'order-001', patientId: 'patient-001', testName: 'Lipid Panel', facilityId };
+      const order: any = {
+        id: 'order-001',
+        patientId: 'patient-001',
+        testName: 'Lipid Panel',
+        facilityId,
+      };
       orderRepo.findOne.mockResolvedValue(order);
       patientRepo.findOne.mockResolvedValue(basePatient);
 
@@ -230,13 +288,20 @@ describe('LabService', () => {
 
       await service.addResults(
         'order-001',
-        [{ componentName: 'LDL', value: '150', unit: 'mg/dL', status: ResultStatus.ABNORMAL_HIGH }] as any,
+        [
+          {
+            componentName: 'LDL',
+            value: '150',
+            unit: 'mg/dL',
+            status: ResultStatus.ABNORMAL_HIGH,
+          },
+        ] as any,
         facilityId,
       );
 
       expect(mockNotificationService.send).toHaveBeenCalledWith(
         expect.anything(), // channel
-        '+919876543210',   // patient phone
+        '+919876543210', // patient phone
         expect.stringContaining('Lipid Panel'), // message includes test name
         facilityId,
         expect.any(String),
@@ -246,7 +311,12 @@ describe('LabService', () => {
     });
 
     it('appends critical alert to SMS when result has CRITICAL_HIGH status', async () => {
-      const order: any = { id: 'order-001', patientId: 'patient-001', testName: 'Potassium', facilityId };
+      const order: any = {
+        id: 'order-001',
+        patientId: 'patient-001',
+        testName: 'Potassium',
+        facilityId,
+      };
       orderRepo.findOne.mockResolvedValue(order);
       patientRepo.findOne.mockResolvedValue(basePatient);
 
@@ -256,7 +326,14 @@ describe('LabService', () => {
 
       await service.addResults(
         'order-001',
-        [{ componentName: 'K+', value: '7.2', unit: 'mEq/L', status: ResultStatus.CRITICAL_HIGH }] as any,
+        [
+          {
+            componentName: 'K+',
+            value: '7.2',
+            unit: 'mEq/L',
+            status: ResultStatus.CRITICAL_HIGH,
+          },
+        ] as any,
         facilityId,
       );
 
@@ -275,17 +352,18 @@ describe('LabService', () => {
 
       const result = await service.cancelOrder('order-001', facilityId);
 
-      expect(orderRepo.update).toHaveBeenCalledWith(
-        'order-001',
-        { status: LabOrderStatus.CANCELLED },
-      );
+      expect(orderRepo.update).toHaveBeenCalledWith('order-001', {
+        status: LabOrderStatus.CANCELLED,
+      });
       expect(result).toEqual({ message: 'Lab order cancelled' });
     });
 
     it('throws NotFoundException when order not found', async () => {
       orderRepo.findOne.mockResolvedValue(null);
 
-      await expect(service.cancelOrder('ghost', facilityId)).rejects.toThrow(NotFoundException);
+      await expect(service.cancelOrder('ghost', facilityId)).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -293,9 +371,14 @@ describe('LabService', () => {
 
   describe('handlePartnerWebhook()', () => {
     it('routes results via addResults when matching order found', async () => {
-      const order: any = { id: 'order-001', patientId: 'patient-001', testName: 'HbA1c', facilityId };
+      const order: any = {
+        id: 'order-001',
+        patientId: 'patient-001',
+        testName: 'HbA1c',
+        facilityId,
+      };
       orderRepo.findOne
-        .mockResolvedValueOnce(order)  // findOne by externalOrderId
+        .mockResolvedValueOnce(order) // findOne by externalOrderId
         .mockResolvedValueOnce(order); // findOne inside addResults
       patientRepo.findOne.mockResolvedValue(basePatient);
 
@@ -305,7 +388,14 @@ describe('LabService', () => {
 
       await service.handlePartnerWebhook(
         'SRL-EXT-001',
-        [{ componentName: 'HbA1c', value: '7.2', unit: '%', status: ResultStatus.ABNORMAL_HIGH }] as any,
+        [
+          {
+            componentName: 'HbA1c',
+            value: '7.2',
+            unit: '%',
+            status: ResultStatus.ABNORMAL_HIGH,
+          },
+        ] as any,
         facilityId,
       );
 
@@ -319,7 +409,11 @@ describe('LabService', () => {
     it('silently returns when externalOrderId not found', async () => {
       orderRepo.findOne.mockResolvedValue(null);
 
-      const result = await service.handlePartnerWebhook('UNKNOWN-EXT', [], facilityId);
+      const result = await service.handlePartnerWebhook(
+        'UNKNOWN-EXT',
+        [],
+        facilityId,
+      );
 
       expect(result).toBeUndefined();
       expect(orderRepo.update).not.toHaveBeenCalled();

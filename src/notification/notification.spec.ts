@@ -69,7 +69,10 @@ describe('NotificationService', () => {
       providers: [
         NotificationService,
         { provide: getRepositoryToken(NotificationLog), useValue: mockLogRepo },
-        { provide: getRepositoryToken(NotificationTemplate), useValue: mockTemplateRepo },
+        {
+          provide: getRepositoryToken(NotificationTemplate),
+          useValue: mockTemplateRepo,
+        },
         { provide: QueueService, useValue: mockQueueService },
       ],
     }).compile();
@@ -273,7 +276,11 @@ describe('NotificationService', () => {
 
   describe('createTemplate()', () => {
     it('creates and saves a notification template', async () => {
-      const dto = { code: 'APPT_REMINDER', body: 'Hello {{name}}', channel: 'SMS' };
+      const dto = {
+        code: 'APPT_REMINDER',
+        body: 'Hello {{name}}',
+        channel: 'SMS',
+      };
       const saved = { id: 'tpl-1', ...dto, facilityId };
       mockTemplateRepo.create.mockReturnValue(saved);
       mockTemplateRepo.save.mockResolvedValue(saved);

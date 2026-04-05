@@ -75,8 +75,14 @@ describe('CrmService', () => {
       providers: [
         CrmService,
         { provide: getRepositoryToken(FollowUp), useValue: mockFollowUpRepo },
-        { provide: getRepositoryToken(PatientSegment), useValue: mockSegmentRepo },
-        { provide: getRepositoryToken(CrmCampaign), useValue: mockCampaignRepo },
+        {
+          provide: getRepositoryToken(PatientSegment),
+          useValue: mockSegmentRepo,
+        },
+        {
+          provide: getRepositoryToken(CrmCampaign),
+          useValue: mockCampaignRepo,
+        },
         { provide: getRepositoryToken(Patient), useValue: mockPatientRepo },
       ],
     }).compile();
@@ -88,7 +94,11 @@ describe('CrmService', () => {
 
   describe('createFollowUp()', () => {
     it('creates and saves a follow-up with facilityId', async () => {
-      const dto = { patientId: 'p1', reason: 'Post-op review', scheduledDate: '2026-04-10' };
+      const dto = {
+        patientId: 'p1',
+        reason: 'Post-op review',
+        scheduledDate: '2026-04-10',
+      };
       const saved = { id: 'fu-1', ...dto, facilityId };
       mockFollowUpRepo.create.mockReturnValue(saved);
       mockFollowUpRepo.save.mockResolvedValue(saved);
@@ -147,7 +157,9 @@ describe('CrmService', () => {
       qb.getMany.mockResolvedValue([]);
       mockFollowUpRepo.createQueryBuilder.mockReturnValue(qb);
 
-      await service.getFollowUps(facilityId, { status: FollowUpStatus.PENDING });
+      await service.getFollowUps(facilityId, {
+        status: FollowUpStatus.PENDING,
+      });
 
       expect(qb.andWhere).toHaveBeenCalledWith(
         expect.stringContaining('status'),
@@ -177,7 +189,10 @@ describe('CrmService', () => {
 
       expect(qb.andWhere).toHaveBeenCalledWith(
         expect.stringContaining('followUpDate >='),
-        expect.objectContaining({ d: expect.any(Date), next: expect.any(Date) }),
+        expect.objectContaining({
+          d: expect.any(Date),
+          next: expect.any(Date),
+        }),
       );
     });
   });
@@ -186,7 +201,10 @@ describe('CrmService', () => {
 
   describe('createSegment()', () => {
     it('creates and saves a segment with facilityId', async () => {
-      const dto = { name: 'Diabetic Patients', description: 'All diabetic patients' };
+      const dto = {
+        name: 'Diabetic Patients',
+        description: 'All diabetic patients',
+      };
       const saved = { id: 'seg-1', ...dto, facilityId };
       mockSegmentRepo.create.mockReturnValue(saved);
       mockSegmentRepo.save.mockResolvedValue(saved);
@@ -227,7 +245,12 @@ describe('CrmService', () => {
 
   describe('createCampaign()', () => {
     it('creates and saves a campaign with facilityId', async () => {
-      const dto = { name: 'Diabetes Awareness', channel: 'SMS', message: 'Get checked!', segmentId: 'seg-1' };
+      const dto = {
+        name: 'Diabetes Awareness',
+        channel: 'SMS',
+        message: 'Get checked!',
+        segmentId: 'seg-1',
+      };
       const saved = { id: 'camp-1', ...dto, facilityId };
       mockCampaignRepo.create.mockReturnValue(saved);
       mockCampaignRepo.save.mockResolvedValue(saved);
@@ -241,7 +264,12 @@ describe('CrmService', () => {
     });
 
     it('converts scheduledAt string to Date when provided', async () => {
-      const dto = { name: 'Reminder', channel: 'EMAIL', scheduledAt: '2026-05-01T09:00:00', segmentId: 'seg-1' };
+      const dto = {
+        name: 'Reminder',
+        channel: 'EMAIL',
+        scheduledAt: '2026-05-01T09:00:00',
+        segmentId: 'seg-1',
+      };
       mockCampaignRepo.create.mockImplementation((data) => data);
       mockCampaignRepo.save.mockImplementation((data) => Promise.resolve(data));
 
@@ -252,7 +280,11 @@ describe('CrmService', () => {
     });
 
     it('leaves scheduledAt undefined when not provided', async () => {
-      const dto = { name: 'Immediate Campaign', channel: 'SMS', segmentId: 'seg-1' };
+      const dto = {
+        name: 'Immediate Campaign',
+        channel: 'SMS',
+        segmentId: 'seg-1',
+      };
       mockCampaignRepo.create.mockImplementation((data) => data);
       mockCampaignRepo.save.mockImplementation((data) => Promise.resolve(data));
 
@@ -270,7 +302,11 @@ describe('CrmService', () => {
       mockFollowUpRepo.findOne.mockResolvedValue(null);
 
       await expect(
-        service.updateFollowUp('no-fu', { status: FollowUpStatus.COMPLETED }, facilityId),
+        service.updateFollowUp(
+          'no-fu',
+          { status: FollowUpStatus.COMPLETED },
+          facilityId,
+        ),
       ).rejects.toThrow(NotFoundException);
     });
 
@@ -284,17 +320,30 @@ describe('CrmService', () => {
       mockFollowUpRepo.findOne.mockResolvedValue(followUp);
       mockFollowUpRepo.save.mockImplementation((data) => Promise.resolve(data));
 
-      await service.updateFollowUp('fu-1', { status: FollowUpStatus.COMPLETED }, facilityId);
+      await service.updateFollowUp(
+        'fu-1',
+        { status: FollowUpStatus.COMPLETED },
+        facilityId,
+      );
 
       expect(followUp.completedAt).toBeInstanceOf(Date);
     });
 
     it('updates notes when provided', async () => {
-      const followUp = { id: 'fu-1', facilityId, status: FollowUpStatus.PENDING, notes: '' };
+      const followUp = {
+        id: 'fu-1',
+        facilityId,
+        status: FollowUpStatus.PENDING,
+        notes: '',
+      };
       mockFollowUpRepo.findOne.mockResolvedValue(followUp);
       mockFollowUpRepo.save.mockImplementation((data) => Promise.resolve(data));
 
-      await service.updateFollowUp('fu-1', { notes: 'Called patient, no answer' }, facilityId);
+      await service.updateFollowUp(
+        'fu-1',
+        { notes: 'Called patient, no answer' },
+        facilityId,
+      );
 
       expect(followUp.notes).toBe('Called patient, no answer');
     });

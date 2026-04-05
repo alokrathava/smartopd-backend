@@ -33,7 +33,8 @@ export class CrmService {
     const patient = await this.patientRepo.findOne({
       where: { id: dto.patientId, facilityId },
     });
-    if (!patient) throw new NotFoundException(`Patient ${dto.patientId} not found`);
+    if (!patient)
+      throw new NotFoundException(`Patient ${dto.patientId} not found`);
 
     const scheduledDate = new Date(dto.scheduledDate);
     const now = new Date();
@@ -154,7 +155,8 @@ export class CrmService {
     const segment = await this.segmentRepo.findOne({
       where: { id: dto.segmentId, facilityId },
     });
-    if (!segment) throw new NotFoundException(`Segment ${dto.segmentId} not found`);
+    if (!segment)
+      throw new NotFoundException(`Segment ${dto.segmentId} not found`);
 
     const campaign = this.campaignRepo.create({
       ...dto,

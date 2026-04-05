@@ -76,7 +76,10 @@ describe('ReportsService', () => {
         { provide: getRepositoryToken(Visit), useValue: mockVisitRepo },
         { provide: getRepositoryToken(Bill), useValue: mockBillRepo },
         { provide: getRepositoryToken(Equipment), useValue: mockEquipmentRepo },
-        { provide: getRepositoryToken(EquipmentLease), useValue: mockLeaseRepo },
+        {
+          provide: getRepositoryToken(EquipmentLease),
+          useValue: mockLeaseRepo,
+        },
         { provide: getRepositoryToken(Patient), useValue: mockPatientRepo },
         { provide: ConfigService, useValue: mockConfigService },
       ],
@@ -113,7 +116,11 @@ describe('ReportsService', () => {
     }
 
     it('returns eligibleLinkages = 0 when linkedThisMonth < 100', async () => {
-      setupDhisMocks({ totalAbhaLinked: 50, linkedThisMonth: 80, abdmLinkedVisits: 40 });
+      setupDhisMocks({
+        totalAbhaLinked: 50,
+        linkedThisMonth: 80,
+        abdmLinkedVisits: 40,
+      });
 
       const result = await service.getDhisDashboard(facilityId, '2026-03');
 
@@ -124,7 +131,11 @@ describe('ReportsService', () => {
     });
 
     it('calculates eligibleLinkages = linkedThisMonth - 100 when above threshold', async () => {
-      setupDhisMocks({ totalAbhaLinked: 200, linkedThisMonth: 150, abdmLinkedVisits: 120 });
+      setupDhisMocks({
+        totalAbhaLinked: 200,
+        linkedThisMonth: 150,
+        abdmLinkedVisits: 120,
+      });
 
       const result = await service.getDhisDashboard(facilityId, '2026-03');
 
@@ -134,7 +145,11 @@ describe('ReportsService', () => {
     });
 
     it('calculates dhisIncomeInr = eligibleLinkages × 20', async () => {
-      setupDhisMocks({ totalAbhaLinked: 300, linkedThisMonth: 200, abdmLinkedVisits: 180 });
+      setupDhisMocks({
+        totalAbhaLinked: 300,
+        linkedThisMonth: 200,
+        abdmLinkedVisits: 180,
+      });
 
       const result = await service.getDhisDashboard(facilityId, '2026-03');
 
@@ -143,7 +158,11 @@ describe('ReportsService', () => {
     });
 
     it('returns eligibleLinkages = 0 (not negative) when linkedThisMonth is exactly 100', async () => {
-      setupDhisMocks({ totalAbhaLinked: 100, linkedThisMonth: 100, abdmLinkedVisits: 100 });
+      setupDhisMocks({
+        totalAbhaLinked: 100,
+        linkedThisMonth: 100,
+        abdmLinkedVisits: 100,
+      });
 
       const result = await service.getDhisDashboard(facilityId, '2026-03');
 
@@ -153,7 +172,11 @@ describe('ReportsService', () => {
     });
 
     it('returns linkagesNeededForEligibility = 0 when already eligible', async () => {
-      setupDhisMocks({ totalAbhaLinked: 200, linkedThisMonth: 120, abdmLinkedVisits: 100 });
+      setupDhisMocks({
+        totalAbhaLinked: 200,
+        linkedThisMonth: 120,
+        abdmLinkedVisits: 100,
+      });
 
       const result = await service.getDhisDashboard(facilityId, '2026-03');
 
@@ -161,7 +184,11 @@ describe('ReportsService', () => {
     });
 
     it('returns correct linkagesNeededForEligibility when below threshold', async () => {
-      setupDhisMocks({ totalAbhaLinked: 50, linkedThisMonth: 60, abdmLinkedVisits: 30 });
+      setupDhisMocks({
+        totalAbhaLinked: 50,
+        linkedThisMonth: 60,
+        abdmLinkedVisits: 30,
+      });
 
       const result = await service.getDhisDashboard(facilityId, '2026-03');
 
@@ -169,7 +196,11 @@ describe('ReportsService', () => {
     });
 
     it('includes last6Months array in the response', async () => {
-      setupDhisMocks({ totalAbhaLinked: 10, linkedThisMonth: 0, abdmLinkedVisits: 0 });
+      setupDhisMocks({
+        totalAbhaLinked: 10,
+        linkedThisMonth: 0,
+        abdmLinkedVisits: 0,
+      });
 
       const result = await service.getDhisDashboard(facilityId, '2026-03');
 
@@ -178,7 +209,11 @@ describe('ReportsService', () => {
     });
 
     it('returns correct dhisThreshold constant of 100', async () => {
-      setupDhisMocks({ totalAbhaLinked: 0, linkedThisMonth: 0, abdmLinkedVisits: 0 });
+      setupDhisMocks({
+        totalAbhaLinked: 0,
+        linkedThisMonth: 0,
+        abdmLinkedVisits: 0,
+      });
 
       const result = await service.getDhisDashboard(facilityId, '2026-03');
 
@@ -186,7 +221,11 @@ describe('ReportsService', () => {
     });
 
     it('returns correct incentivePerLinkageInr constant of 20', async () => {
-      setupDhisMocks({ totalAbhaLinked: 0, linkedThisMonth: 0, abdmLinkedVisits: 0 });
+      setupDhisMocks({
+        totalAbhaLinked: 0,
+        linkedThisMonth: 0,
+        abdmLinkedVisits: 0,
+      });
 
       const result = await service.getDhisDashboard(facilityId, '2026-03');
 
@@ -208,7 +247,11 @@ describe('ReportsService', () => {
       qb.getRawMany.mockResolvedValue([]);
       mockBillRepo.createQueryBuilder.mockReturnValue(qb);
 
-      const result = await service.getRevenueSummary(facilityId, '2026-03-01', '2026-03-31');
+      const result = await service.getRevenueSummary(
+        facilityId,
+        '2026-03-01',
+        '2026-03-31',
+      );
 
       expect(result.totalBilled).toBe(1000);
     });
@@ -223,7 +266,11 @@ describe('ReportsService', () => {
       qb.getRawMany.mockResolvedValue([]);
       mockBillRepo.createQueryBuilder.mockReturnValue(qb);
 
-      const result = await service.getRevenueSummary(facilityId, '2026-03-01', '2026-03-31');
+      const result = await service.getRevenueSummary(
+        facilityId,
+        '2026-03-01',
+        '2026-03-31',
+      );
 
       expect(result.totalCollected).toBe(550);
     });
@@ -238,7 +285,11 @@ describe('ReportsService', () => {
       qb.getRawMany.mockResolvedValue([]);
       mockBillRepo.createQueryBuilder.mockReturnValue(qb);
 
-      const result = await service.getRevenueSummary(facilityId, '2026-03-01', '2026-03-31');
+      const result = await service.getRevenueSummary(
+        facilityId,
+        '2026-03-01',
+        '2026-03-31',
+      );
 
       expect(result.totalOutstanding).toBe(250);
     });
@@ -254,7 +305,11 @@ describe('ReportsService', () => {
       qb.getRawMany.mockResolvedValue([]);
       mockBillRepo.createQueryBuilder.mockReturnValue(qb);
 
-      const result = await service.getRevenueSummary(facilityId, '2026-03-01', '2026-03-31');
+      const result = await service.getRevenueSummary(
+        facilityId,
+        '2026-03-01',
+        '2026-03-31',
+      );
 
       expect(result.billCount).toBe(3);
     });
@@ -265,7 +320,11 @@ describe('ReportsService', () => {
       qb.getRawMany.mockResolvedValue([]);
       mockBillRepo.createQueryBuilder.mockReturnValue(qb);
 
-      const result = await service.getRevenueSummary(facilityId, '2026-03-01', '2026-03-31');
+      const result = await service.getRevenueSummary(
+        facilityId,
+        '2026-03-01',
+        '2026-03-31',
+      );
 
       expect(result.totalBilled).toBe(0);
       expect(result.totalCollected).toBe(0);
@@ -284,7 +343,11 @@ describe('ReportsService', () => {
       qb.getRawMany.mockResolvedValue([]);
       mockVisitRepo.createQueryBuilder.mockReturnValue(qb);
 
-      const result = await service.getVisitStats(facilityId, '2026-03-01', '2026-03-31');
+      const result = await service.getVisitStats(
+        facilityId,
+        '2026-03-01',
+        '2026-03-31',
+      );
 
       expect(result.total).toBe(250);
     });
@@ -304,7 +367,11 @@ describe('ReportsService', () => {
         return qb;
       });
 
-      const result = await service.getVisitStats(facilityId, '2026-03-01', '2026-03-31');
+      const result = await service.getVisitStats(
+        facilityId,
+        '2026-03-01',
+        '2026-03-31',
+      );
 
       expect(result.inRange).toBe(42);
     });
@@ -329,7 +396,11 @@ describe('ReportsService', () => {
         return qb;
       });
 
-      const result = await service.getVisitStats(facilityId, '2026-03-01', '2026-03-31');
+      const result = await service.getVisitStats(
+        facilityId,
+        '2026-03-01',
+        '2026-03-31',
+      );
 
       expect(result).toHaveProperty('byStatus');
       expect(result).toHaveProperty('byType');
@@ -345,7 +416,11 @@ describe('ReportsService', () => {
       qb.getCount.mockResolvedValue(25);
       mockPatientRepo.createQueryBuilder.mockReturnValue(qb);
 
-      const result = await service.getPatientStats(facilityId, '2026-03-01', '2026-03-31');
+      const result = await service.getPatientStats(
+        facilityId,
+        '2026-03-01',
+        '2026-03-31',
+      );
 
       expect(result.totalPatients).toBe(500);
     });
@@ -356,7 +431,11 @@ describe('ReportsService', () => {
       qb.getCount.mockResolvedValue(18);
       mockPatientRepo.createQueryBuilder.mockReturnValue(qb);
 
-      const result = await service.getPatientStats(facilityId, '2026-03-01', '2026-03-31');
+      const result = await service.getPatientStats(
+        facilityId,
+        '2026-03-01',
+        '2026-03-31',
+      );
 
       expect(result.newPatientsInRange).toBe(18);
     });

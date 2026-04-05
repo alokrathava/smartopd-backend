@@ -30,44 +30,28 @@ import compression from 'compression';
 // that ConfigService picks them up without needing a real .env.test file on disk.
 // ──────────────────────────────────────────────────────────────────────────────
 function applyTestEnv(): void {
-  process.env['NODE_ENV'] = 'test';
+  process.env.NODE_ENV = process.env.NODE_ENV || 'test';
 
-  // Database — override with test DB
-  process.env['DB_HOST'] =
-    process.env['TEST_DB_HOST'] ?? process.env['DATABASE_HOST'] ?? 'localhost';
-  process.env['DB_PORT'] = String(
-    process.env['TEST_DB_PORT'] ?? process.env['DATABASE_PORT'] ?? '3306',
-  );
-  process.env['DB_USERNAME'] =
-    process.env['TEST_DB_USERNAME'] ?? process.env['DATABASE_USER'] ?? 'root';
-  process.env['DB_PASSWORD'] =
-    process.env['TEST_DB_PASSWORD'] ?? process.env['DATABASE_PASS'] ?? '';
-  process.env['DB_NAME'] =
-    process.env['TEST_DB_NAME'] ??
-    process.env['DATABASE_NAME'] ??
-    'smartopd_test';
+  process.env.DB_HOST = process.env.DB_HOST || 'localhost';
+  process.env.DB_PORT = process.env.DB_PORT || '3306';
+  process.env.DB_USERNAME = process.env.DB_USERNAME || 'root';
+  process.env.DB_PASSWORD = process.env.DB_PASSWORD || '';
+  process.env.DB_NAME = process.env.DB_NAME || 'smartopd_test';
 
-  // JWT
-  process.env['JWT_SECRET'] =
-    process.env['TEST_JWT_SECRET'] ?? 'test-secret-key-for-testing-only';
-  process.env['JWT_EXPIRY'] = '15m';
-  process.env['JWT_REFRESH_EXPIRY'] = '7d';
+  process.env.JWT_SECRET =
+    process.env.JWT_SECRET || 'test-secret-key-for-testing-only';
 
-  // Redis
-  process.env['REDIS_HOST'] = process.env['TEST_REDIS_HOST'] ?? 'localhost';
-  process.env['REDIS_PORT'] = String(process.env['TEST_REDIS_PORT'] ?? '6379');
+  process.env.REDIS_HOST = process.env.REDIS_HOST || 'localhost';
+  process.env.REDIS_PORT = process.env.REDIS_PORT || '6379';
 
-  // Throttle — disable aggressive rate-limiting during tests
-  process.env['THROTTLE_TTL'] = '60000';
-  process.env['THROTTLE_LIMIT'] = '10000';
+  process.env.THROTTLE_TTL = process.env.THROTTLE_TTL || '60000';
+  process.env.THROTTLE_LIMIT = process.env.THROTTLE_LIMIT || '10000';
 
-  // Suppress ABDM / NHCX / Lab calls (services fall back to sandbox mode when
-  // these env vars are absent, so we just make sure they're blank)
-  process.env['ABDM_CLIENT_ID'] = '';
-  process.env['ABDM_CLIENT_SECRET'] = '';
-  process.env['NHCX_CLIENT_ID'] = '';
-  process.env['LAB_SRL_API_KEY'] = '';
-  process.env['LAB_THYROCARE_API_KEY'] = '';
+  process.env.ABDM_CLIENT_ID = process.env.ABDM_CLIENT_ID || '';
+  process.env.ABDM_CLIENT_SECRET = process.env.ABDM_CLIENT_SECRET || '';
+  process.env.NHCX_CLIENT_ID = process.env.NHCX_CLIENT_ID || '';
+  process.env.LAB_SRL_API_KEY = process.env.LAB_SRL_API_KEY || '';
+  process.env.LAB_THYROCARE_API_KEY = process.env.LAB_THYROCARE_API_KEY || '';
 }
 
 // Apply immediately when this module is first imported

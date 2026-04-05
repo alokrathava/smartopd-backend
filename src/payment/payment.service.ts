@@ -75,8 +75,13 @@ export class PaymentService {
 
   async addItem(dto: AddBillItemDto, facilityId: string): Promise<BillItem> {
     const bill = await this.getBill(dto.billId!, facilityId);
-    if (bill.status === BillStatus.FINALIZED || bill.status === BillStatus.PAID) {
-      throw new BadRequestException('Cannot add items to a finalized or paid bill');
+    if (
+      bill.status === BillStatus.FINALIZED ||
+      bill.status === BillStatus.PAID
+    ) {
+      throw new BadRequestException(
+        'Cannot add items to a finalized or paid bill',
+      );
     }
     const qty = dto.quantity ?? 1;
     const unitPrice = dto.unitPrice ?? (dto.amount ? dto.amount / qty : 0);

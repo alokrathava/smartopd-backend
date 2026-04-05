@@ -191,7 +191,10 @@ async function registerFacilityAndAdmin(): Promise<string> {
     // If the facility already exists (from a previous test run), try to log in
     // as admin and retrieve the facilityId from the token payload.
     // Note: duplicate email returns 409 (ConflictException) from the service.
-    if ((res.status === 400 || res.status === 409) && res.body?.message?.toLowerCase().includes('already')) {
+    if (
+      (res.status === 400 || res.status === 409) &&
+      res.body?.message?.toLowerCase().includes('already')
+    ) {
       const token = await loginAs(adminCred);
       const meRes = await agent()
         .get('/api/v1/auth/me')

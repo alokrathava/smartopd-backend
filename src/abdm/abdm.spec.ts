@@ -6,7 +6,11 @@ import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 
 import { AbdmService } from './abdm.service';
-import { AbdmRecord, AbdmFlowType, AbdmStatus } from './entities/abdm-record.entity';
+import {
+  AbdmRecord,
+  AbdmFlowType,
+  AbdmStatus,
+} from './entities/abdm-record.entity';
 import { Patient } from '../patients/entities/patient.entity';
 import { QueueService } from '../queue/queue.service';
 
@@ -23,7 +27,11 @@ function makeRepo() {
 }
 
 const mockHttpService = {
-  post: jest.fn().mockReturnValue(of({ data: { accessToken: 'mock-token', expiresIn: 3600 } })),
+  post: jest
+    .fn()
+    .mockReturnValue(
+      of({ data: { accessToken: 'mock-token', expiresIn: 3600 } }),
+    ),
   get: jest.fn().mockReturnValue(of({ data: {} })),
 };
 
@@ -84,7 +92,10 @@ describe('AbdmService', () => {
       patientRepo.findOne.mockResolvedValue(null);
 
       await expect(
-        service.generateAadhaarOtp({ patientId: 'ghost', aadhaarNumber: '123412341234' }, facilityId),
+        service.generateAadhaarOtp(
+          { patientId: 'ghost', aadhaarNumber: '123412341234' },
+          facilityId,
+        ),
       ).rejects.toThrow(NotFoundException);
     });
 
@@ -169,7 +180,10 @@ describe('AbdmService', () => {
       );
       expect(patientRepo.update).toHaveBeenCalledWith(
         'patient-001',
-        expect.objectContaining({ aadhaarVerified: true, abhaLinkedAt: expect.any(Date) }),
+        expect.objectContaining({
+          aadhaarVerified: true,
+          abhaLinkedAt: expect.any(Date),
+        }),
       );
       expect(result).toHaveProperty('abhaNumber');
     });
@@ -185,7 +199,9 @@ describe('AbdmService', () => {
         facilityId,
       );
 
-      expect(mockQueueService.enqueueAbhaLinkageProcessing).toHaveBeenCalledWith(
+      expect(
+        mockQueueService.enqueueAbhaLinkageProcessing,
+      ).toHaveBeenCalledWith(
         expect.objectContaining({ patientId: 'patient-001', facilityId }),
       );
     });
@@ -199,7 +215,11 @@ describe('AbdmService', () => {
 
       await expect(
         service.initiateM2Link(
-          { patientId: 'ghost', abhaNumber: '91-1234-5678-9012', authMode: 'MOBILE_OTP' },
+          {
+            patientId: 'ghost',
+            abhaNumber: '91-1234-5678-9012',
+            authMode: 'MOBILE_OTP',
+          },
           facilityId,
         ),
       ).rejects.toThrow(NotFoundException);
@@ -214,7 +234,11 @@ describe('AbdmService', () => {
       abdmRepo.update.mockResolvedValue({});
 
       const result = await service.initiateM2Link(
-        { patientId: 'patient-001', abhaNumber: '91-1234-5678-9012', authMode: 'MOBILE_OTP' },
+        {
+          patientId: 'patient-001',
+          abhaNumber: '91-1234-5678-9012',
+          authMode: 'MOBILE_OTP',
+        },
         facilityId,
       );
 
@@ -232,20 +256,32 @@ describe('AbdmService', () => {
       patientRepo.findOne.mockResolvedValue(null);
 
       await expect(
-        service.requestConsent({ patientId: 'ghost', purpose: 'CAREMGT' }, facilityId),
+        service.requestConsent(
+          { patientId: 'ghost', purpose: 'CAREMGT' },
+          facilityId,
+        ),
       ).rejects.toThrow(NotFoundException);
     });
 
     it('throws BadRequestException when patient has no ABHA number', async () => {
-      patientRepo.findOne.mockResolvedValue({ ...basePatient, abhaNumber: null });
+      patientRepo.findOne.mockResolvedValue({
+        ...basePatient,
+        abhaNumber: null,
+      });
 
       await expect(
-        service.requestConsent({ patientId: 'patient-001', purpose: 'CAREMGT' }, facilityId),
+        service.requestConsent(
+          { patientId: 'patient-001', purpose: 'CAREMGT' },
+          facilityId,
+        ),
       ).rejects.toThrow(BadRequestException);
     });
 
     it('creates M3_HIU_CONSENT record and auto-grants consent in sandbox mode', async () => {
-      patientRepo.findOne.mockResolvedValue({ ...basePatient, abhaNumber: '91-1234-5678-9012' });
+      patientRepo.findOne.mockResolvedValue({
+        ...basePatient,
+        abhaNumber: '91-1234-5678-9012',
+      });
 
       const record: any = { id: 'abdm-m3-001' };
       abdmRepo.create.mockReturnValue(record);
@@ -270,12 +306,23 @@ describe('AbdmService', () => {
   describe('getPatientAbdmHistory()', () => {
     it('returns ABDM records sorted by createdAt DESC', async () => {
       const records = [
-        { id: 'r1', flowType: AbdmFlowType.M1_ABHA_CREATION, createdAt: new Date('2026-02-01') },
-        { id: 'r2', flowType: AbdmFlowType.M2_KYC_LINK, createdAt: new Date('2026-01-01') },
+        {
+          id: 'r1',
+          flowType: AbdmFlowType.M1_ABHA_CREATION,
+          createdAt: new Date('2026-02-01'),
+        },
+        {
+          id: 'r2',
+          flowType: AbdmFlowType.M2_KYC_LINK,
+          createdAt: new Date('2026-01-01'),
+        },
       ];
       abdmRepo.find.mockResolvedValue(records);
 
-      const result = await service.getPatientAbdmHistory('patient-001', facilityId);
+      const result = await service.getPatientAbdmHistory(
+        'patient-001',
+        facilityId,
+      );
 
       expect(abdmRepo.find).toHaveBeenCalledWith({
         where: { patientId: 'patient-001', facilityId },

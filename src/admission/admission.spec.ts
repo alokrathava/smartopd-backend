@@ -7,7 +7,12 @@ import {
   CompleteDischargeDto,
   CreateWardRoundDto,
 } from './admission.service';
-import { Admission, AdmissionStatus, AdmissionType, DischargeType } from './entities/admission.entity';
+import {
+  Admission,
+  AdmissionStatus,
+  AdmissionType,
+  DischargeType,
+} from './entities/admission.entity';
 import { WardRound } from './entities/ward-round.entity';
 import { WardRoundStop } from './entities/ward-round-stop.entity';
 import { DischargeSummary } from './entities/discharge-summary.entity';
@@ -69,8 +74,14 @@ describe('AdmissionService', () => {
         AdmissionService,
         { provide: getRepositoryToken(Admission), useValue: mockAdmissionRepo },
         { provide: getRepositoryToken(WardRound), useValue: mockWardRoundRepo },
-        { provide: getRepositoryToken(WardRoundStop), useValue: mockWardRoundStopRepo },
-        { provide: getRepositoryToken(DischargeSummary), useValue: mockSummaryRepo },
+        {
+          provide: getRepositoryToken(WardRoundStop),
+          useValue: mockWardRoundStopRepo,
+        },
+        {
+          provide: getRepositoryToken(DischargeSummary),
+          useValue: mockSummaryRepo,
+        },
         { provide: getRepositoryToken(Bed), useValue: mockBedRepo },
       ],
     }).compile();
@@ -94,13 +105,20 @@ describe('AdmissionService', () => {
     it('throws NotFoundException when bed does not exist', async () => {
       mockBedRepo.findOne.mockResolvedValue(null);
 
-      await expect(service.create(dto, FACILITY_ID, USER_ID)).rejects.toThrow(NotFoundException);
+      await expect(service.create(dto, FACILITY_ID, USER_ID)).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('throws BadRequestException when bed is not AVAILABLE', async () => {
-      mockBedRepo.findOne.mockResolvedValue({ id: 'bed-1', status: BedStatus.OCCUPIED });
+      mockBedRepo.findOne.mockResolvedValue({
+        id: 'bed-1',
+        status: BedStatus.OCCUPIED,
+      });
 
-      await expect(service.create(dto, FACILITY_ID, USER_ID)).rejects.toThrow(BadRequestException);
+      await expect(service.create(dto, FACILITY_ID, USER_ID)).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('creates admission with ACTIVE status and generated admission number', async () => {
@@ -120,13 +138,19 @@ describe('AdmissionService', () => {
       };
       mockAdmissionRepo.create.mockReturnValue(admission);
       mockAdmissionRepo.save.mockResolvedValue(admission);
-      mockBedRepo.save.mockResolvedValue({ ...bed, status: BedStatus.OCCUPIED });
+      mockBedRepo.save.mockResolvedValue({
+        ...bed,
+        status: BedStatus.OCCUPIED,
+      });
 
       const result = await service.create(dto, FACILITY_ID, USER_ID);
 
       expect(result.status).toBe(AdmissionStatus.ACTIVE);
       expect(mockAdmissionRepo.create).toHaveBeenCalledWith(
-        expect.objectContaining({ facilityId: FACILITY_ID, status: AdmissionStatus.ACTIVE }),
+        expect.objectContaining({
+          facilityId: FACILITY_ID,
+          status: AdmissionStatus.ACTIVE,
+        }),
       );
     });
 
@@ -137,7 +161,12 @@ describe('AdmissionService', () => {
       mockAdmissionRepo.createQueryBuilder.mockReturnValue(qb);
       mockBedRepo.findOne.mockResolvedValue(bed);
 
-      const admission = { id: 'adm-1', ...dto, facilityId: FACILITY_ID, status: AdmissionStatus.ACTIVE };
+      const admission = {
+        id: 'adm-1',
+        ...dto,
+        facilityId: FACILITY_ID,
+        status: AdmissionStatus.ACTIVE,
+      };
       mockAdmissionRepo.create.mockReturnValue(admission);
       mockAdmissionRepo.save.mockResolvedValue(admission);
       mockBedRepo.save.mockResolvedValue({});
@@ -145,7 +174,10 @@ describe('AdmissionService', () => {
       await service.create(dto, FACILITY_ID, USER_ID);
 
       expect(mockBedRepo.save).toHaveBeenCalledWith(
-        expect.objectContaining({ status: BedStatus.OCCUPIED, currentPatientId: dto.patientId }),
+        expect.objectContaining({
+          status: BedStatus.OCCUPIED,
+          currentPatientId: dto.patientId,
+        }),
       );
     });
   });
@@ -162,9 +194,13 @@ describe('AdmissionService', () => {
       qb.getMany.mockResolvedValue(admissions);
       mockAdmissionRepo.createQueryBuilder.mockReturnValue(qb);
 
-      const result = await service.findAll(FACILITY_ID, { status: AdmissionStatus.ACTIVE });
+      const result = await service.findAll(FACILITY_ID, {
+        status: AdmissionStatus.ACTIVE,
+      });
 
-      expect(qb.andWhere).toHaveBeenCalledWith('a.status = :status', { status: AdmissionStatus.ACTIVE });
+      expect(qb.andWhere).toHaveBeenCalledWith('a.status = :status', {
+        status: AdmissionStatus.ACTIVE,
+      });
       expect(result).toHaveLength(2);
     });
 
@@ -175,7 +211,9 @@ describe('AdmissionService', () => {
 
       await service.findAll(FACILITY_ID, { wardId: 'ward-5' });
 
-      expect(qb.andWhere).toHaveBeenCalledWith('a.wardId = :wardId', { wardId: 'ward-5' });
+      expect(qb.andWhere).toHaveBeenCalledWith('a.wardId = :wardId', {
+        wardId: 'ward-5',
+      });
     });
   });
 
@@ -190,9 +228,9 @@ describe('AdmissionService', () => {
     it('throws NotFoundException when admission does not exist', async () => {
       mockAdmissionRepo.findOne.mockResolvedValue(null);
 
-      await expect(service.completeDischarge('no-adm', dischargeDto, FACILITY_ID)).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(
+        service.completeDischarge('no-adm', dischargeDto, FACILITY_ID),
+      ).rejects.toThrow(NotFoundException);
     });
 
     it('throws BadRequestException when admission is already discharged', async () => {
@@ -201,9 +239,9 @@ describe('AdmissionService', () => {
         status: AdmissionStatus.DISCHARGED,
       });
 
-      await expect(service.completeDischarge('a1', dischargeDto, FACILITY_ID)).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(
+        service.completeDischarge('a1', dischargeDto, FACILITY_ID),
+      ).rejects.toThrow(BadRequestException);
     });
 
     it('sets status to DISCHARGED and dischargedAt timestamp', async () => {
@@ -215,14 +253,22 @@ describe('AdmissionService', () => {
         facilityId: FACILITY_ID,
       };
       const bed = { id: 'bed-1', status: BedStatus.OCCUPIED };
-      const saved = { ...admission, status: AdmissionStatus.DISCHARGED, dischargedAt: new Date() };
+      const saved = {
+        ...admission,
+        status: AdmissionStatus.DISCHARGED,
+        dischargedAt: new Date(),
+      };
 
       mockAdmissionRepo.findOne.mockResolvedValue(admission);
       mockBedRepo.findOne.mockResolvedValue(bed);
       mockBedRepo.save.mockResolvedValue({});
       mockAdmissionRepo.save.mockResolvedValue(saved);
 
-      const result = await service.completeDischarge('a1', dischargeDto, FACILITY_ID);
+      const result = await service.completeDischarge(
+        'a1',
+        dischargeDto,
+        FACILITY_ID,
+      );
 
       expect(result.status).toBe(AdmissionStatus.DISCHARGED);
       expect(result.dischargedAt).toBeDefined();
@@ -241,7 +287,10 @@ describe('AdmissionService', () => {
       mockAdmissionRepo.findOne.mockResolvedValue(admission);
       mockBedRepo.findOne.mockResolvedValue(bed);
       mockBedRepo.save.mockResolvedValue({});
-      mockAdmissionRepo.save.mockResolvedValue({ ...admission, status: AdmissionStatus.DISCHARGED });
+      mockAdmissionRepo.save.mockResolvedValue({
+        ...admission,
+        status: AdmissionStatus.DISCHARGED,
+      });
 
       await service.completeDischarge('a1', dischargeDto, FACILITY_ID);
 
@@ -268,8 +317,16 @@ describe('AdmissionService', () => {
     };
 
     it('creates a ward round with stops', async () => {
-      const admission = { id: 'adm-1', facilityId: FACILITY_ID, status: AdmissionStatus.ACTIVE };
-      const round = { id: 'round-1', admissionId: 'adm-1', facilityId: FACILITY_ID };
+      const admission = {
+        id: 'adm-1',
+        facilityId: FACILITY_ID,
+        status: AdmissionStatus.ACTIVE,
+      };
+      const round = {
+        id: 'round-1',
+        admissionId: 'adm-1',
+        facilityId: FACILITY_ID,
+      };
       const stop = { id: 'stop-1', wardRoundId: 'round-1' };
 
       mockAdmissionRepo.findOne.mockResolvedValue(admission);
@@ -278,10 +335,18 @@ describe('AdmissionService', () => {
       mockWardRoundStopRepo.create.mockReturnValue(stop);
       mockWardRoundStopRepo.save.mockResolvedValue([stop]);
 
-      const result = await service.createWardRound('adm-1', roundDto, FACILITY_ID, USER_ID);
+      const result = await service.createWardRound(
+        'adm-1',
+        roundDto,
+        FACILITY_ID,
+        USER_ID,
+      );
 
       expect(mockWardRoundRepo.create).toHaveBeenCalledWith(
-        expect.objectContaining({ admissionId: 'adm-1', facilityId: FACILITY_ID }),
+        expect.objectContaining({
+          admissionId: 'adm-1',
+          facilityId: FACILITY_ID,
+        }),
       );
       expect(result.id).toBe('round-1');
     });
@@ -299,7 +364,10 @@ describe('AdmissionService', () => {
 
   describe('getDischargeSummary', () => {
     it('returns null when no discharge summary exists', async () => {
-      mockAdmissionRepo.findOne.mockResolvedValue({ id: 'a1', facilityId: FACILITY_ID });
+      mockAdmissionRepo.findOne.mockResolvedValue({
+        id: 'a1',
+        facilityId: FACILITY_ID,
+      });
       mockSummaryRepo.findOne.mockResolvedValue(null);
 
       const result = await service.getDischargeSummary('a1', FACILITY_ID);
@@ -308,8 +376,15 @@ describe('AdmissionService', () => {
     });
 
     it('returns the discharge summary when it exists', async () => {
-      const summary = { id: 'sum-1', admissionId: 'a1', facilityId: FACILITY_ID };
-      mockAdmissionRepo.findOne.mockResolvedValue({ id: 'a1', facilityId: FACILITY_ID });
+      const summary = {
+        id: 'sum-1',
+        admissionId: 'a1',
+        facilityId: FACILITY_ID,
+      };
+      mockAdmissionRepo.findOne.mockResolvedValue({
+        id: 'a1',
+        facilityId: FACILITY_ID,
+      });
       mockSummaryRepo.findOne.mockResolvedValue(summary);
 
       const result = await service.getDischargeSummary('a1', FACILITY_ID);
@@ -320,7 +395,9 @@ describe('AdmissionService', () => {
     it('throws NotFoundException when admission does not exist', async () => {
       mockAdmissionRepo.findOne.mockResolvedValue(null);
 
-      await expect(service.getDischargeSummary('no-adm', FACILITY_ID)).rejects.toThrow(NotFoundException);
+      await expect(
+        service.getDischargeSummary('no-adm', FACILITY_ID),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -343,11 +420,18 @@ describe('AdmissionService', () => {
       };
 
       mockAdmissionRepo.findOne.mockResolvedValue(admission);
-      mockBedRepo.findOne.mockResolvedValue({ id: 'bed-1', status: BedStatus.OCCUPIED });
+      mockBedRepo.findOne.mockResolvedValue({
+        id: 'bed-1',
+        status: BedStatus.OCCUPIED,
+      });
       mockBedRepo.save.mockResolvedValue({});
       mockAdmissionRepo.save.mockResolvedValue(saved);
 
-      const result = await service.dama('a1', { reason: 'Patient refused treatment' }, FACILITY_ID);
+      const result = await service.dama(
+        'a1',
+        { reason: 'Patient refused treatment' },
+        FACILITY_ID,
+      );
 
       expect(result.status).toBe(AdmissionStatus.DAMA);
       expect(result.dischargeType).toBe(DischargeType.DAMA);

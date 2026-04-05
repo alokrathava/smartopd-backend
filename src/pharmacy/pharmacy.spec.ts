@@ -74,8 +74,14 @@ describe('PharmacyService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         PharmacyService,
-        { provide: getRepositoryToken(DispenseRecord), useValue: mockDispenseRepo },
-        { provide: getRepositoryToken(PharmacyInventory), useValue: mockInventoryRepo },
+        {
+          provide: getRepositoryToken(DispenseRecord),
+          useValue: mockDispenseRepo,
+        },
+        {
+          provide: getRepositoryToken(PharmacyInventory),
+          useValue: mockInventoryRepo,
+        },
         { provide: getRepositoryToken(Patient), useValue: mockPatientRepo },
         { provide: HttpService, useValue: mockHttpService },
         { provide: ConfigService, useValue: mockConfigService },
@@ -109,7 +115,11 @@ describe('PharmacyService', () => {
     });
 
     it('sets totalPrice to undefined when unitPrice is missing', async () => {
-      const dto = { patientId: 'p1', drugName: 'Amoxicillin', quantityDispensed: 2 };
+      const dto = {
+        patientId: 'p1',
+        drugName: 'Amoxicillin',
+        quantityDispensed: 2,
+      };
       const created = { id: 'dr2', totalPrice: undefined };
       mockDispenseRepo.create.mockReturnValue(created);
       mockDispenseRepo.save.mockResolvedValue(created);
@@ -123,19 +133,33 @@ describe('PharmacyService', () => {
     });
 
     it('passes facilityId and pharmacistId to the created record', async () => {
-      const dto = { patientId: 'p1', drugName: 'Ibuprofen', unitPrice: 5, quantityDispensed: 10 };
+      const dto = {
+        patientId: 'p1',
+        drugName: 'Ibuprofen',
+        unitPrice: 5,
+        quantityDispensed: 10,
+      };
       mockDispenseRepo.create.mockReturnValue({});
       mockDispenseRepo.save.mockResolvedValue({ id: 'dr3' });
 
       await service.dispense(dto as any, 'fac-test', 'pharm-test');
 
       expect(mockDispenseRepo.create).toHaveBeenCalledWith(
-        expect.objectContaining({ facilityId: 'fac-test', dispensedById: 'pharm-test' }),
+        expect.objectContaining({
+          facilityId: 'fac-test',
+          dispensedById: 'pharm-test',
+        }),
       );
     });
 
     it('sets otpVerifiedAt when otpVerified is true', async () => {
-      const dto = { patientId: 'p1', drugName: 'Drug', unitPrice: 1, quantityDispensed: 1, otpVerified: true };
+      const dto = {
+        patientId: 'p1',
+        drugName: 'Drug',
+        unitPrice: 1,
+        quantityDispensed: 1,
+        otpVerified: true,
+      };
       mockDispenseRepo.create.mockImplementation((data) => data);
       mockDispenseRepo.save.mockImplementation((data) => Promise.resolve(data));
 
@@ -146,7 +170,12 @@ describe('PharmacyService', () => {
     });
 
     it('saves the record and returns the saved entity', async () => {
-      const dto = { patientId: 'p1', drugName: 'Drug', unitPrice: 2, quantityDispensed: 3 };
+      const dto = {
+        patientId: 'p1',
+        drugName: 'Drug',
+        unitPrice: 2,
+        quantityDispensed: 3,
+      };
       const saved = { id: 'dr-saved', totalPrice: 6 };
       mockDispenseRepo.create.mockReturnValue({});
       mockDispenseRepo.save.mockResolvedValue(saved);
@@ -196,7 +225,11 @@ describe('PharmacyService', () => {
         allergies: JSON.stringify(['penicillin', 'ibuprofen']),
       });
 
-      const result = await service.checkAllergy('p1', 'ibuprofen 400mg', 'fac1');
+      const result = await service.checkAllergy(
+        'p1',
+        'ibuprofen 400mg',
+        'fac1',
+      );
 
       expect(result.hasAllergy).toBe(true);
       expect(result.matchedAllergens).toContain('ibuprofen');
@@ -255,7 +288,9 @@ describe('PharmacyService', () => {
 
       await service.getLowStock('fac1');
 
-      expect(qb.andWhere).toHaveBeenCalledWith(expect.stringContaining('isActive = true'));
+      expect(qb.andWhere).toHaveBeenCalledWith(
+        expect.stringContaining('isActive = true'),
+      );
     });
   });
 
@@ -341,7 +376,10 @@ describe('PharmacyService', () => {
       qb.getMany.mockResolvedValue([]);
       mockDispenseRepo.createQueryBuilder.mockReturnValue(qb);
 
-      await service.getDispenseHistory('fac1', { patientId: 'p1', prescriptionId: 'rx1' });
+      await service.getDispenseHistory('fac1', {
+        patientId: 'p1',
+        prescriptionId: 'rx1',
+      });
 
       expect(qb.andWhere).toHaveBeenCalledTimes(2);
     });

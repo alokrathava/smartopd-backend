@@ -27,14 +27,19 @@ export class UsersService {
 
   // ── Helpers ──────────────────────────────────────────────────
   /** Strip sensitive fields before returning user data to clients */
-  private sanitizeUser(user: User): Omit<User, 'passwordHash' | 'inviteToken' | 'inviteExpiresAt'> {
+  private sanitizeUser(
+    user: User,
+  ): Omit<User, 'passwordHash' | 'inviteToken' | 'inviteExpiresAt'> {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { passwordHash, inviteToken, inviteExpiresAt, ...safe } = user as any;
     return safe;
   }
 
   // ── Users ────────────────────────────────────────────────────
-  async createUser(dto: CreateUserDto, facilityId: string): Promise<Omit<User, 'passwordHash' | 'inviteToken' | 'inviteExpiresAt'>> {
+  async createUser(
+    dto: CreateUserDto,
+    facilityId: string,
+  ): Promise<Omit<User, 'passwordHash' | 'inviteToken' | 'inviteExpiresAt'>> {
     const exists = await this.userRepo.findOne({ where: { email: dto.email } });
     if (exists) throw new ConflictException('Email already in use');
     const passwordHash = await bcrypt.hash(dto.password, 12);
@@ -43,12 +48,17 @@ export class UsersService {
     return this.sanitizeUser(saved);
   }
 
-  async findAllUsers(facilityId: string): Promise<Omit<User, 'passwordHash' | 'inviteToken' | 'inviteExpiresAt'>[]> {
+  async findAllUsers(
+    facilityId: string,
+  ): Promise<Omit<User, 'passwordHash' | 'inviteToken' | 'inviteExpiresAt'>[]> {
     const users = await this.userRepo.find({ where: { facilityId } });
-    return users.map(u => this.sanitizeUser(u));
+    return users.map((u) => this.sanitizeUser(u));
   }
 
-  async findUserById(id: string, facilityId: string): Promise<Omit<User, 'passwordHash' | 'inviteToken' | 'inviteExpiresAt'>> {
+  async findUserById(
+    id: string,
+    facilityId: string,
+  ): Promise<Omit<User, 'passwordHash' | 'inviteToken' | 'inviteExpiresAt'>> {
     const user = await this.userRepo.findOne({ where: { id, facilityId } });
     if (!user) throw new NotFoundException('User not found');
     return this.sanitizeUser(user);

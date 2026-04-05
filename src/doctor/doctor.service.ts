@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Like } from 'typeorm';
 import { Consultation } from './entities/consultation.entity';
@@ -116,9 +120,13 @@ export class DoctorService {
       where: { id: dto.prescriptionId, facilityId },
     });
     if (!prescription)
-      throw new NotFoundException(`Prescription ${dto.prescriptionId} not found`);
+      throw new NotFoundException(
+        `Prescription ${dto.prescriptionId} not found`,
+      );
     if (prescription.status === PrescriptionStatus.FINALIZED) {
-      throw new BadRequestException('Cannot add items to a finalized prescription');
+      throw new BadRequestException(
+        'Cannot add items to a finalized prescription',
+      );
     }
     const item = this.prescriptionItemRepo.create({ ...dto, facilityId });
     return this.prescriptionItemRepo.save(item);
@@ -141,7 +149,9 @@ export class DoctorService {
       where: { visitId, facilityId },
     });
     if (!prescription)
-      throw new NotFoundException(`Prescription for visit ${visitId} not found`);
+      throw new NotFoundException(
+        `Prescription for visit ${visitId} not found`,
+      );
     const items = await this.prescriptionItemRepo.find({
       where: { prescriptionId: prescription.id, facilityId },
     });

@@ -49,7 +49,10 @@ export class UpdateFacilitySettingsDto {
   @IsOptional()
   @IsString()
   brandName?: string;
-  @ApiPropertyOptional({ example: 'City Hospital', description: 'Alias for brandName' })
+  @ApiPropertyOptional({
+    example: 'City Hospital',
+    description: 'Alias for brandName',
+  })
   @IsOptional()
   @IsString()
   hospitalName?: string;

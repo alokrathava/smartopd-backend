@@ -98,7 +98,11 @@ describe('QueueService', () => {
     });
 
     it('returns the job object from the queue', async () => {
-      const data: SmsJobData = { to: '+91000', message: 'hi', facilityId: 'f1' };
+      const data: SmsJobData = {
+        to: '+91000',
+        message: 'hi',
+        facilityId: 'f1',
+      };
       notificationsQueue.add.mockResolvedValueOnce({ id: 'job-sms-42' });
 
       const result = await service.enqueueSms(data);
@@ -175,17 +179,26 @@ describe('QueueService', () => {
 
   describe('enqueueDischargePublish()', () => {
     it('adds a publish-discharge job to the FHIR queue without delay', async () => {
-      const data: FhirPublishJobData = { admissionId: 'adm-1', facilityId: 'fac-1' };
+      const data: FhirPublishJobData = {
+        admissionId: 'adm-1',
+        facilityId: 'fac-1',
+      };
 
       await service.enqueueDischargePublish(data);
 
-      expect(fhirQueue.add).toHaveBeenCalledWith(JOB_NAMES.PUBLISH_DISCHARGE, data);
+      expect(fhirQueue.add).toHaveBeenCalledWith(
+        JOB_NAMES.PUBLISH_DISCHARGE,
+        data,
+      );
     });
   });
 
   describe('enqueuePrescriptionPublish()', () => {
     it('adds a publish-prescription job to the FHIR queue with a 1-second delay', async () => {
-      const data: FhirPublishJobData = { prescriptionId: 'rx-1', facilityId: 'fac-1' };
+      const data: FhirPublishJobData = {
+        prescriptionId: 'rx-1',
+        facilityId: 'fac-1',
+      };
 
       await service.enqueuePrescriptionPublish(data);
 
@@ -210,7 +223,10 @@ describe('QueueService', () => {
       await service.enqueueAbhaLinkageProcessing(data);
 
       expect(dhisQueue.add).toHaveBeenCalledTimes(1);
-      expect(dhisQueue.add).toHaveBeenCalledWith(JOB_NAMES.PROCESS_ABHA_LINKAGE, data);
+      expect(dhisQueue.add).toHaveBeenCalledWith(
+        JOB_NAMES.PROCESS_ABHA_LINKAGE,
+        data,
+      );
       expect(notificationsQueue.add).not.toHaveBeenCalled();
       expect(fhirQueue.add).not.toHaveBeenCalled();
     });
@@ -239,7 +255,10 @@ describe('QueueService', () => {
       await service.enqueueFollowUpGeneration(data);
 
       expect(crmQueue.add).toHaveBeenCalledTimes(1);
-      expect(crmQueue.add).toHaveBeenCalledWith(JOB_NAMES.GENERATE_FOLLOWUPS, data);
+      expect(crmQueue.add).toHaveBeenCalledWith(
+        JOB_NAMES.GENERATE_FOLLOWUPS,
+        data,
+      );
       expect(notificationsQueue.add).not.toHaveBeenCalled();
     });
   });
@@ -248,10 +267,10 @@ describe('QueueService', () => {
     it('adds a send-campaign job to the CRM queue with campaignId and facilityId', async () => {
       await service.enqueueCampaignSend('camp-99', 'fac-1');
 
-      expect(crmQueue.add).toHaveBeenCalledWith(
-        JOB_NAMES.SEND_CAMPAIGN,
-        { campaignId: 'camp-99', facilityId: 'fac-1' },
-      );
+      expect(crmQueue.add).toHaveBeenCalledWith(JOB_NAMES.SEND_CAMPAIGN, {
+        campaignId: 'camp-99',
+        facilityId: 'fac-1',
+      });
     });
   });
 
@@ -259,10 +278,9 @@ describe('QueueService', () => {
     it('adds a churn-scoring job to the CRM queue', async () => {
       await service.enqueueChurnScoring('fac-1');
 
-      expect(crmQueue.add).toHaveBeenCalledWith(
-        JOB_NAMES.CHURN_SCORING,
-        { facilityId: 'fac-1' },
-      );
+      expect(crmQueue.add).toHaveBeenCalledWith(JOB_NAMES.CHURN_SCORING, {
+        facilityId: 'fac-1',
+      });
     });
   });
 
@@ -290,9 +308,18 @@ describe('QueueService', () => {
     });
 
     it('FHIR jobs never reach the notifications, DHIS or CRM queues', async () => {
-      await service.enqueueConsultationPublish({ visitId: 'v', facilityId: 'f' });
-      await service.enqueueDischargePublish({ admissionId: 'a', facilityId: 'f' });
-      await service.enqueuePrescriptionPublish({ prescriptionId: 'p', facilityId: 'f' });
+      await service.enqueueConsultationPublish({
+        visitId: 'v',
+        facilityId: 'f',
+      });
+      await service.enqueueDischargePublish({
+        admissionId: 'a',
+        facilityId: 'f',
+      });
+      await service.enqueuePrescriptionPublish({
+        prescriptionId: 'p',
+        facilityId: 'f',
+      });
 
       expect(notificationsQueue.add).not.toHaveBeenCalled();
       expect(dhisQueue.add).not.toHaveBeenCalled();

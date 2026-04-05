@@ -1,7 +1,6 @@
 import { IsString, IsOptional, IsUUID, IsDateString } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
-
 export class CreateCampaignDto {
   @ApiProperty()
   @IsString()

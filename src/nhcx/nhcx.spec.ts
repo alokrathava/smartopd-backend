@@ -6,7 +6,11 @@ import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 
 import { NhcxService } from './nhcx.service';
-import { NhcxClaimRecord, NhcxClaimStatus, NhcxClaimType } from './entities/nhcx-claim-record.entity';
+import {
+  NhcxClaimRecord,
+  NhcxClaimStatus,
+  NhcxClaimType,
+} from './entities/nhcx-claim-record.entity';
 import { Bill } from '../payment/entities/bill.entity';
 import { Patient } from '../patients/entities/patient.entity';
 
@@ -96,7 +100,9 @@ describe('NhcxService', () => {
     it('throws NotFoundException when patient not found', async () => {
       patientRepo.findOne.mockResolvedValue(null);
 
-      await expect(service.createClaim(baseDto as any, facilityId, 'user-1')).rejects.toThrow(NotFoundException);
+      await expect(
+        service.createClaim(baseDto as any, facilityId, 'user-1'),
+      ).rejects.toThrow(NotFoundException);
     });
 
     it('creates a claim with DRAFT status and embedded FHIR bundle', async () => {
@@ -106,7 +112,11 @@ describe('NhcxService', () => {
       claimRepo.create.mockReturnValue(claim);
       claimRepo.save.mockResolvedValue(claim);
 
-      const result = await service.createClaim(baseDto as any, facilityId, 'user-1');
+      const result = await service.createClaim(
+        baseDto as any,
+        facilityId,
+        'user-1',
+      );
 
       expect(claimRepo.create).toHaveBeenCalledWith(
         expect.objectContaining({ status: NhcxClaimStatus.DRAFT }),
@@ -128,7 +138,9 @@ describe('NhcxService', () => {
 
       const bundle = JSON.parse(capturedArgs.fhirBundle);
       expect(bundle.resourceType).toBe('Bundle');
-      const resourceTypes = bundle.entry.map((e: any) => e.resource.resourceType);
+      const resourceTypes = bundle.entry.map(
+        (e: any) => e.resource.resourceType,
+      );
       expect(resourceTypes).toContain('Claim');
       expect(resourceTypes).toContain('Patient');
     });
@@ -140,13 +152,15 @@ describe('NhcxService', () => {
     it('throws NotFoundException when claim does not exist', async () => {
       claimRepo.findOne.mockResolvedValue(null);
 
-      await expect(service.submitClaim('ghost-claim', facilityId)).rejects.toThrow(NotFoundException);
+      await expect(
+        service.submitClaim('ghost-claim', facilityId),
+      ).rejects.toThrow(NotFoundException);
     });
 
     it('updates status to SUBMITTED with a mock nhcxClaimId in sandbox mode', async () => {
       const claim: any = { id: 'claim-001', fhirBundle: '{}', facilityId };
       claimRepo.findOne
-        .mockResolvedValueOnce(claim)     // first call to find claim
+        .mockResolvedValueOnce(claim) // first call to find claim
         .mockResolvedValueOnce({ ...claim, status: NhcxClaimStatus.SUBMITTED }); // return after update
       claimRepo.update.mockResolvedValue({ affected: 1 });
 
@@ -169,7 +183,11 @@ describe('NhcxService', () => {
       claimRepo.findOne.mockResolvedValue(null);
 
       await expect(
-        service.updateClaimStatus('ghost', { status: NhcxClaimStatus.APPROVED } as any, facilityId),
+        service.updateClaimStatus(
+          'ghost',
+          { status: NhcxClaimStatus.APPROVED } as any,
+          facilityId,
+        ),
       ).rejects.toThrow(NotFoundException);
     });
 
@@ -197,14 +215,18 @@ describe('NhcxService', () => {
 
     it('does NOT set resolvedAt for QUERY_RAISED status', async () => {
       const claim: any = { id: 'claim-001' };
-      claimRepo.findOne
-        .mockResolvedValueOnce(claim)
-        .mockResolvedValueOnce({ ...claim, status: NhcxClaimStatus.QUERY_RAISED });
+      claimRepo.findOne.mockResolvedValueOnce(claim).mockResolvedValueOnce({
+        ...claim,
+        status: NhcxClaimStatus.QUERY_RAISED,
+      });
       claimRepo.update.mockResolvedValue({ affected: 1 });
 
       await service.updateClaimStatus(
         'claim-001',
-        { status: NhcxClaimStatus.QUERY_RAISED, queryText: 'Need more docs' } as any,
+        {
+          status: NhcxClaimStatus.QUERY_RAISED,
+          queryText: 'Need more docs',
+        } as any,
         facilityId,
       );
 
@@ -238,7 +260,11 @@ describe('NhcxService', () => {
       claimRepo.update.mockResolvedValue({ affected: 1 });
 
       await service.handleNhcxWebhook(
-        { claimId: 'NHCX-002', status: 'DENIED', denialReason: 'Pre-existing condition' },
+        {
+          claimId: 'NHCX-002',
+          status: 'DENIED',
+          denialReason: 'Pre-existing condition',
+        },
         facilityId,
       );
 
@@ -257,7 +283,11 @@ describe('NhcxService', () => {
       claimRepo.update.mockResolvedValue({ affected: 1 });
 
       await service.handleNhcxWebhook(
-        { claimId: 'NHCX-003', status: 'PARTIALLY_APPROVED', approvedAmount: 2500 },
+        {
+          claimId: 'NHCX-003',
+          status: 'PARTIALLY_APPROVED',
+          approvedAmount: 2500,
+        },
         facilityId,
       );
 
@@ -272,7 +302,10 @@ describe('NhcxService', () => {
 
       // Should not throw
       await expect(
-        service.handleNhcxWebhook({ claimId: 'UNKNOWN', status: 'APPROVED' }, facilityId),
+        service.handleNhcxWebhook(
+          { claimId: 'UNKNOWN', status: 'APPROVED' },
+          facilityId,
+        ),
       ).resolves.toBeUndefined();
 
       expect(claimRepo.update).not.toHaveBeenCalled();
@@ -306,7 +339,9 @@ describe('NhcxService', () => {
     it('throws NotFoundException when claim not found', async () => {
       claimRepo.findOne.mockResolvedValue(null);
 
-      await expect(service.getClaim('ghost', facilityId)).rejects.toThrow(NotFoundException);
+      await expect(service.getClaim('ghost', facilityId)).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 });

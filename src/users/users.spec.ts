@@ -30,7 +30,7 @@ const buildUser = (overrides: Partial<User> = {}): User =>
     updatedAt: new Date('2025-01-01'),
     deletedAt: null,
     ...overrides,
-  } as User);
+  }) as User;
 
 const buildFacility = (overrides: Partial<Facility> = {}): Facility =>
   ({
@@ -39,14 +39,16 @@ const buildFacility = (overrides: Partial<Facility> = {}): Facility =>
     isActive: true,
     approvalStatus: 'ACTIVE',
     ...overrides,
-  } as Facility);
+  }) as Facility;
 
-const buildSettings = (overrides: Partial<FacilitySettings> = {}): FacilitySettings =>
+const buildSettings = (
+  overrides: Partial<FacilitySettings> = {},
+): FacilitySettings =>
   ({
     id: 'settings-uuid-1',
     facilityId: 'fac-uuid-1',
     ...overrides,
-  } as FacilitySettings);
+  }) as FacilitySettings;
 
 // ─── Repository mock factory ──────────────────────────────────────────────────
 
@@ -75,7 +77,10 @@ describe('UsersService', () => {
         UsersService,
         { provide: getRepositoryToken(User), useValue: userRepo },
         { provide: getRepositoryToken(Facility), useValue: facilityRepo },
-        { provide: getRepositoryToken(FacilitySettings), useValue: settingsRepo },
+        {
+          provide: getRepositoryToken(FacilitySettings),
+          useValue: settingsRepo,
+        },
       ],
     }).compile();
 
@@ -116,7 +121,12 @@ describe('UsersService', () => {
       const savedArg = userRepo.save.mock.calls[0][0] as User;
       expect((savedArg as any).password).toBeUndefined();
       // Result is sanitized — passwordHash and invite fields stripped
-      const { passwordHash: _ph, inviteToken: _it, inviteExpiresAt: _ie, ...expectedSafe } = created as any;
+      const {
+        passwordHash: _ph,
+        inviteToken: _it,
+        inviteExpiresAt: _ie,
+        ...expectedSafe
+      } = created as any;
       expect(result).toEqual(expectedSafe);
     });
 
@@ -171,7 +181,9 @@ describe('UsersService', () => {
 
       const result = await service.findUserByIdOnly('user-uuid-1');
 
-      expect(userRepo.findOne).toHaveBeenCalledWith({ where: { id: 'user-uuid-1' } });
+      expect(userRepo.findOne).toHaveBeenCalledWith({
+        where: { id: 'user-uuid-1' },
+      });
       expect(result).toEqual(user);
     });
 
@@ -197,7 +209,12 @@ describe('UsersService', () => {
         where: { id: 'user-uuid-1', facilityId: 'fac-uuid-1' },
       });
       // Result is sanitized — passwordHash and invite fields stripped
-      const { passwordHash: _ph, inviteToken: _it, inviteExpiresAt: _ie, ...expectedSafe } = user as any;
+      const {
+        passwordHash: _ph,
+        inviteToken: _it,
+        inviteExpiresAt: _ie,
+        ...expectedSafe
+      } = user as any;
       expect(result).toEqual(expectedSafe);
     });
 
@@ -214,12 +231,21 @@ describe('UsersService', () => {
 
   describe('findAllUsers()', () => {
     it('returns all users for a facility', async () => {
-      const users = [buildUser(), buildUser({ id: 'user-uuid-2', email: 'nurse@h.com', role: Role.NURSE })];
+      const users = [
+        buildUser(),
+        buildUser({
+          id: 'user-uuid-2',
+          email: 'nurse@h.com',
+          role: Role.NURSE,
+        }),
+      ];
       userRepo.find.mockResolvedValueOnce(users);
 
       const result = await service.findAllUsers('fac-uuid-1');
 
-      expect(userRepo.find).toHaveBeenCalledWith({ where: { facilityId: 'fac-uuid-1' } });
+      expect(userRepo.find).toHaveBeenCalledWith({
+        where: { facilityId: 'fac-uuid-1' },
+      });
       expect(result).toHaveLength(2);
     });
   });
@@ -234,10 +260,15 @@ describe('UsersService', () => {
       await service.updateLastLogin('user-uuid-1');
 
       expect(userRepo.update).toHaveBeenCalledTimes(1);
-      const [id, patch] = userRepo.update.mock.calls[0] as [string, { lastLoginAt: Date }];
+      const [id, patch] = userRepo.update.mock.calls[0] as [
+        string,
+        { lastLoginAt: Date },
+      ];
       expect(id).toBe('user-uuid-1');
       expect(patch.lastLoginAt).toBeInstanceOf(Date);
-      expect(patch.lastLoginAt.getTime()).toBeGreaterThanOrEqual(before.getTime());
+      expect(patch.lastLoginAt.getTime()).toBeGreaterThanOrEqual(
+        before.getTime(),
+      );
     });
   });
 
@@ -288,7 +319,10 @@ describe('UsersService', () => {
 
   describe('getDoctors()', () => {
     it('queries only active DOCTOR-role users for the given facility', async () => {
-      const doctors = [buildUser(), buildUser({ id: 'doc-2', email: 'doc2@h.com' })];
+      const doctors = [
+        buildUser(),
+        buildUser({ id: 'doc-2', email: 'doc2@h.com' }),
+      ];
       userRepo.find.mockResolvedValueOnce(doctors);
 
       const result = await service.getDoctors('fac-uuid-1');
@@ -324,7 +358,9 @@ describe('UsersService', () => {
       });
 
       expect(facilityRepo.save).toHaveBeenCalledTimes(1);
-      expect(settingsRepo.create).toHaveBeenCalledWith({ facilityId: facility.id });
+      expect(settingsRepo.create).toHaveBeenCalledWith({
+        facilityId: facility.id,
+      });
       expect(settingsRepo.save).toHaveBeenCalledTimes(1);
       expect(result).toEqual(facility);
     });
@@ -339,14 +375,18 @@ describe('UsersService', () => {
 
       const result = await service.findFacilityById('fac-uuid-1');
 
-      expect(facilityRepo.findOne).toHaveBeenCalledWith({ where: { id: 'fac-uuid-1' } });
+      expect(facilityRepo.findOne).toHaveBeenCalledWith({
+        where: { id: 'fac-uuid-1' },
+      });
       expect(result).toEqual(facility);
     });
 
     it('throws NotFoundException when the facility does not exist', async () => {
       facilityRepo.findOne.mockResolvedValueOnce(null);
 
-      await expect(service.findFacilityById('ghost-fac')).rejects.toThrow(NotFoundException);
+      await expect(service.findFacilityById('ghost-fac')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -354,9 +394,16 @@ describe('UsersService', () => {
 
   describe('activateFacility()', () => {
     it('sets isActive=true and approvalStatus=ACTIVE, then saves', async () => {
-      const facility = buildFacility({ isActive: false, approvalStatus: 'PENDING' });
+      const facility = buildFacility({
+        isActive: false,
+        approvalStatus: 'PENDING',
+      });
       facilityRepo.findOne.mockResolvedValueOnce(facility);
-      facilityRepo.save.mockResolvedValueOnce({ ...facility, isActive: true, approvalStatus: 'ACTIVE' });
+      facilityRepo.save.mockResolvedValueOnce({
+        ...facility,
+        isActive: true,
+        approvalStatus: 'ACTIVE',
+      });
 
       const result = await service.activateFacility('fac-uuid-1');
 
@@ -370,7 +417,9 @@ describe('UsersService', () => {
     it('throws NotFoundException when the facility does not exist', async () => {
       facilityRepo.findOne.mockResolvedValueOnce(null);
 
-      await expect(service.activateFacility('no-fac')).rejects.toThrow(NotFoundException);
+      await expect(service.activateFacility('no-fac')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -378,9 +427,16 @@ describe('UsersService', () => {
 
   describe('suspendFacility()', () => {
     it('sets isActive=false and approvalStatus=SUSPENDED, then saves', async () => {
-      const facility = buildFacility({ isActive: true, approvalStatus: 'ACTIVE' });
+      const facility = buildFacility({
+        isActive: true,
+        approvalStatus: 'ACTIVE',
+      });
       facilityRepo.findOne.mockResolvedValueOnce(facility);
-      facilityRepo.save.mockResolvedValueOnce({ ...facility, isActive: false, approvalStatus: 'SUSPENDED' });
+      facilityRepo.save.mockResolvedValueOnce({
+        ...facility,
+        isActive: false,
+        approvalStatus: 'SUSPENDED',
+      });
 
       const result = await service.suspendFacility('fac-uuid-1');
 
@@ -412,7 +468,9 @@ describe('UsersService', () => {
 
       const result = await service.getFacilitySettings('fac-uuid-1');
 
-      expect(settingsRepo.create).toHaveBeenCalledWith({ facilityId: 'fac-uuid-1' });
+      expect(settingsRepo.create).toHaveBeenCalledWith({
+        facilityId: 'fac-uuid-1',
+      });
       expect(settingsRepo.save).toHaveBeenCalledTimes(1);
       expect(result).toEqual(newSettings);
     });
@@ -442,7 +500,10 @@ describe('UsersService', () => {
     it('updates the logoUrl on the facility and saves', async () => {
       const facility = buildFacility({ logoUrl: null as any });
       facilityRepo.findOne.mockResolvedValueOnce(facility);
-      const updated = { ...facility, logoUrl: 'https://cdn.example.com/logo.png' };
+      const updated = {
+        ...facility,
+        logoUrl: 'https://cdn.example.com/logo.png',
+      };
       facilityRepo.save.mockResolvedValueOnce(updated);
 
       const result = await service.uploadFacilityLogo(

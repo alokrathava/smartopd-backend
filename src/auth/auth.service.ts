@@ -1,6 +1,7 @@
 import {
   Injectable,
   UnauthorizedException,
+  ForbiddenException,
   BadRequestException,
   ConflictException,
 } from '@nestjs/common';
@@ -351,9 +352,7 @@ export class AuthService {
   ) {
     // Only SUPER_ADMIN or FACILITY_ADMIN can invite
     if (![Role.SUPER_ADMIN, Role.FACILITY_ADMIN].includes(inviterRole)) {
-      throw new UnauthorizedException(
-        'Insufficient permissions to invite users',
-      );
+      throw new ForbiddenException('Insufficient permissions to invite users');
     }
 
     const existing = await this.userRepo.findOne({
@@ -362,7 +361,7 @@ export class AuthService {
     if (existing) throw new ConflictException('Email already registered');
 
     const inviteToken = uuidv4();
-    const tempPassword = await bcrypt.hash(uuidv4(), 10); // Random temp password
+    const tempPassword = await bcrypt.hash(uuidv4(), 10);
 
     const user = this.userRepo.create({
       email: dto.email,
@@ -382,7 +381,7 @@ export class AuthService {
 
     return {
       message: `Invitation sent to ${dto.email}`,
-      inviteToken, // In production: send via email/SMS only, don't return in response
+      inviteToken,
     };
   }
 

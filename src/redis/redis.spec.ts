@@ -55,13 +55,19 @@ describe('RedisService', () => {
       await service.blacklistToken('abc-123', 900);
 
       expect(mockRedisClient.setex).toHaveBeenCalledTimes(1);
-      expect(mockRedisClient.setex).toHaveBeenCalledWith('bl:abc-123', 900, '1');
+      expect(mockRedisClient.setex).toHaveBeenCalledWith(
+        'bl:abc-123',
+        900,
+        '1',
+      );
     });
 
     it('does not throw when Redis throws (degraded mode)', async () => {
       mockRedisClient.setex.mockRejectedValueOnce(new Error('Redis down'));
 
-      await expect(service.blacklistToken('jti-fail', 300)).resolves.toBeUndefined();
+      await expect(
+        service.blacklistToken('jti-fail', 300),
+      ).resolves.toBeUndefined();
     });
   });
 
@@ -107,12 +113,18 @@ describe('RedisService', () => {
     it('calls redis.setex when a TTL is provided', async () => {
       await service.set('my-key', 'my-value', 60);
 
-      expect(mockRedisClient.setex).toHaveBeenCalledWith('my-key', 60, 'my-value');
+      expect(mockRedisClient.setex).toHaveBeenCalledWith(
+        'my-key',
+        60,
+        'my-value',
+      );
       expect(mockRedisClient.set).not.toHaveBeenCalled();
     });
 
     it('does not throw when Redis throws (degraded mode)', async () => {
-      mockRedisClient.set.mockRejectedValueOnce(new Error('Connection refused'));
+      mockRedisClient.set.mockRejectedValueOnce(
+        new Error('Connection refused'),
+      );
 
       await expect(service.set('k', 'v')).resolves.toBeUndefined();
     });
@@ -209,8 +221,13 @@ describe('RedisService', () => {
 
       const count = await service.increment('ratelimit:192.168.1.1', 60);
 
-      expect(mockRedisClient.incr).toHaveBeenCalledWith('ratelimit:192.168.1.1');
-      expect(mockRedisClient.expire).toHaveBeenCalledWith('ratelimit:192.168.1.1', 60);
+      expect(mockRedisClient.incr).toHaveBeenCalledWith(
+        'ratelimit:192.168.1.1',
+      );
+      expect(mockRedisClient.expire).toHaveBeenCalledWith(
+        'ratelimit:192.168.1.1',
+        60,
+      );
       expect(count).toBe(1);
     });
 
@@ -236,7 +253,10 @@ describe('RedisService', () => {
 
   describe('publish()', () => {
     it('publishes a message to the correct channel', async () => {
-      await service.publish('facility:abc', JSON.stringify({ event: 'queue:updated' }));
+      await service.publish(
+        'facility:abc',
+        JSON.stringify({ event: 'queue:updated' }),
+      );
 
       expect(mockRedisClient.publish).toHaveBeenCalledWith(
         'facility:abc',
@@ -245,7 +265,9 @@ describe('RedisService', () => {
     });
 
     it('does not throw when Redis throws (degraded mode)', async () => {
-      mockRedisClient.publish.mockRejectedValueOnce(new Error('PUBLISH failed'));
+      mockRedisClient.publish.mockRejectedValueOnce(
+        new Error('PUBLISH failed'),
+      );
 
       await expect(service.publish('ch', 'msg')).resolves.toBeUndefined();
     });
