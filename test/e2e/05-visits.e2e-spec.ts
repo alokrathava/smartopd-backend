@@ -15,26 +15,15 @@
  *   DELETE /visits/:id
  */
 
-import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication, ValidationPipe } from '@nestjs/common';
+import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
-import { AppModule } from '../../src/app.module';
+import { initApp, closeApp } from '../helpers/app.setup';
+import { getToken, seedTestUsers } from '../helpers/auth.helper';
+import { seedPatient } from '../helpers/seed.helper';
+import { Role } from '../../src/common/enums/role.enum';
 
 async function createApp(): Promise<INestApplication> {
-  const moduleFixture: TestingModule = await Test.createTestingModule({
-    imports: [AppModule],
-  }).compile();
-  const app = moduleFixture.createNestApplication();
-  app.setGlobalPrefix('api/v1');
-  app.useGlobalPipes(
-    new ValidationPipe({
-      whitelist: true,
-      forbidNonWhitelisted: true,
-      transform: true,
-    }),
-  );
-  await app.init();
-  return app;
+  return initApp();
 }
 
 let counter = Date.now();
@@ -58,111 +47,33 @@ interface Ctx {
 async function buildContext(): Promise<Ctx> {
   const app = await createApp();
 
-  // Register facility
-  const adminEmail = uniqueEmail('admin');
-  const regRes = await request(app.getHttpServer())
-    .post('/api/v1/auth/register')
-    .send({
-      facilityName: `Visit E2E Hospital ${uid()}`,
-      facilityType: 'HOSPITAL',
-      city: 'Hyderabad',
-      state: 'Telangana',
-      adminEmail,
-      adminFirstName: 'Suresh',
-      adminLastName: 'Kumar',
-      adminPassword: 'Admin@Test1',
-    });
-  expect(regRes.status).toBe(201);
-  const facilityId: string = regRes.body.facilityId;
+  await seedTestUsers();
 
-  const loginAdmin = await request(app.getHttpServer())
-    .post('/api/v1/auth/login')
-    .send({ email: adminEmail, password: 'Admin@Test1' });
-  const adminToken: string = loginAdmin.body.accessToken;
+  const adminToken = await getToken(Role.FACILITY_ADMIN);
+  const doctorToken = await getToken(Role.DOCTOR);
+  const nurseToken = await getToken(Role.NURSE);
+  const receptionToken = await getToken(Role.RECEPTIONIST);
+  const pharmacistToken = await getToken(Role.PHARMACIST);
 
-  // Create doctor
-  const docEmail = uniqueEmail('doc');
-  const docRes = await request(app.getHttpServer())
-    .post('/api/v1/users')
-    .set('Authorization', `Bearer ${adminToken}`)
-    .send({
-      email: docEmail,
-      firstName: 'Dr.Arjun',
-      lastName: 'Rao',
-      password: 'Doctor@Test1',
-      role: 'DOCTOR',
-    });
-  const doctorId: string = docRes.body.id;
+  const adminMe = await request(app.getHttpServer())
+    .get('/api/v1/auth/me')
+    .set('Authorization', `Bearer ${adminToken}`);
+  expect(adminMe.status).toBe(200);
 
-  const docLogin = await request(app.getHttpServer())
-    .post('/api/v1/auth/login')
-    .send({ email: docEmail, password: 'Doctor@Test1' });
-  const doctorToken: string = docLogin.body.accessToken;
+  const doctorMe = await request(app.getHttpServer())
+    .get('/api/v1/auth/me')
+    .set('Authorization', `Bearer ${doctorToken}`);
+  expect(doctorMe.status).toBe(200);
 
-  // Create nurse
-  const nurseEmail = uniqueEmail('nurse');
-  await request(app.getHttpServer())
-    .post('/api/v1/users')
-    .set('Authorization', `Bearer ${adminToken}`)
-    .send({
-      email: nurseEmail,
-      firstName: 'Meera',
-      lastName: 'Nair',
-      password: 'Nurse@Test1',
-      role: 'NURSE',
-    });
-  const nurseLogin = await request(app.getHttpServer())
-    .post('/api/v1/auth/login')
-    .send({ email: nurseEmail, password: 'Nurse@Test1' });
-  const nurseToken: string = nurseLogin.body.accessToken;
+  const facilityId: string = adminMe.body.facilityId;
+  const doctorId: string = doctorMe.body.id;
 
-  // Create receptionist
-  const recEmail = uniqueEmail('rec');
-  await request(app.getHttpServer())
-    .post('/api/v1/users')
-    .set('Authorization', `Bearer ${adminToken}`)
-    .send({
-      email: recEmail,
-      firstName: 'Pooja',
-      lastName: 'Sharma',
-      password: 'Recept@Test1',
-      role: 'RECEPTIONIST',
-    });
-  const recLogin = await request(app.getHttpServer())
-    .post('/api/v1/auth/login')
-    .send({ email: recEmail, password: 'Recept@Test1' });
-  const receptionToken: string = recLogin.body.accessToken;
+  const patient = await seedPatient(facilityId);
+  const patientId: string = patient.id;
 
-  // Create pharmacist
-  const pharmEmail = uniqueEmail('pharm');
-  await request(app.getHttpServer())
-    .post('/api/v1/users')
-    .set('Authorization', `Bearer ${adminToken}`)
-    .send({
-      email: pharmEmail,
-      firstName: 'Ravi',
-      lastName: 'Pillai',
-      password: 'Pharma@Test1',
-      role: 'PHARMACIST',
-    });
-  const pharmLogin = await request(app.getHttpServer())
-    .post('/api/v1/auth/login')
-    .send({ email: pharmEmail, password: 'Pharma@Test1' });
-  const pharmacistToken: string = pharmLogin.body.accessToken;
-
-  // Create patient
-  const patRes = await request(app.getHttpServer())
-    .post('/api/v1/patients')
-    .set('Authorization', `Bearer ${adminToken}`)
-    .send({
-      firstName: 'Ramesh',
-      lastName: 'Verma',
-      phone: `+9198${Math.floor(10000000 + Math.random() * 89999999)}`,
-      dateOfBirth: '1985-06-15',
-      gender: 'MALE',
-      consentGiven: true,
-    });
-  const patientId: string = patRes.body.id;
+  expect(facilityId).toBeTruthy();
+  expect(doctorId).toBeTruthy();
+  expect(patientId).toBeTruthy();
 
   return {
     app,
@@ -188,7 +99,7 @@ describe('Visits (E2E)', () => {
   }, 60000);
 
   afterAll(async () => {
-    await ctx.app.close();
+    await closeApp();
   });
 
   // ── POST /visits ────────────────────────────────────────────────────────────
@@ -421,23 +332,34 @@ describe('Visits (E2E)', () => {
         .post('/api/v1/visits')
         .set('Authorization', `Bearer ${ctx.adminToken}`)
         .send({ patientId: ctx.patientId, visitType: 'OPD' });
+
+      expect(newVisit.status).toBe(201);
+
       const res = await request(ctx.app.getHttpServer())
         .patch(`/api/v1/visits/${newVisit.body.id}/assign-doctor`)
         .set('Authorization', `Bearer ${ctx.receptionToken}`)
         .send({ doctorId: ctx.doctorId });
+
       expect(res.status).toBe(200);
       expect(res.body.doctorId).toBe(ctx.doctorId);
     });
 
     it('❌ 400/404 – non-existent doctor', async () => {
+      const freshVisit = await request(ctx.app.getHttpServer())
+        .post('/api/v1/visits')
+        .set('Authorization', `Bearer ${ctx.adminToken}`)
+        .send({ patientId: ctx.patientId, visitType: 'OPD' });
+
+      expect(freshVisit.status).toBe(201);
+
       const res = await request(ctx.app.getHttpServer())
-        .patch(`/api/v1/visits/${visitId}/assign-doctor`)
+        .patch(`/api/v1/visits/${freshVisit.body.id}/assign-doctor`)
         .set('Authorization', `Bearer ${ctx.receptionToken}`)
         .send({ doctorId: '00000000-0000-0000-0000-000000000000' });
+
       expect([400, 404]).toContain(res.status);
     });
   });
-
   // ── PATCH /visits/:id/no-show ────────────────────────────────────────────
 
   describe('PATCH /api/v1/visits/:id/no-show', () => {

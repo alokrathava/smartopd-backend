@@ -22,12 +22,12 @@
  */
 
 import supertestLib from 'supertest';
-import { getHttpServer } from './app.setup.js';
-import { getToken, seedTestUsers, TEST_FACILITY_ID } from './auth.helper.js';
-import { Role } from '../../src/common/enums/role.enum.js';
-import { Gender } from '../../src/common/enums/gender.enum.js';
-import { VisitType } from '../../src/visits/entities/visit.entity.js';
-import { RoomType } from '../../src/room/entities/room.entity.js';
+import { getHttpServer } from './app.setup';
+import { getToken, seedTestUsers, TEST_FACILITY_ID } from './auth.helper';
+import { Role } from '../../src/common/enums/role.enum';
+import { Gender } from '../../src/common/enums/gender.enum';
+import { VisitType } from '../../src/visits/entities/visit.entity';
+import { RoomType } from '../../src/room/entities/room.entity';
 
 // ──────────────────────────────────────────────────────────────────────────────
 // Typed result shapes

@@ -137,10 +137,15 @@ export class PaymentService {
     facilityId: string,
     userId: string,
   ): Promise<PaymentTransaction> {
-    const bill = await this.getBill(dto.billId!, facilityId);
+    if (!dto.billId) {
+      throw new BadRequestException('billId is required');
+    }
+
+    const billId = dto.billId;
+    const bill = await this.getBill(billId, facilityId);
 
     const transaction = this.transactionRepo.create({
-      billId: dto.billId,
+      billId,
       patientId: bill.patientId,
       facilityId,
       amount: dto.amount,
@@ -160,7 +165,7 @@ export class PaymentService {
     if (newDue <= 0) newStatus = BillStatus.PAID;
     else if (newPaid > 0) newStatus = BillStatus.PARTIAL;
 
-    await this.billRepo.update(dto.billId, {
+    await this.billRepo.update(billId, {
       paidAmount: newPaid,
       dueAmount: Math.max(0, newDue),
       status: newStatus,
