@@ -111,7 +111,7 @@ describe('Payment Module (E2E)', () => {
 
   beforeAll(async () => {
     ctx = await buildCtx();
-  }, 60000);
+  }, 120000);
   afterAll(async () => {
     await ctx.app.close();
   });

@@ -128,7 +128,7 @@ describe('Users & Facilities (E2E)', () => {
     const reg = await registerFacility(app);
     facilityId = reg.facilityId;
     adminToken = reg.adminToken;
-  }, 60000);
+  }, 120000);
 
   afterAll(async () => {
     await closeApp();

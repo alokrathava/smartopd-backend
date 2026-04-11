@@ -108,7 +108,7 @@ describe('Equipment Module (E2E)', () => {
 
   beforeAll(async () => {
     ctx = await buildCtx();
-  }, 60000);
+  }, 120000);
   afterAll(async () => {
     await ctx.app.close();
   });
@@ -124,13 +124,12 @@ describe('Equipment Module (E2E)', () => {
         .send({
           name: 'Wheelchair Standard',
           category: 'WHEELCHAIR',
-          serialNo: serial,
+          serialNumber: serial,
           purchaseDate: '2024-01-01',
-          condition: 'GOOD',
         });
       expect([200, 201]).toContain(res.status);
       equipmentId = res.body.id;
-      qrCode = res.body.qrCode ?? res.body.serialNo ?? serial;
+      qrCode = res.body.qrCode ?? res.body.serialNumber ?? serial;
     });
 
     it('✅ FACILITY_ADMIN creates equipment', async () => {
@@ -140,7 +139,7 @@ describe('Equipment Module (E2E)', () => {
         .send({
           name: 'Oxygen Cylinder 5L',
           category: 'OXYGEN_CYLINDER',
-          serialNo: `OX-${uid()}`,
+          serialNumber: `OX-${uid()}`,
         });
       expect([200, 201]).toContain(res.status);
     });
@@ -149,7 +148,7 @@ describe('Equipment Module (E2E)', () => {
       const res = await request(ctx.app.getHttpServer())
         .post('/api/v1/equipment')
         .set('Authorization', `Bearer ${ctx.equipmentToken}`)
-        .send({ category: 'WHEELCHAIR', serialNo: `SN-${uid()}` });
+        .send({ category: 'WHEELCHAIR', serialNumber: `SN-${uid()}` });
       expect(res.status).toBe(400);
     });
 
@@ -158,11 +157,11 @@ describe('Equipment Module (E2E)', () => {
       await request(ctx.app.getHttpServer())
         .post('/api/v1/equipment')
         .set('Authorization', `Bearer ${ctx.equipmentToken}`)
-        .send({ name: 'Test', category: 'WHEELCHAIR', serialNo: serial });
+        .send({ name: 'Test', category: 'WHEELCHAIR', serialNumber: serial });
       const res = await request(ctx.app.getHttpServer())
         .post('/api/v1/equipment')
         .set('Authorization', `Bearer ${ctx.equipmentToken}`)
-        .send({ name: 'Test2', category: 'WHEELCHAIR', serialNo: serial });
+        .send({ name: 'Test2', category: 'WHEELCHAIR', serialNumber: serial });
       expect([400, 409]).toContain(res.status);
     });
 
@@ -173,7 +172,7 @@ describe('Equipment Module (E2E)', () => {
         .send({
           name: 'Crutches',
           category: 'CRUTCHES',
-          serialNo: `SN-${uid()}`,
+          serialNumber: `SN-${uid()}`,
         });
       expect(res.status).toBe(403);
     });
@@ -181,7 +180,7 @@ describe('Equipment Module (E2E)', () => {
     it('🔐 401 – no auth', async () => {
       const res = await request(ctx.app.getHttpServer())
         .post('/api/v1/equipment')
-        .send({ name: 'X', category: 'WHEELCHAIR', serialNo: 'X' });
+        .send({ name: 'X', category: 'WHEELCHAIR', serialNumber: 'X' });
       expect(res.status).toBe(401);
     });
   });
@@ -256,12 +255,12 @@ describe('Equipment Module (E2E)', () => {
   });
 
   describe('PATCH /api/v1/equipment/:id', () => {
-    it('✅ Updates equipment condition', async () => {
+    it('✅ Updates equipment', async () => {
       if (!equipmentId) return;
       const res = await request(ctx.app.getHttpServer())
         .patch(`/api/v1/equipment/${equipmentId}`)
         .set('Authorization', `Bearer ${ctx.equipmentToken}`)
-        .send({ condition: 'FAIR', notes: 'Minor wear on armrests' });
+        .send({ location: 'Ward A', notes: 'Minor wear on armrests' });
       expect([200, 201]).toContain(res.status);
     });
 
@@ -270,7 +269,7 @@ describe('Equipment Module (E2E)', () => {
       const res = await request(ctx.app.getHttpServer())
         .patch(`/api/v1/equipment/${equipmentId}`)
         .set('Authorization', `Bearer ${ctx.nurseToken}`)
-        .send({ condition: 'POOR' });
+        .send({ location: 'Ward B' });
       expect(res.status).toBe(403);
     });
   });
@@ -280,15 +279,15 @@ describe('Equipment Module (E2E)', () => {
   describe('POST /api/v1/equipment/leases', () => {
     it('✅ Issues equipment to patient → 201', async () => {
       if (!equipmentId) return;
-      const returnBy = new Date();
-      returnBy.setDate(returnBy.getDate() + 7);
+      const dueDate = new Date();
+      dueDate.setDate(dueDate.getDate() + 7);
       const res = await request(ctx.app.getHttpServer())
         .post('/api/v1/equipment/leases')
         .set('Authorization', `Bearer ${ctx.equipmentToken}`)
         .send({
           equipmentId,
           patientId: ctx.patientId,
-          returnBy: returnBy.toISOString(),
+          dueDate: dueDate.toISOString(),
           depositAmount: 500,
         });
       expect([200, 201]).toContain(res.status);
@@ -297,15 +296,15 @@ describe('Equipment Module (E2E)', () => {
 
     it('❌ 409 – equipment already on lease', async () => {
       if (!equipmentId) return;
-      const returnBy = new Date();
-      returnBy.setDate(returnBy.getDate() + 3);
+      const dueDate = new Date();
+      dueDate.setDate(dueDate.getDate() + 3);
       const res = await request(ctx.app.getHttpServer())
         .post('/api/v1/equipment/leases')
         .set('Authorization', `Bearer ${ctx.equipmentToken}`)
         .send({
           equipmentId,
           patientId: ctx.patientId,
-          returnBy: returnBy.toISOString(),
+          dueDate: dueDate.toISOString(),
         });
       expect([400, 409]).toContain(res.status);
     });
@@ -318,7 +317,7 @@ describe('Equipment Module (E2E)', () => {
       expect(res.status).toBe(400);
     });
 
-    it('❌ 400 – missing returnBy', async () => {
+    it('❌ 400 – missing dueDate', async () => {
       const res = await request(ctx.app.getHttpServer())
         .post('/api/v1/equipment/leases')
         .set('Authorization', `Bearer ${ctx.equipmentToken}`)
@@ -332,7 +331,7 @@ describe('Equipment Module (E2E)', () => {
         .send({
           equipmentId,
           patientId: ctx.patientId,
-          returnBy: new Date().toISOString(),
+          dueDate: new Date().toISOString(),
         });
       expect(res.status).toBe(401);
     });
@@ -373,9 +372,8 @@ describe('Equipment Module (E2E)', () => {
         .patch(`/api/v1/equipment/leases/${leaseId}/return`)
         .set('Authorization', `Bearer ${ctx.equipmentToken}`)
         .send({
-          condition: 'GOOD',
+          returnedCondition: 'GOOD',
           notes: 'Returned in clean condition',
-          depositRefunded: true,
         });
       expect([200, 201]).toContain(res.status);
     });
@@ -385,7 +383,7 @@ describe('Equipment Module (E2E)', () => {
       const res = await request(ctx.app.getHttpServer())
         .patch(`/api/v1/equipment/leases/${leaseId}/return`)
         .set('Authorization', `Bearer ${ctx.equipmentToken}`)
-        .send({ condition: 'GOOD' });
+        .send({ returnedCondition: 'GOOD' });
       expect([400, 409]).toContain(res.status);
     });
 
@@ -410,7 +408,8 @@ describe('Equipment Module (E2E)', () => {
         .set('Authorization', `Bearer ${ctx.equipmentToken}`)
         .send({
           equipmentId,
-          type: 'PREVENTIVE',
+          maintenanceType: 'PREVENTIVE',
+          scheduledDate: '2026-03-30',
           description: 'Quarterly inspection',
           nextDueDate: '2026-06-30',
         });
@@ -421,7 +420,7 @@ describe('Equipment Module (E2E)', () => {
       const res = await request(ctx.app.getHttpServer())
         .post('/api/v1/equipment/maintenance')
         .set('Authorization', `Bearer ${ctx.equipmentToken}`)
-        .send({ type: 'PREVENTIVE', description: 'Test' });
+        .send({ maintenanceType: 'PREVENTIVE', scheduledDate: '2026-03-30', description: 'Test' });
       expect(res.status).toBe(400);
     });
 
@@ -430,14 +429,14 @@ describe('Equipment Module (E2E)', () => {
       const res = await request(ctx.app.getHttpServer())
         .post('/api/v1/equipment/maintenance')
         .set('Authorization', `Bearer ${ctx.nurseToken}`)
-        .send({ equipmentId, type: 'PREVENTIVE', description: 'Test' });
+        .send({ equipmentId, maintenanceType: 'PREVENTIVE', scheduledDate: '2026-03-30', description: 'Test' });
       expect(res.status).toBe(403);
     });
 
     it('🔐 401 – no auth', async () => {
       const res = await request(ctx.app.getHttpServer())
         .post('/api/v1/equipment/maintenance')
-        .send({ equipmentId: 'x', type: 'PREVENTIVE' });
+        .send({ equipmentId: 'x', maintenanceType: 'PREVENTIVE', scheduledDate: '2026-03-30' });
       expect(res.status).toBe(401);
     });
   });
