@@ -82,10 +82,12 @@ async function buildCtx(): Promise<RoomCtx> {
     return l.body.accessToken as string;
   };
 
-  const nurseToken = await makeUser('NURSE', 'Nurse@Test1');
-  const receptionToken = await makeUser('RECEPTIONIST', 'Recept@Test1');
-  const doctorToken = await makeUser('DOCTOR', 'Doctor@Test1');
-  const pharmacistToken = await makeUser('PHARMACIST', 'Pharma@Test1');
+  const [nurseToken, receptionToken, doctorToken, pharmacistToken] = await Promise.all([
+    makeUser('NURSE', 'Nurse@Test1'),
+    makeUser('RECEPTIONIST', 'Recept@Test1'),
+    makeUser('DOCTOR', 'Doctor@Test1'),
+    makeUser('PHARMACIST', 'Pharma@Test1'),
+  ]);
 
   const ward = `ICU-${uid()}`;
 
