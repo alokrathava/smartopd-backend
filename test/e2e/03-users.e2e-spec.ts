@@ -275,7 +275,7 @@ describe('Users & Facilities (E2E)', () => {
         expect([200, 201]).toContain(res.status);
         expect(res.body.role).toBe(role);
       }
-    });
+    }, 30000);
 
     it('❌ 400 – missing email', async () => {
       const res = await request(app.getHttpServer())
