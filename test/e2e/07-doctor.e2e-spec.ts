@@ -313,12 +313,9 @@ describe('Doctor Module (E2E)', () => {
         .set('Authorization', `Bearer ${ctx.doctorToken}`)
         .send({
           drugName: 'Paracetamol',
-          dosage: '500mg',
+          form: 'TABLET',
+          dose: '500mg',
           frequency: 'TDS',
-          duration: 5,
-          quantity: 15,
-          route: 'ORAL',
-          instructions: 'After food',
         });
       expect([200, 201]).toContain(res.status);
     });
@@ -330,11 +327,9 @@ describe('Doctor Module (E2E)', () => {
         .set('Authorization', `Bearer ${ctx.doctorToken}`)
         .send({
           drugName: 'Ibuprofen',
-          dosage: '400mg',
+          form: 'TABLET',
+          dose: '400mg',
           frequency: 'BD',
-          duration: 3,
-          quantity: 6,
-          route: 'ORAL',
         });
       expect([200, 201]).toContain(res.status);
     });
