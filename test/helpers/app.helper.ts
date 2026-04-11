@@ -2,7 +2,7 @@
  * Shared E2E test bootstrap helpers.
  *
  * Usage:
- *   import { buildApp, loginAs, registerFacilityAndAdmin } from '../helpers/app.helper.js';
+ *   import { buildApp, loginAs, registerFacilityAndAdmin } from '../helpers/app.helper';
  */
 
 import supertestLib from 'supertest';

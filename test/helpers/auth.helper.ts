@@ -10,7 +10,7 @@
  *
  * Usage:
  *   import { getToken, getAuthHeader, seedTestUsers, TEST_FACILITY_ID }
- *     from '../helpers/auth.helper.js';
+ *     from '../helpers/auth.helper';
  *
  *   beforeAll(async () => { await seedTestUsers(); });
  *
@@ -23,9 +23,9 @@
  */
 
 import supertestLib from 'supertest';
-import { getHttpServer } from './app.setup.js';
-import { Role } from '../../src/common/enums/role.enum.js';
-import { FacilityType } from '../../src/users/entities/facility.entity.js';
+import { getHttpServer } from './app.setup';
+import { Role } from '../../src/common/enums/role.enum';
+import { FacilityType } from '../../src/users/entities/facility.entity';
 
 // ──────────────────────────────────────────────────────────────────────────────
 // Types

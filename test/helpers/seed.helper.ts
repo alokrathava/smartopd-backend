@@ -9,7 +9,7 @@
  * themselves.
  *
  * Usage:
- *   import { seedPatient, seedVisit, cleanupTestData } from '../helpers/seed.helper.js';
+ *   import { seedPatient, seedVisit, cleanupTestData } from '../helpers/seed.helper';
  *
  *   let patientId: string;
  *   beforeAll(async () => {

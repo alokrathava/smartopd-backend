@@ -22,7 +22,7 @@ import {
   inviteAndActivateUser,
   createPatient,
   minimalPatientPayload,
-} from '../helpers/app.helper.js';
+} from '../helpers/app.helper';
 
 // ─── shared state ─────────────────────────────────────────────────────────────
 

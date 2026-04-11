@@ -16,7 +16,7 @@
  *     mockLabPartners,
  *     mockNotificationProviders,
  *     restoreAllMocks,
- *   } from '../helpers/mock.helper.js';
+ *   } from '../helpers/mock.helper';
  *
  *   beforeEach(() => {
  *     mockAbdmGateway();
