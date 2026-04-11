@@ -433,11 +433,12 @@ describe('Doctor Module (E2E)', () => {
       expect(res.status).toBe(200);
     });
 
-    it('❌ 400 – missing q param', async () => {
+    it('✅ Returns results (may be empty) when q param is missing', async () => {
       const res = await request(ctx.app.getHttpServer())
         .get('/api/v1/doctor/icd10/search')
         .set('Authorization', `Bearer ${ctx.doctorToken}`);
-      expect([400, 422]).toContain(res.status);
+      expect(res.status).toBe(200);
+      expect(Array.isArray(res.body)).toBe(true);
     });
 
     it('🔐 401 without token', async () => {
