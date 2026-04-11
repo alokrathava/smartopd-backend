@@ -230,7 +230,7 @@ describe('NhcxService', () => {
         facilityId,
       );
 
-      const updateArgs = claimRepo.update.mock.calls[0][1] as any;
+      const updateArgs = claimRepo.update.mock.calls[0][1];
       expect(updateArgs.resolvedAt).toBeUndefined();
     });
   });

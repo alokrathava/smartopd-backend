@@ -141,7 +141,7 @@ describe('EventsGateway', () => {
 
       expect(socket.disconnect).not.toHaveBeenCalled();
       expect(socket.join).toHaveBeenCalledWith('facility:fac-1');
-      expect((socket as any).user).toEqual(payload);
+      expect(socket.user).toEqual(payload);
     });
 
     it('disconnects a client whose JWT is invalid', () => {
@@ -232,7 +232,7 @@ describe('EventsGateway', () => {
   describe('handleJoinUserRoom()', () => {
     it('joins the user room when the socket user matches the requested userId', () => {
       const socket = makeSocket('valid');
-      (socket as any).user = { sub: 'user-42' };
+      socket.user = { sub: 'user-42' };
 
       gateway.handleJoinUserRoom(socket, { userId: 'user-42' });
 
@@ -241,7 +241,7 @@ describe('EventsGateway', () => {
 
     it('does NOT join the user room when userId does not match socket user', () => {
       const socket = makeSocket('valid');
-      (socket as any).user = { sub: 'user-42' };
+      socket.user = { sub: 'user-42' };
 
       gateway.handleJoinUserRoom(socket, { userId: 'attacker-99' });
 
@@ -250,7 +250,7 @@ describe('EventsGateway', () => {
 
     it('returns { event: "user:joined" }', () => {
       const socket = makeSocket('valid');
-      (socket as any).user = { sub: 'u1' };
+      socket.user = { sub: 'u1' };
 
       const result = gateway.handleJoinUserRoom(socket, { userId: 'u1' });
 

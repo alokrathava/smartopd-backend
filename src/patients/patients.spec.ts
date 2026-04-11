@@ -119,7 +119,7 @@ describe('PatientsService', () => {
 
       await service.create(dto, facilityId, userId);
 
-      const created = patientRepo.create.mock.calls[0][0] as any;
+      const created = patientRepo.create.mock.calls[0][0];
       expect(created.mrn).toBe('HOSP-2026-000006');
     });
 
@@ -142,7 +142,7 @@ describe('PatientsService', () => {
         userId,
       );
 
-      const created = patientRepo.create.mock.calls[0][0] as any;
+      const created = patientRepo.create.mock.calls[0][0];
       const year = new Date().getFullYear();
       expect(created.mrn).toBe(`HOSP-${year}-000001`);
     });

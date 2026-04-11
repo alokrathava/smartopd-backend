@@ -85,7 +85,7 @@ describe('NurseService', () => {
 
       await service.recordVitals(dto, facilityId, userId);
 
-      const created = vitalsRepo.create.mock.calls[0][0] as any;
+      const created = vitalsRepo.create.mock.calls[0][0];
       // BMI = 70 / (1.75 * 1.75) ≈ 22.86
       expect(created.bmi).toBeCloseTo(22.86, 1);
     });
@@ -98,7 +98,7 @@ describe('NurseService', () => {
 
       await service.recordVitals(dto, facilityId, userId);
 
-      const created = vitalsRepo.create.mock.calls[0][0] as any;
+      const created = vitalsRepo.create.mock.calls[0][0];
       expect(created.isCritical).toBe(true);
       expect(created.criticalFlags).toContain('SpO2 low');
     });
@@ -111,7 +111,7 @@ describe('NurseService', () => {
 
       await service.recordVitals(dto, facilityId, userId);
 
-      const created = vitalsRepo.create.mock.calls[0][0] as any;
+      const created = vitalsRepo.create.mock.calls[0][0];
       expect(created.isCritical).toBe(true);
       expect(created.criticalFlags).toContain('SBP high');
     });
@@ -124,7 +124,7 @@ describe('NurseService', () => {
 
       await service.recordVitals(dto, facilityId, userId);
 
-      const created = vitalsRepo.create.mock.calls[0][0] as any;
+      const created = vitalsRepo.create.mock.calls[0][0];
       expect(created.isCritical).toBe(true);
       expect(created.criticalFlags).toContain('Temp high');
     });
@@ -144,7 +144,7 @@ describe('NurseService', () => {
 
       await service.recordVitals(dto, facilityId, userId);
 
-      const created = vitalsRepo.create.mock.calls[0][0] as any;
+      const created = vitalsRepo.create.mock.calls[0][0];
       expect(created.isCritical).toBe(false);
       expect(created.criticalFlags).toBeUndefined();
     });
@@ -157,7 +157,7 @@ describe('NurseService', () => {
 
       await service.recordVitals(dto, facilityId, userId);
 
-      const created = vitalsRepo.create.mock.calls[0][0] as any;
+      const created = vitalsRepo.create.mock.calls[0][0];
       expect(created.isCritical).toBe(true);
       expect(created.criticalFlags).toContain('Pulse low');
     });
@@ -170,7 +170,7 @@ describe('NurseService', () => {
 
       await service.recordVitals(dto, facilityId, userId);
 
-      const created = vitalsRepo.create.mock.calls[0][0] as any;
+      const created = vitalsRepo.create.mock.calls[0][0];
       expect(created.bmi).toBeUndefined();
     });
   });
@@ -221,7 +221,7 @@ describe('NurseService', () => {
       expect(triageRepo.create).toHaveBeenCalledWith(
         expect.objectContaining({ facilityId, triageById: userId }),
       );
-      const created = triageRepo.create.mock.calls[0][0] as any;
+      const created = triageRepo.create.mock.calls[0][0];
       expect(created.triageAt).toBeInstanceOf(Date);
       expect(result).toEqual(triage);
     });
@@ -273,7 +273,7 @@ describe('NurseService', () => {
       expect(marRepo.create).toHaveBeenCalledWith(
         expect.objectContaining({ facilityId, administeredById: userId }),
       );
-      const created = marRepo.create.mock.calls[0][0] as any;
+      const created = marRepo.create.mock.calls[0][0];
       expect(created.scheduledAt).toBeInstanceOf(Date);
       expect(result).toEqual(marRecord);
     });

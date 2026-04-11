@@ -58,20 +58,46 @@ export class VisitsService {
     facilityId: string,
     userId: string,
   ): Promise<Visit> {
-    const visitNumber = await this.generateVisitNumber(facilityId);
-    const tokenNumber = await this.getDailyToken(facilityId);
+    let visitNumber: string | null = null;
+    let retries = 0;
+    const maxRetries = 5;
 
-    const visit = this.visitRepo.create({
-      ...dto,
-      facilityId,
-      registeredById: userId,
-      visitNumber,
-      tokenNumber,
-      checkedInAt: new Date(),
-      scheduledAt: dto.scheduledAt ? new Date(dto.scheduledAt) : undefined,
-    });
+    // Retry mechanism for handling concurrent visit number generation
+    while (!visitNumber && retries < maxRetries) {
+      try {
+        visitNumber = await this.generateVisitNumber(facilityId);
+        const tokenNumber = await this.getDailyToken(facilityId);
 
-    return this.visitRepo.save(visit);
+        const visit = this.visitRepo.create({
+          ...dto,
+          facilityId,
+          registeredById: userId,
+          visitNumber,
+          tokenNumber,
+          checkedInAt: new Date(),
+          scheduledAt: dto.scheduledAt ? new Date(dto.scheduledAt) : undefined,
+        });
+
+        return await this.visitRepo.save(visit);
+      } catch (error: any) {
+        if (
+          error?.code === 'ER_DUP_ENTRY' &&
+          error?.message?.includes('visit_number')
+        ) {
+          visitNumber = null;
+          retries++;
+          if (retries >= maxRetries) {
+            throw new Error(
+              'Failed to generate unique visit number after maximum retries',
+            );
+          }
+        } else {
+          throw error;
+        }
+      }
+    }
+
+    throw new Error('Failed to create visit: could not generate visit number');
   }
 
   async findAll(

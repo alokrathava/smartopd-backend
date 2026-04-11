@@ -97,7 +97,7 @@ describe('CrmService', () => {
       const dto = {
         patientId: 'p1',
         reason: 'Post-op review',
-        scheduledDate: '2026-04-10',
+        scheduledDate: '2026-04-20',
       };
       const saved = { id: 'fu-1', ...dto, facilityId };
       mockFollowUpRepo.create.mockReturnValue(saved);

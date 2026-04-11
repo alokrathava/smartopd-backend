@@ -120,7 +120,7 @@ describe('VisitsService', () => {
         userId,
       );
 
-      const created = visitRepo.create.mock.calls[0][0] as any;
+      const created = visitRepo.create.mock.calls[0][0];
       expect(created.tokenNumber).toBe(5);
     });
 
@@ -146,7 +146,7 @@ describe('VisitsService', () => {
       );
       const after = new Date();
 
-      const created = visitRepo.create.mock.calls[0][0] as any;
+      const created = visitRepo.create.mock.calls[0][0];
       expect(created.checkedInAt.getTime()).toBeGreaterThanOrEqual(
         before.getTime(),
       );
@@ -325,12 +325,10 @@ describe('VisitsService', () => {
 
       expect(result.status).toBe(VisitStatus.COMPLETED);
       expect(result.completedAt).toBeInstanceOf(Date);
-      expect(result.completedAt!.getTime()).toBeGreaterThanOrEqual(
+      expect(result.completedAt.getTime()).toBeGreaterThanOrEqual(
         before.getTime(),
       );
-      expect(result.completedAt!.getTime()).toBeLessThanOrEqual(
-        after.getTime(),
-      );
+      expect(result.completedAt.getTime()).toBeLessThanOrEqual(after.getTime());
     });
   });
 

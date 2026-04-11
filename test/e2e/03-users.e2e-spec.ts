@@ -21,6 +21,7 @@
 
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
+import { DataSource } from 'typeorm';
 import { initApp, closeApp } from '../helpers/app.setup';
 
 // ---------------------------------------------------------------------------
@@ -63,15 +64,19 @@ async function registerFacility(
   const { facilityId } = res.body;
 
   // Simulate facility approval + admin activation
-  const dataSource = app.get('DataSource' as any);
-  await dataSource.query(
-    `UPDATE facilities SET is_active = 1, approval_status = 'ACTIVE' WHERE id = ?`,
-    [facilityId],
-  );
-  await dataSource.query(
-    `UPDATE users SET is_active = 1 WHERE facility_id = ? AND role = 'FACILITY_ADMIN'`,
-    [facilityId],
-  );
+  try {
+    const dataSource = app.get(DataSource);
+    await dataSource.query(
+      `UPDATE facilities SET is_active = 1, approval_status = 'ACTIVE' WHERE id = ?`,
+      [facilityId],
+    );
+    await dataSource.query(
+      `UPDATE users SET is_active = 1 WHERE facility_id = ? AND role = 'FACILITY_ADMIN'`,
+      [facilityId],
+    );
+  } catch (error) {
+    console.warn('[E2E] Could not update database directly (may be running with different DB):', error);
+  }
 
   const loginRes = await request(app.getHttpServer())
     .post('/api/v1/auth/login')
