@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, LessThanOrEqual } from 'typeorm';
 import { Equipment, EquipmentStatus } from './entities/equipment.entity';
@@ -27,6 +27,18 @@ export class EquipmentService {
     dto: CreateEquipmentDto,
     facilityId: string,
   ): Promise<Equipment> {
+    // Check for duplicate serialNumber within the facility
+    if (dto.serialNumber) {
+      const existing = await this.equipmentRepo.findOne({
+        where: { serialNumber: dto.serialNumber, facilityId },
+      });
+      if (existing) {
+        throw new ConflictException(
+          `Equipment with serial number ${dto.serialNumber} already exists in this facility`,
+        );
+      }
+    }
+
     const eq = this.equipmentRepo.create({
       ...dto,
       facilityId,
