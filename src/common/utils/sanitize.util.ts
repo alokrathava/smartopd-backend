@@ -37,12 +37,13 @@ export function stripHtmlTags(str: string | null | undefined): string {
  * @param obj Object to sanitize
  * @returns Sanitized object
  */
-export function sanitizeObject<T extends Record<string, any>>(obj: T): T {
+export function sanitizeObject(obj: Record<string, any>): Record<string, any> {
   if (!obj) return obj;
 
-  const sanitized = { ...obj };
+  const sanitized: Record<string, any> = { ...obj };
 
-  for (const [key, value] of Object.entries(sanitized)) {
+  for (const key of Object.keys(sanitized)) {
+    const value = sanitized[key];
     if (typeof value === 'string') {
       // Escape HTML in string fields
       sanitized[key] = escapeHtml(value);

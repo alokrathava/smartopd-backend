@@ -1,8 +1,8 @@
 {
   "meta": {
-    "timestamp": "2026-04-12T05:41:51.949Z",
+    "timestamp": "2026-04-12T05:44:45.931Z",
     "runDate": "2026-04-12",
-    "runTime": "05:41:51",
+    "runTime": "05:44:45",
     "rootDir": "D:\\Business\\Code\\SmartOPD\\smartopd-backend\\src",
     "mode": "UNIT"
   },
@@ -16,7 +16,7 @@
     "numPendingTests": 0,
     "numTodoTests": 0,
     "success": false,
-    "durationMs": 978
+    "durationMs": 996
   },
   "byType": {
     "UNIT": {
@@ -28,14 +28,14 @@
       "failed": 0,
       "pending": 0,
       "skipped": 0,
-      "durationMs": 978
+      "durationMs": 996
     }
   },
   "suites": [
     {
       "suitePath": "src\\patients\\patients-xss.spec.ts",
       "type": "UNIT",
-      "duration": 978,
+      "duration": 996,
       "tests": [
         {
           "title": "Patients XSS Protection CreatePatientDto sanitization should escape HTML special characters in firstName",
@@ -44,7 +44,7 @@
             "CreatePatientDto sanitization"
           ],
           "status": "passed",
-          "duration": 3,
+          "duration": 4,
           "failureMessages": []
         },
         {
@@ -54,7 +54,7 @@
             "CreatePatientDto sanitization"
           ],
           "status": "passed",
-          "duration": 2,
+          "duration": 1,
           "failureMessages": []
         },
         {
@@ -94,7 +94,7 @@
             "CreatePatientDto sanitization"
           ],
           "status": "passed",
-          "duration": 0,
+          "duration": 1,
           "failureMessages": []
         },
         {
@@ -104,7 +104,7 @@
             "CreatePatientDto sanitization"
           ],
           "status": "passed",
-          "duration": 1,
+          "duration": 0,
           "failureMessages": []
         }
       ],
