@@ -626,8 +626,9 @@ export async function inviteAndActivateUser(
   }
 
   if (createRes.status !== 201 && createRes.status !== 200) {
+    const errorMsg = createRes.body?.message || createRes.body?.error || createRes.text || JSON.stringify(createRes.body);
     throw new Error(
-      `Failed to create user ${userPayload.role}: ${createRes.body?.message || createRes.text}`,
+      `Failed to create user ${userPayload.role} (${createRes.status}): ${errorMsg}`,
     );
   }
 
