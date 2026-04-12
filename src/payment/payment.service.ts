@@ -121,15 +121,39 @@ export class PaymentService {
     if (!patient)
       throw new NotFoundException(`Patient ${dto.patientId} not found`);
 
-    const billNumber = await this.generateBillNumber(facilityId);
-    const bill = this.billRepo.create({
-      ...dto,
-      facilityId,
-      generatedById: userId,
-      billNumber,
-      billDate: new Date(),
-    });
-    return this.billRepo.save(bill);
+    // Retry loop for handling duplicate bill number race conditions
+    // Multiple concurrent requests can generate the same bill number
+    let lastError: any = null;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        const billNumber = await this.generateBillNumber(facilityId);
+        const bill = this.billRepo.create({
+          ...dto,
+          facilityId,
+          generatedById: userId,
+          billNumber,
+          billDate: new Date(),
+        });
+        return await this.billRepo.save(bill);
+      } catch (error: any) {
+        // Check if this is a duplicate constraint error
+        if (
+          attempt < 2 &&
+          error?.code === 'ER_DUP_ENTRY' &&
+          error?.message?.includes('billNumber')
+        ) {
+          lastError = error;
+          // Wait a small amount before retry to allow other transactions to complete
+          await new Promise((resolve) => setTimeout(resolve, 10 * (attempt + 1)));
+          continue;
+        }
+        // For other errors, fail immediately
+        throw error;
+      }
+    }
+
+    // If all retries failed, throw the last error
+    throw lastError;
   }
 
   async addItem(dto: AddBillItemDto, facilityId: string): Promise<BillItem> {
