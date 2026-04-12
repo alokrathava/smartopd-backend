@@ -240,9 +240,9 @@ async function createUserForRole(
     .set('Content-Type', 'application/json');
 
   if (res.status !== 201 && res.status !== 200) {
-    // 400 "email already in use" is acceptable — user exists from prior run
+    // 400/409 "email already in use" is acceptable — user exists from prior run
     if (
-      res.status === 400 &&
+      (res.status === 400 || res.status === 409) &&
       (res.body?.message as string | undefined)
         ?.toLowerCase()
         .includes('already')
