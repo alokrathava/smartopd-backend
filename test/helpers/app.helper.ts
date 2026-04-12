@@ -216,7 +216,7 @@ async function createUserForRole(
 
   if (res.status !== 201 && res.status !== 200) {
     if (
-      res.status === 400 &&
+      (res.status === 400 || res.status === 409) &&
       (res.body?.message as string | undefined)
         ?.toLowerCase()
         .includes('already')
@@ -340,32 +340,32 @@ export function getHttpServer() {
 /**
  * Minimal patient payload for testing
  */
-export const minimalPatientPayload = {
-  firstName: 'Test',
-  lastName: 'Patient',
-  dateOfBirth: '1990-01-01',
-  gender: 'M',
-  contactNumber: '9876543210',
-  email: 'test@patient.in',
-};
+export function minimalPatientPayload(overrides?: any): any {
+  const defaults = {
+    firstName: 'Test',
+    lastName: 'Patient',
+    dateOfBirth: '1990-01-01',
+    gender: 'MALE',
+    phone: '+916000000001',
+    email: 'test@patient.in',
+    consentGiven: true,
+  };
+  return { ...defaults, ...overrides };
+}
 
 /**
  * Create a test patient
  */
 export async function createPatient(
   token: string,
-  payload?: Partial<typeof minimalPatientPayload>,
+  payload?: any,
 ): Promise<{ id: string; [key: string]: any }> {
-  const app = await setupInitApp();
   const server = setupGetHttpServer();
 
   const response = await supertestLib(server)
     .post('/api/v1/patients')
     .set('Authorization', `Bearer ${token}`)
-    .send({
-      ...minimalPatientPayload,
-      ...payload,
-    });
+    .send(minimalPatientPayload(payload));
 
   if (response.status !== 201 && response.status !== 200) {
     throw new Error(
@@ -582,13 +582,66 @@ async function createUserAndGetToken(
 }
 
 /**
- * Invite and activate a user (wrapper for createUserAndGetToken)
+ * Invite and activate a user with custom email/name
  */
 export async function inviteAndActivateUser(
+  app: INestApplication | any,
   adminToken: string,
-  role: Role,
-  facilityId: string,
-): Promise<string> {
+  userPayload: {
+    email: string;
+    firstName: string;
+    lastName: string;
+    role: string;
+  },
+): Promise<{
+  accessToken: string;
+  refreshToken: string;
+  user: {
+    id: string;
+    email: string;
+    role: string;
+    facilityId: string;
+    firstName: string;
+    lastName: string;
+  };
+}> {
   const server = setupGetHttpServer();
-  return createUserAndGetToken(server, adminToken, role, facilityId);
+
+  // Create user via API
+  const createRes = await supertestLib(server)
+    .post('/api/v1/users')
+    .set('Authorization', `Bearer ${adminToken}`)
+    .send({
+      email: userPayload.email,
+      firstName: userPayload.firstName,
+      lastName: userPayload.lastName,
+      password: 'User@Test1',
+      role: userPayload.role,
+    });
+
+  if (createRes.status === 409) {
+    throw new Error(
+      `User with email ${userPayload.email} already exists (409 Conflict)`,
+    );
+  }
+
+  if (createRes.status !== 201 && createRes.status !== 200) {
+    throw new Error(
+      `Failed to create user ${userPayload.role}: ${createRes.body?.message || createRes.text}`,
+    );
+  }
+
+  // Login as new user
+  const loginRes = await supertestLib(server).post('/api/v1/auth/login').send({
+    email: userPayload.email,
+    password: 'User@Test1',
+  });
+
+  if (loginRes.status !== 200) {
+    throw new Error(
+      `Failed to login user ${userPayload.email}: ${loginRes.body?.message || loginRes.text}`,
+    );
+  }
+
+  return loginRes.body;
 }
