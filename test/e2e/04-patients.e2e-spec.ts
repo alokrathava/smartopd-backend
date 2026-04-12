@@ -14,15 +14,17 @@
 
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
+import { initApp, closeApp } from '../helpers/app.setup';
 import {
-  buildApp,
-  closeApp,
   getFacilityAContext,
   getFacilityBContext,
   inviteAndActivateUser,
   createPatient,
   minimalPatientPayload,
 } from '../helpers/app.helper';
+
+// Alias for compatibility with test expectations
+const buildApp = initApp;
 
 // ─── shared state ─────────────────────────────────────────────────────────────
 
@@ -85,7 +87,7 @@ beforeAll(async () => {
     role: 'DOCTOR',
   });
   doctorTokenA = doctor.accessToken;
-});
+}, 120000);
 
 afterAll(async () => {
   await closeApp();

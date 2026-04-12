@@ -7,6 +7,7 @@ import { Bill, BillStatus } from './entities/bill.entity';
 import { BillItem } from './entities/bill-item.entity';
 import {
   PaymentTransaction,
+  PaymentMode,
   TransactionStatus,
 } from './entities/payment-transaction.entity';
 import { Patient } from '../patients/entities/patient.entity';
@@ -80,7 +81,6 @@ describe('PaymentService', () => {
     mockBillItemRepo.createQueryBuilder.mockReturnValue(makeQb());
     mockTransactionRepo.createQueryBuilder.mockReturnValue(makeQb());
 
-    // Default: patient exists for createBill tests
     mockPatientRepo.findOne.mockResolvedValue({ id: 'p1', facilityId });
 
     const module: TestingModule = await Test.createTestingModule({
@@ -108,7 +108,7 @@ describe('PaymentService', () => {
   describe('createBill()', () => {
     it('creates and saves a bill with generated bill number', async () => {
       const qb = makeQb();
-      qb.getOne.mockResolvedValue(null); // no previous bill
+      qb.getOne.mockResolvedValue(null);
       mockBillRepo.createQueryBuilder.mockReturnValue(qb);
 
       const createdBill = {
@@ -182,7 +182,6 @@ describe('PaymentService', () => {
       mockBillItemRepo.create.mockReturnValue(savedItem);
       mockBillItemRepo.save.mockResolvedValue(savedItem);
 
-      // recalculate will call billItemRepo.find
       mockBillItemRepo.find.mockResolvedValue([{ amount: 200, gstPercent: 0 }]);
       mockBillRepo.update.mockResolvedValue({});
 
@@ -260,12 +259,14 @@ describe('PaymentService', () => {
       };
       mockBillRepo.findOne.mockResolvedValue(bill);
 
+      // status here uses TransactionStatus from the entity — correct enum ✓
       const savedTx = { id: 'tx-1', status: TransactionStatus.SUCCESS };
       mockTransactionRepo.create.mockReturnValue(savedTx);
       mockTransactionRepo.save.mockResolvedValue(savedTx);
       mockBillRepo.update.mockResolvedValue({});
 
-      const dto = { billId: 'bill-1', amount: 200, paymentMode: 'CASH' };
+      // method uses PaymentMode from the entity — matches RecordPaymentDto ✓
+      const dto = { billId: 'bill-1', amount: 200, method: PaymentMode.CASH };
       const result = await service.recordPayment(
         dto as any,
         facilityId,
@@ -295,7 +296,7 @@ describe('PaymentService', () => {
       mockTransactionRepo.save.mockResolvedValue({ id: 'tx-1' });
       mockBillRepo.update.mockResolvedValue({});
 
-      const dto = { billId: 'bill-1', amount: 300, paymentMode: 'UPI' };
+      const dto = { billId: 'bill-1', amount: 300, method: PaymentMode.UPI };
       await service.recordPayment(dto as any, facilityId, userId);
 
       expect(mockBillRepo.update).toHaveBeenCalledWith(
@@ -318,7 +319,7 @@ describe('PaymentService', () => {
       mockTransactionRepo.save.mockResolvedValue({ id: 'tx-1' });
       mockBillRepo.update.mockResolvedValue({});
 
-      const dto = { billId: 'bill-1', amount: 200, paymentMode: 'CASH' };
+      const dto = { billId: 'bill-1', amount: 200, method: PaymentMode.CASH };
       await service.recordPayment(dto as any, facilityId, userId);
 
       expect(mockBillRepo.update).toHaveBeenCalledWith(
@@ -330,7 +331,7 @@ describe('PaymentService', () => {
     it('throws NotFoundException when bill is not found', async () => {
       mockBillRepo.findOne.mockResolvedValue(null);
 
-      const dto = { billId: 'ghost', amount: 100, paymentMode: 'CASH' };
+      const dto = { billId: 'ghost', amount: 100, method: PaymentMode.CASH };
       await expect(
         service.recordPayment(dto as any, facilityId, userId),
       ).rejects.toThrow(NotFoundException);

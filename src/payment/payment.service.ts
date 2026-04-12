@@ -9,6 +9,7 @@ import { Bill, BillStatus } from './entities/bill.entity';
 import { BillItem } from './entities/bill-item.entity';
 import {
   PaymentTransaction,
+  PaymentMode,
   TransactionStatus,
 } from './entities/payment-transaction.entity';
 import { Patient } from '../patients/entities/patient.entity';
@@ -36,6 +37,56 @@ export class PaymentService {
     private readonly patientRepo: Repository<Patient>,
     private readonly paymentProviderFactory: PaymentProviderFactory,
   ) {}
+
+  /**
+   * Maps a PaymentMethod (provider/DTO layer) to a PaymentMode (entity layer).
+   *
+   * These are two separate enums that serve different purposes:
+   *  - PaymentMethod  → which payment gateway/provider to use (RAZORPAY, STRIPE, …)
+   *  - PaymentMode    → how the money actually moved on the transaction record
+   *                     (CASH, UPI, CARD, NEFT, INSURANCE, WAIVED)
+   *
+   * Razorpay and Stripe both result in a CARD/UPI/etc. movement at the DB level,
+   * so we normalise them to the closest PaymentMode here.
+   */
+  private toPaymentMode(method: PaymentMethod): PaymentMode {
+    const map: Record<PaymentMethod, PaymentMode> = {
+      [PaymentMethod.RAZORPAY]: PaymentMode.CARD, // Razorpay covers UPI/card – default to CARD
+      [PaymentMethod.STRIPE]: PaymentMode.CARD, // Stripe is card-based
+      [PaymentMethod.CASH]: PaymentMode.CASH,
+      [PaymentMethod.CHEQUE]: PaymentMode.NEFT, // Closest offline mode
+      [PaymentMethod.BANK_TRANSFER]: PaymentMode.NEFT,
+      [PaymentMethod.INSURANCE]: PaymentMode.INSURANCE,
+      [PaymentMethod.CUSTOM_OVERRIDE]: PaymentMode.WAIVED,
+    };
+
+    const mode = map[method];
+    if (!mode) {
+      throw new BadRequestException(`Unsupported payment method: ${method}`);
+    }
+    return mode;
+  }
+
+  /**
+   * Maps a PaymentMode (entity layer) back to a PaymentMethod so the correct
+   * provider can be retrieved from the factory for verify/refund operations.
+   */
+  private toPaymentMethod(mode: PaymentMode): PaymentMethod {
+    const map: Record<PaymentMode, PaymentMethod> = {
+      [PaymentMode.CASH]: PaymentMethod.CASH,
+      [PaymentMode.UPI]: PaymentMethod.RAZORPAY, // UPI is processed via Razorpay
+      [PaymentMode.CARD]: PaymentMethod.RAZORPAY, // Default card provider
+      [PaymentMode.NEFT]: PaymentMethod.BANK_TRANSFER,
+      [PaymentMode.INSURANCE]: PaymentMethod.INSURANCE,
+      [PaymentMode.WAIVED]: PaymentMethod.CUSTOM_OVERRIDE,
+    };
+
+    const method = map[mode];
+    if (!method) {
+      throw new BadRequestException(`Unsupported payment mode: ${mode}`);
+    }
+    return method;
+  }
 
   private async generateBillNumber(facilityId: string): Promise<string> {
     const year = new Date().getFullYear();
@@ -107,7 +158,6 @@ export class PaymentService {
     });
     const saved = await this.billItemRepo.save(item);
 
-    // Recalculate subtotal
     await this.recalculate(bill.id, facilityId);
     return saved;
   }
@@ -152,16 +202,17 @@ export class PaymentService {
     const billId = dto.billId;
     const bill = await this.getBill(billId, facilityId);
 
+    // dto.method is PaymentMode (from RecordPaymentDto) — matches entity directly.
     const transaction = this.transactionRepo.create({
       billId,
       patientId: bill.patientId,
       facilityId,
       amount: dto.amount,
-      paymentMode: dto.method,
+      paymentMode: dto.method, // PaymentMode → PaymentMode ✓
       upiTransactionId: dto.transactionRef,
       notes: dto.notes,
       receivedById: userId,
-      status: TransactionStatus.SUCCESS,
+      status: TransactionStatus.SUCCESS, // TransactionStatus → TransactionStatus ✓
       paidAt: new Date(),
     });
     const saved = await this.transactionRepo.save(transaction);
@@ -193,7 +244,7 @@ export class PaymentService {
       .addSelect('t.paymentMode', 'mode')
       .where('t.facilityId = :facilityId', { facilityId })
       .andWhere('t.paidAt >= :d AND t.paidAt < :next', { d, next })
-      .andWhere('t.status = :status', { status: TransactionStatus.SUCCESS })
+      .andWhere('t.status = :status', { status: TransactionStatus.SUCCESS }) // TransactionStatus ✓
       .groupBy('t.paymentMode')
       .getRawMany();
 
@@ -231,10 +282,7 @@ export class PaymentService {
   ): Promise<any> {
     const bill = await this.getBill(billId, facilityId);
 
-    if (!bill) {
-      throw new NotFoundException(`Bill ${billId} not found`);
-    }
-
+    // dto.method is PaymentMethod — route to the correct gateway provider.
     const provider = this.paymentProviderFactory.getProvider(dto.method);
 
     const paymentInit = await provider.initiate({
@@ -247,14 +295,14 @@ export class PaymentService {
       metadata: dto.metadata,
     });
 
-    // Create transaction record
+    // Convert PaymentMethod → PaymentMode for the entity column.
     const transaction = this.transactionRepo.create({
       billId,
       patientId: bill.patientId,
       facilityId,
       amount: dto.amount,
-      paymentMode: dto.method,
-      status: TransactionStatus.PENDING,
+      paymentMode: this.toPaymentMode(dto.method), // PaymentMethod → PaymentMode ✓
+      status: TransactionStatus.INITIATED, // TransactionStatus ✓
       receivedById: userId,
       notes: `Payment initiated via ${dto.method}`,
     });
@@ -272,11 +320,6 @@ export class PaymentService {
   ): Promise<any> {
     const bill = await this.getBill(billId, facilityId);
 
-    if (!bill) {
-      throw new NotFoundException(`Bill ${billId} not found`);
-    }
-
-    // Find the payment transaction by reference
     const transaction = await this.transactionRepo.findOne({
       where: { billId, upiTransactionId: dto.transactionRef },
     });
@@ -287,12 +330,12 @@ export class PaymentService {
       );
     }
 
-    // Get the provider that handled this payment
+    // transaction.paymentMode is PaymentMode; convert back to PaymentMethod
+    // so the correct gateway provider can be retrieved from the factory.
     const provider = this.paymentProviderFactory.getProvider(
-      transaction.paymentMode as PaymentMethod,
+      this.toPaymentMethod(transaction.paymentMode), // PaymentMode → PaymentMethod ✓
     );
 
-    // Verify with the provider
     const verifyResult = await provider.verify({
       paymentId: transaction.id,
       transactionRef: dto.transactionRef,
@@ -301,12 +344,10 @@ export class PaymentService {
     });
 
     if (verifyResult.success) {
-      // Update transaction status
-      transaction.status = TransactionStatus.SUCCESS;
+      transaction.status = TransactionStatus.SUCCESS; // TransactionStatus ✓
       transaction.paidAt = new Date();
       await this.transactionRepo.save(transaction);
 
-      // Update bill payment status
       const newPaid = Number(bill.paidAmount) + Number(dto.amount);
       const newDue = Number(bill.totalAmount) - newPaid;
 
@@ -337,40 +378,38 @@ export class PaymentService {
       throw new NotFoundException(`Transaction ${transactionId} not found`);
     }
 
+    // Compare using TransactionStatus — same enum as the entity property.
     if (transaction.status !== TransactionStatus.SUCCESS) {
+      // TransactionStatus ✓
       throw new BadRequestException(
         `Cannot refund transaction with status ${transaction.status}`,
       );
     }
 
-    // Get the provider that handled this payment
+    // Convert PaymentMode → PaymentMethod to reach the correct gateway.
     const provider = this.paymentProviderFactory.getProvider(
-      transaction.paymentMode as PaymentMethod,
+      this.toPaymentMethod(transaction.paymentMode), // PaymentMode → PaymentMethod ✓
     );
 
-    // Process refund via provider
     const refundResult = await provider.refund({
       transactionId: transaction.id,
       amount: dto.amount || Number(transaction.amount),
       reason: dto.reason,
     });
 
-    // Update transaction status if refund successful
     if (refundResult.status === 'REFUNDED') {
-      transaction.status = TransactionStatus.PENDING; // Mark as pending refund processing
+      transaction.status = TransactionStatus.REFUNDED; // TransactionStatus ✓
       await this.transactionRepo.save(transaction);
 
-      // Update bill if full refund
       if (!dto.amount || dto.amount === Number(transaction.amount)) {
         const bill = await this.getBill(transaction.billId, facilityId);
+        const newPaid = Math.max(
+          0,
+          Number(bill.paidAmount) - Number(transaction.amount),
+        );
         await this.billRepo.update(transaction.billId, {
-          paidAmount: Math.max(
-            0,
-            Number(bill.paidAmount) - Number(transaction.amount),
-          ),
-          dueAmount:
-            Number(bill.totalAmount) -
-            Math.max(0, Number(bill.paidAmount) - Number(transaction.amount)),
+          paidAmount: newPaid,
+          dueAmount: Number(bill.totalAmount) - newPaid,
           status: BillStatus.FINALIZED,
         });
       }
