@@ -11,6 +11,7 @@ import { Roles } from '../common/decorators/roles.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { Role } from '../common/enums/role.enum';
 import type { JwtPayload } from '../common/interfaces/jwt-payload.interface';
+import { PaginationDto } from '../common/dto/pagination.dto';
 import { AuditService } from './audit.service';
 
 @ApiTags('Audit')
@@ -35,9 +36,10 @@ export class AuditController {
     @Query('resource') resource?: string,
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
-    @Query('page') page?: number,
-    @Query('limit') limit?: number,
+    @Query() pagination?: PaginationDto,
   ) {
+    const page = pagination?.page ?? 1;
+    const limit = pagination?.limit ?? 20;
     return this.auditService.findAll(
       user.facilityId!,
       { userId, resource, startDate, endDate },

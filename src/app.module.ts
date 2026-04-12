@@ -187,6 +187,7 @@ import { LabResult } from './lab/entities/lab-result.entity';
     QueueModule,
 
     // Feature Modules
+    RoomModule,
     UsersModule,
     AuthModule,
     PatientsModule,
@@ -200,7 +201,6 @@ import { LabResult } from './lab/entities/lab-result.entity';
     CrmModule,
     AuditModule,
     ReportsModule,
-    RoomModule,
     AdmissionModule,
     OtModule,
     OperationsCrmModule,

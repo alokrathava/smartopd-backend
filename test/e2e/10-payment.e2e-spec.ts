@@ -124,7 +124,7 @@ describe('Payment Module (E2E)', () => {
         .post('/api/v1/payment/bills')
         .set('Authorization', `Bearer ${ctx.receptionToken}`)
         .send({ patientId: ctx.patientId });
-      expect([200, 201]).toContain(res.status);
+      expect(res.status).toBe(201);
       billId = res.body.id;
     });
 
@@ -133,7 +133,7 @@ describe('Payment Module (E2E)', () => {
         .post('/api/v1/payment/bills')
         .set('Authorization', `Bearer ${ctx.pharmacistToken}`)
         .send({ patientId: ctx.patientId });
-      expect([200, 201]).toContain(res.status);
+      expect(res.status).toBe(201);
     });
 
     it('❌ 400 – missing patientId', async () => {
@@ -363,7 +363,7 @@ describe('Payment Module (E2E)', () => {
         .post(`/api/v1/payment/bills/${b.body.id}/pay`)
         .set('Authorization', `Bearer ${ctx.receptionToken}`)
         .send({ amount: 300, method: 'UPI', transactionRef: `UPI${uid()}` });
-      expect([200, 201]).toContain(res.status);
+      expect(res.status).toBe(201);
     });
 
     it('❌ 400 – zero or negative amount', async () => {
