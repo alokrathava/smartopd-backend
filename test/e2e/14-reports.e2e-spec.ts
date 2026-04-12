@@ -66,13 +66,14 @@ async function buildCtx(): Promise<RepCtx> {
     return l.body.accessToken as string;
   };
 
-  const [doctorToken, nurseToken, receptionToken, crmToken, equipmentToken] = await Promise.all([
-    makeUser('DOCTOR', 'Doctor@Test1'),
-    makeUser('NURSE', 'Nurse@Test1'),
-    makeUser('RECEPTIONIST', 'Recept@Test1'),
-    makeUser('CRM_ANALYST', 'CrmAna@Test1'),
-    makeUser('EQUIPMENT_STAFF', 'Equip@Test1!'),
-  ]);
+  const [doctorToken, nurseToken, receptionToken, crmToken, equipmentToken] =
+    await Promise.all([
+      makeUser('DOCTOR', 'Doctor@Test1'),
+      makeUser('NURSE', 'Nurse@Test1'),
+      makeUser('RECEPTIONIST', 'Recept@Test1'),
+      makeUser('CRM_ANALYST', 'CrmAna@Test1'),
+      makeUser('EQUIPMENT_STAFF', 'Equip@Test1!'),
+    ]);
 
   return {
     app,

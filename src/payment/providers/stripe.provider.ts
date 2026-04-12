@@ -3,10 +3,22 @@
  * Supports international payment processing
  */
 
-import { Injectable, BadRequestException, InternalServerErrorException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Stripe from 'stripe';
-import { IPaymentProvider, PaymentInitRequest, PaymentInitResponse, PaymentVerifyRequest, PaymentVerifyResponse, PaymentRefundRequest, PaymentRefundResponse } from './payment-provider.interface';
+import {
+  IPaymentProvider,
+  PaymentInitRequest,
+  PaymentInitResponse,
+  PaymentVerifyRequest,
+  PaymentVerifyResponse,
+  PaymentRefundRequest,
+  PaymentRefundResponse,
+} from './payment-provider.interface';
 import { PaymentMethod, PaymentStatus } from '../enums/payment-method.enum';
 
 @Injectable()
@@ -60,7 +72,9 @@ export class StripeProvider implements IPaymentProvider {
         },
       };
     } catch (error: any) {
-      throw new InternalServerErrorException(`Stripe initiation failed: ${error.message}`);
+      throw new InternalServerErrorException(
+        `Stripe initiation failed: ${error.message}`,
+      );
     }
   }
 
@@ -70,7 +84,9 @@ export class StripeProvider implements IPaymentProvider {
     }
 
     try {
-      const paymentIntent = await this.stripe.paymentIntents.retrieve(request.paymentId);
+      const paymentIntent = await this.stripe.paymentIntents.retrieve(
+        request.paymentId,
+      );
 
       if (paymentIntent.status === 'succeeded') {
         return {
@@ -101,7 +117,9 @@ export class StripeProvider implements IPaymentProvider {
         };
       }
     } catch (error: any) {
-      throw new InternalServerErrorException(`Stripe verification failed: ${error.message}`);
+      throw new InternalServerErrorException(
+        `Stripe verification failed: ${error.message}`,
+      );
     }
   }
 
@@ -128,7 +146,9 @@ export class StripeProvider implements IPaymentProvider {
         timestamp: new Date(refund.created * 1000),
       };
     } catch (error: any) {
-      throw new InternalServerErrorException(`Stripe refund failed: ${error.message}`);
+      throw new InternalServerErrorException(
+        `Stripe refund failed: ${error.message}`,
+      );
     }
   }
 
@@ -138,7 +158,8 @@ export class StripeProvider implements IPaymentProvider {
     }
 
     try {
-      const paymentIntent = await this.stripe.paymentIntents.retrieve(transactionId);
+      const paymentIntent =
+        await this.stripe.paymentIntents.retrieve(transactionId);
 
       switch (paymentIntent.status) {
         case 'succeeded':
@@ -155,7 +176,9 @@ export class StripeProvider implements IPaymentProvider {
           return PaymentStatus.PENDING;
       }
     } catch (error: any) {
-      throw new InternalServerErrorException(`Failed to get Stripe payment status: ${error.message}`);
+      throw new InternalServerErrorException(
+        `Failed to get Stripe payment status: ${error.message}`,
+      );
     }
   }
 

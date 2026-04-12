@@ -75,7 +75,10 @@ async function registerFacility(
       [facilityId],
     );
   } catch (error) {
-    console.warn('[E2E] Could not update database directly (may be running with different DB):', error);
+    console.warn(
+      '[E2E] Could not update database directly (may be running with different DB):',
+      error,
+    );
   }
 
   const loginRes = await request(app.getHttpServer())

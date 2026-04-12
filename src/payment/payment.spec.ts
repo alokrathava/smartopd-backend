@@ -93,7 +93,10 @@ describe('PaymentService', () => {
           useValue: mockTransactionRepo,
         },
         { provide: getRepositoryToken(Patient), useValue: mockPatientRepo },
-        { provide: PaymentProviderFactory, useValue: mockPaymentProviderFactory },
+        {
+          provide: PaymentProviderFactory,
+          useValue: mockPaymentProviderFactory,
+        },
       ],
     }).compile();
 

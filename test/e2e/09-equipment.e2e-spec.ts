@@ -420,7 +420,11 @@ describe('Equipment Module (E2E)', () => {
       const res = await request(ctx.app.getHttpServer())
         .post('/api/v1/equipment/maintenance')
         .set('Authorization', `Bearer ${ctx.equipmentToken}`)
-        .send({ maintenanceType: 'PREVENTIVE', scheduledDate: '2026-03-30', description: 'Test' });
+        .send({
+          maintenanceType: 'PREVENTIVE',
+          scheduledDate: '2026-03-30',
+          description: 'Test',
+        });
       expect(res.status).toBe(400);
     });
 
@@ -429,14 +433,23 @@ describe('Equipment Module (E2E)', () => {
       const res = await request(ctx.app.getHttpServer())
         .post('/api/v1/equipment/maintenance')
         .set('Authorization', `Bearer ${ctx.nurseToken}`)
-        .send({ equipmentId, maintenanceType: 'PREVENTIVE', scheduledDate: '2026-03-30', description: 'Test' });
+        .send({
+          equipmentId,
+          maintenanceType: 'PREVENTIVE',
+          scheduledDate: '2026-03-30',
+          description: 'Test',
+        });
       expect(res.status).toBe(403);
     });
 
     it('🔐 401 – no auth', async () => {
       const res = await request(ctx.app.getHttpServer())
         .post('/api/v1/equipment/maintenance')
-        .send({ equipmentId: 'x', maintenanceType: 'PREVENTIVE', scheduledDate: '2026-03-30' });
+        .send({
+          equipmentId: 'x',
+          maintenanceType: 'PREVENTIVE',
+          scheduledDate: '2026-03-30',
+        });
       expect(res.status).toBe(401);
     });
   });

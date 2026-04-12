@@ -3,10 +3,22 @@
  * Supports payment processing for India
  */
 
-import { Injectable, BadRequestException, InternalServerErrorException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Razorpay from 'razorpay';
-import { IPaymentProvider, PaymentInitRequest, PaymentInitResponse, PaymentVerifyRequest, PaymentVerifyResponse, PaymentRefundRequest, PaymentRefundResponse } from './payment-provider.interface';
+import {
+  IPaymentProvider,
+  PaymentInitRequest,
+  PaymentInitResponse,
+  PaymentVerifyRequest,
+  PaymentVerifyResponse,
+  PaymentRefundRequest,
+  PaymentRefundResponse,
+} from './payment-provider.interface';
 import { PaymentMethod, PaymentStatus } from '../enums/payment-method.enum';
 
 @Injectable()
@@ -64,7 +76,9 @@ export class RazorpayProvider implements IPaymentProvider {
         },
       };
     } catch (error: any) {
-      throw new InternalServerErrorException(`Razorpay initiation failed: ${error.message}`);
+      throw new InternalServerErrorException(
+        `Razorpay initiation failed: ${error.message}`,
+      );
     }
   }
 
@@ -83,8 +97,15 @@ export class RazorpayProvider implements IPaymentProvider {
         throw new BadRequestException('Razorpay signature missing');
       }
 
-      const hmac = crypto.createHmac('sha256', this.configService.get('RAZORPAY_KEY_SECRET'));
-      hmac.update(request.metadata?.razorpay_order_id + '|' + request.metadata?.razorpay_payment_id);
+      const hmac = crypto.createHmac(
+        'sha256',
+        this.configService.get('RAZORPAY_KEY_SECRET'),
+      );
+      hmac.update(
+        request.metadata?.razorpay_order_id +
+          '|' +
+          request.metadata?.razorpay_payment_id,
+      );
       const generated_signature = hmac.digest('hex');
 
       if (generated_signature !== signature) {
@@ -99,7 +120,11 @@ export class RazorpayProvider implements IPaymentProvider {
       }
 
       // Capture the payment
-      await this.razorpay.payments.capture(request.metadata?.razorpay_payment_id, Math.round(request.amount * 100), 'INR');
+      await this.razorpay.payments.capture(
+        request.metadata?.razorpay_payment_id,
+        Math.round(request.amount * 100),
+        'INR',
+      );
 
       return {
         success: true,
@@ -110,7 +135,9 @@ export class RazorpayProvider implements IPaymentProvider {
         timestamp: new Date(),
       };
     } catch (error: any) {
-      throw new InternalServerErrorException(`Razorpay verification failed: ${error.message}`);
+      throw new InternalServerErrorException(
+        `Razorpay verification failed: ${error.message}`,
+      );
     }
   }
 
@@ -130,7 +157,10 @@ export class RazorpayProvider implements IPaymentProvider {
         options.amount = Math.round(request.amount * 100);
       }
 
-      const refund = await this.razorpay.payments.refund(request.transactionId, options);
+      const refund = await this.razorpay.payments.refund(
+        request.transactionId,
+        options,
+      );
 
       return {
         refundId: refund.id,
@@ -140,7 +170,9 @@ export class RazorpayProvider implements IPaymentProvider {
         timestamp: new Date(),
       };
     } catch (error: any) {
-      throw new InternalServerErrorException(`Razorpay refund failed: ${error.message}`);
+      throw new InternalServerErrorException(
+        `Razorpay refund failed: ${error.message}`,
+      );
     }
   }
 
@@ -163,7 +195,9 @@ export class RazorpayProvider implements IPaymentProvider {
           return PaymentStatus.PENDING;
       }
     } catch (error: any) {
-      throw new InternalServerErrorException(`Failed to get Razorpay payment status: ${error.message}`);
+      throw new InternalServerErrorException(
+        `Failed to get Razorpay payment status: ${error.message}`,
+      );
     }
   }
 

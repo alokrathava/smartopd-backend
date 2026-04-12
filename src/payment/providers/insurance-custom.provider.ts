@@ -4,7 +4,15 @@
  */
 
 import { Injectable } from '@nestjs/common';
-import { IPaymentProvider, PaymentInitRequest, PaymentInitResponse, PaymentVerifyRequest, PaymentVerifyResponse, PaymentRefundRequest, PaymentRefundResponse } from './payment-provider.interface';
+import {
+  IPaymentProvider,
+  PaymentInitRequest,
+  PaymentInitResponse,
+  PaymentVerifyRequest,
+  PaymentVerifyResponse,
+  PaymentRefundRequest,
+  PaymentRefundResponse,
+} from './payment-provider.interface';
 import { PaymentMethod, PaymentStatus } from '../enums/payment-method.enum';
 
 @Injectable()
@@ -91,7 +99,8 @@ export class CustomOverrideProvider implements IPaymentProvider {
       amount: request.amount,
       currency: request.currency || 'INR',
       metadata: {
-        instruction: 'Custom payment method. Awaiting manual processing by hospital/clinic staff.',
+        instruction:
+          'Custom payment method. Awaiting manual processing by hospital/clinic staff.',
         custom_method: request.metadata?.custom_method,
         notes: request.metadata?.notes,
         generated_at: new Date(),

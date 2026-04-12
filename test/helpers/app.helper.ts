@@ -309,7 +309,11 @@ export function clearTokenCache(): void {
 // New E2E Helper Functions (for tests expecting buildApp, closeApp, etc.)
 // ──────────────────────────────────────────────────────────────────────────────
 
-import { initApp as setupInitApp, closeApp as setupCloseApp, getHttpServer as setupGetHttpServer } from './app.setup';
+import {
+  initApp as setupInitApp,
+  closeApp as setupCloseApp,
+  getHttpServer as setupGetHttpServer,
+} from './app.setup';
 import { INestApplication } from '@nestjs/common';
 
 /**
@@ -364,7 +368,9 @@ export async function createPatient(
     });
 
   if (response.status !== 201 && response.status !== 200) {
-    throw new Error(`Failed to create patient: ${response.status} - ${response.body.message || response.text}`);
+    throw new Error(
+      `Failed to create patient: ${response.status} - ${response.body.message || response.text}`,
+    );
   }
 
   return response.body;
@@ -410,26 +416,41 @@ export async function getFacilityAContext(): Promise<FacilityContext> {
     });
 
   if (registerRes.status !== 200 && registerRes.status !== 201) {
-    throw new Error(`Failed to register facility A: ${registerRes.body.message}`);
+    throw new Error(
+      `Failed to register facility A: ${registerRes.body.message}`,
+    );
   }
 
   const facilityId = registerRes.body.facilityId;
   const adminEmail = registerRes.body.adminEmail;
 
   // Login as admin
-  const loginRes = await supertestLib(server)
-    .post('/api/v1/auth/login')
-    .send({
-      email: adminEmail,
-      password: 'Admin@Test1',
-    });
+  const loginRes = await supertestLib(server).post('/api/v1/auth/login').send({
+    email: adminEmail,
+    password: 'Admin@Test1',
+  });
 
   const adminToken = loginRes.body.accessToken;
 
   // Create other user roles
-  const doctorToken = await createUserAndGetToken(server, adminToken, Role.DOCTOR, facilityId);
-  const nurseToken = await createUserAndGetToken(server, adminToken, Role.NURSE, facilityId);
-  const receptionistToken = await createUserAndGetToken(server, adminToken, Role.RECEPTIONIST, facilityId);
+  const doctorToken = await createUserAndGetToken(
+    server,
+    adminToken,
+    Role.DOCTOR,
+    facilityId,
+  );
+  const nurseToken = await createUserAndGetToken(
+    server,
+    adminToken,
+    Role.NURSE,
+    facilityId,
+  );
+  const receptionistToken = await createUserAndGetToken(
+    server,
+    adminToken,
+    Role.RECEPTIONIST,
+    facilityId,
+  );
 
   const context: FacilityContext = {
     facilityId,
@@ -470,26 +491,41 @@ export async function getFacilityBContext(): Promise<FacilityContext> {
     });
 
   if (registerRes.status !== 200 && registerRes.status !== 201) {
-    throw new Error(`Failed to register facility B: ${registerRes.body.message}`);
+    throw new Error(
+      `Failed to register facility B: ${registerRes.body.message}`,
+    );
   }
 
   const facilityId = registerRes.body.facilityId;
   const adminEmail = registerRes.body.adminEmail;
 
   // Login as admin
-  const loginRes = await supertestLib(server)
-    .post('/api/v1/auth/login')
-    .send({
-      email: adminEmail,
-      password: 'Admin@Test1',
-    });
+  const loginRes = await supertestLib(server).post('/api/v1/auth/login').send({
+    email: adminEmail,
+    password: 'Admin@Test1',
+  });
 
   const adminToken = loginRes.body.accessToken;
 
   // Create other user roles
-  const doctorToken = await createUserAndGetToken(server, adminToken, Role.DOCTOR, facilityId);
-  const nurseToken = await createUserAndGetToken(server, adminToken, Role.NURSE, facilityId);
-  const receptionistToken = await createUserAndGetToken(server, adminToken, Role.RECEPTIONIST, facilityId);
+  const doctorToken = await createUserAndGetToken(
+    server,
+    adminToken,
+    Role.DOCTOR,
+    facilityId,
+  );
+  const nurseToken = await createUserAndGetToken(
+    server,
+    adminToken,
+    Role.NURSE,
+    facilityId,
+  );
+  const receptionistToken = await createUserAndGetToken(
+    server,
+    adminToken,
+    Role.RECEPTIONIST,
+    facilityId,
+  );
 
   const context: FacilityContext = {
     facilityId,
@@ -537,12 +573,10 @@ async function createUserAndGetToken(
   }
 
   // Login as new user
-  const loginRes = await supertestLib(server)
-    .post('/api/v1/auth/login')
-    .send({
-      email: uniqueEmail,
-      password: 'User@Test1',
-    });
+  const loginRes = await supertestLib(server).post('/api/v1/auth/login').send({
+    email: uniqueEmail,
+    password: 'User@Test1',
+  });
 
   return loginRes.body.accessToken;
 }

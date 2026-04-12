@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, LessThanOrEqual } from 'typeorm';
 import { Equipment, EquipmentStatus } from './entities/equipment.entity';
@@ -101,12 +105,13 @@ export class EquipmentService {
 
     // Check if equipment is already on an active lease
     const activeLease = await this.leaseRepo.findOne({
-      where: { equipmentId: dto.equipmentId, status: PatientLeaseStatus.ACTIVE },
+      where: {
+        equipmentId: dto.equipmentId,
+        status: PatientLeaseStatus.ACTIVE,
+      },
     });
     if (activeLease) {
-      throw new ConflictException(
-        `Equipment is already on an active lease`,
-      );
+      throw new ConflictException(`Equipment is already on an active lease`);
     }
 
     eq.status = EquipmentStatus.LEASED_OUT;

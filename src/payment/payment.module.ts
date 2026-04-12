@@ -11,7 +11,10 @@ import { PaymentProviderFactory } from './providers/payment-provider.factory';
 import { RazorpayProvider } from './providers/razorpay.provider';
 import { StripeProvider } from './providers/stripe.provider';
 import { CashChequeProvider } from './providers/cash-cheque.provider';
-import { InsuranceProvider, CustomOverrideProvider } from './providers/insurance-custom.provider';
+import {
+  InsuranceProvider,
+  CustomOverrideProvider,
+} from './providers/insurance-custom.provider';
 
 @Module({
   imports: [

@@ -15,6 +15,11 @@ import { Patient } from '../patients/entities/patient.entity';
 import { CreateBillDto } from './dto/create-bill.dto';
 import { AddBillItemDto } from './dto/add-bill-item.dto';
 import { RecordPaymentDto } from './dto/record-payment.dto';
+import {
+  InitiatePaymentDto,
+  VerifyPaymentDto,
+  RefundPaymentDto,
+} from './dto/payment-provider.dto';
 import { PaymentProviderFactory } from './providers/payment-provider.factory';
 import { PaymentMethod } from './enums/payment-method.enum';
 
@@ -214,5 +219,163 @@ export class PaymentService {
       where: { patientId, facilityId },
       order: { createdAt: 'DESC' },
     });
+  }
+
+  // ─── Payment Provider Integration Methods ──────────────────────────────────
+
+  async initiatePayment(
+    billId: string,
+    dto: InitiatePaymentDto,
+    facilityId: string,
+    userId: string,
+  ): Promise<any> {
+    const bill = await this.getBill(billId, facilityId);
+
+    if (!bill) {
+      throw new NotFoundException(`Bill ${billId} not found`);
+    }
+
+    const provider = this.paymentProviderFactory.getProvider(dto.method);
+
+    const paymentInit = await provider.initiate({
+      amount: dto.amount,
+      billId,
+      currency: dto.currency || 'INR',
+      description: dto.description || `Payment for bill ${bill.billNumber}`,
+      customerEmail: dto.customerEmail,
+      customerPhone: dto.customerPhone,
+      metadata: dto.metadata,
+    });
+
+    // Create transaction record
+    const transaction = this.transactionRepo.create({
+      billId,
+      patientId: bill.patientId,
+      facilityId,
+      amount: dto.amount,
+      paymentMode: dto.method,
+      status: TransactionStatus.PENDING,
+      receivedById: userId,
+      notes: `Payment initiated via ${dto.method}`,
+    });
+
+    await this.transactionRepo.save(transaction);
+
+    return paymentInit;
+  }
+
+  async verifyPayment(
+    billId: string,
+    dto: VerifyPaymentDto,
+    facilityId: string,
+    userId: string,
+  ): Promise<any> {
+    const bill = await this.getBill(billId, facilityId);
+
+    if (!bill) {
+      throw new NotFoundException(`Bill ${billId} not found`);
+    }
+
+    // Find the payment transaction by reference
+    const transaction = await this.transactionRepo.findOne({
+      where: { billId, upiTransactionId: dto.transactionRef },
+    });
+
+    if (!transaction) {
+      throw new NotFoundException(
+        `Payment transaction ${dto.transactionRef} not found`,
+      );
+    }
+
+    // Get the provider that handled this payment
+    const provider = this.paymentProviderFactory.getProvider(
+      transaction.paymentMode as PaymentMethod,
+    );
+
+    // Verify with the provider
+    const verifyResult = await provider.verify({
+      paymentId: transaction.id,
+      transactionRef: dto.transactionRef,
+      amount: dto.amount,
+      metadata: dto.metadata,
+    });
+
+    if (verifyResult.success) {
+      // Update transaction status
+      transaction.status = TransactionStatus.SUCCESS;
+      transaction.paidAt = new Date();
+      await this.transactionRepo.save(transaction);
+
+      // Update bill payment status
+      const newPaid = Number(bill.paidAmount) + Number(dto.amount);
+      const newDue = Number(bill.totalAmount) - newPaid;
+
+      let newStatus = bill.status;
+      if (newDue <= 0) newStatus = BillStatus.PAID;
+      else if (newPaid > 0) newStatus = BillStatus.PARTIAL;
+
+      await this.billRepo.update(billId, {
+        paidAmount: newPaid,
+        dueAmount: Math.max(0, newDue),
+        status: newStatus,
+      });
+    }
+
+    return verifyResult;
+  }
+
+  async refundPayment(
+    transactionId: string,
+    dto: RefundPaymentDto,
+    facilityId: string,
+  ): Promise<any> {
+    const transaction = await this.transactionRepo.findOne({
+      where: { id: transactionId, facilityId },
+    });
+
+    if (!transaction) {
+      throw new NotFoundException(`Transaction ${transactionId} not found`);
+    }
+
+    if (transaction.status !== TransactionStatus.SUCCESS) {
+      throw new BadRequestException(
+        `Cannot refund transaction with status ${transaction.status}`,
+      );
+    }
+
+    // Get the provider that handled this payment
+    const provider = this.paymentProviderFactory.getProvider(
+      transaction.paymentMode as PaymentMethod,
+    );
+
+    // Process refund via provider
+    const refundResult = await provider.refund({
+      transactionId: transaction.id,
+      amount: dto.amount || Number(transaction.amount),
+      reason: dto.reason,
+    });
+
+    // Update transaction status if refund successful
+    if (refundResult.status === 'REFUNDED') {
+      transaction.status = TransactionStatus.PENDING; // Mark as pending refund processing
+      await this.transactionRepo.save(transaction);
+
+      // Update bill if full refund
+      if (!dto.amount || dto.amount === Number(transaction.amount)) {
+        const bill = await this.getBill(transaction.billId, facilityId);
+        await this.billRepo.update(transaction.billId, {
+          paidAmount: Math.max(
+            0,
+            Number(bill.paidAmount) - Number(transaction.amount),
+          ),
+          dueAmount:
+            Number(bill.totalAmount) -
+            Math.max(0, Number(bill.paidAmount) - Number(transaction.amount)),
+          status: BillStatus.FINALIZED,
+        });
+      }
+    }
+
+    return refundResult;
   }
 }

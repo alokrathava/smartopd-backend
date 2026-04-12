@@ -103,7 +103,8 @@ describe('Notifications Module (E2E)', () => {
         .send({
           code: templateCode,
           channel: 'SMS',
-          bodyTemplate: 'Dear {{patientName}}, your appointment is on {{date}}.',
+          bodyTemplate:
+            'Dear {{patientName}}, your appointment is on {{date}}.',
           variables: ['patientName', 'date'],
         });
       expect([200, 201]).toContain(res.status);
@@ -152,7 +153,11 @@ describe('Notifications Module (E2E)', () => {
       const res = await request(ctx.app.getHttpServer())
         .post('/api/v1/notifications/templates')
         .set('Authorization', `Bearer ${ctx.adminToken}`)
-        .send({ code: templateCode, channel: 'SMS', bodyTemplate: 'Duplicate' });
+        .send({
+          code: templateCode,
+          channel: 'SMS',
+          bodyTemplate: 'Duplicate',
+        });
       expect([400, 409]).toContain(res.status);
     });
 

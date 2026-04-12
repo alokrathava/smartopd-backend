@@ -2,7 +2,14 @@
  * DTOs for Payment Provider Integration
  */
 
-import { IsEnum, IsNumber, IsOptional, IsString, Min, IsObject } from 'class-validator';
+import {
+  IsEnum,
+  IsNumber,
+  IsOptional,
+  IsString,
+  Min,
+  IsObject,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { PaymentMethod } from '../enums/payment-method.enum';
 
@@ -58,7 +65,9 @@ export class VerifyPaymentDto {
 }
 
 export class RefundPaymentDto {
-  @ApiPropertyOptional({ description: 'Partial refund amount (if not specified, full refund)' })
+  @ApiPropertyOptional({
+    description: 'Partial refund amount (if not specified, full refund)',
+  })
   @IsOptional()
   @IsNumber()
   @Min(0.01)

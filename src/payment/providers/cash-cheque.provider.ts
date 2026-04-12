@@ -4,7 +4,15 @@
  */
 
 import { Injectable } from '@nestjs/common';
-import { IPaymentProvider, PaymentInitRequest, PaymentInitResponse, PaymentVerifyRequest, PaymentVerifyResponse, PaymentRefundRequest, PaymentRefundResponse } from './payment-provider.interface';
+import {
+  IPaymentProvider,
+  PaymentInitRequest,
+  PaymentInitResponse,
+  PaymentVerifyRequest,
+  PaymentVerifyResponse,
+  PaymentRefundRequest,
+  PaymentRefundResponse,
+} from './payment-provider.interface';
 import { PaymentMethod, PaymentStatus } from '../enums/payment-method.enum';
 
 @Injectable()

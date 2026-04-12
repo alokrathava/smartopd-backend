@@ -3,13 +3,20 @@
  * Manages all payment providers and routes requests to appropriate provider
  */
 
-import { Injectable, BadRequestException, InternalServerErrorException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { PaymentMethod } from '../enums/payment-method.enum';
 import { IPaymentProvider } from './payment-provider.interface';
 import { RazorpayProvider } from './razorpay.provider';
 import { CashChequeProvider } from './cash-cheque.provider';
 import { StripeProvider } from './stripe.provider';
-import { InsuranceProvider, CustomOverrideProvider } from './insurance-custom.provider';
+import {
+  InsuranceProvider,
+  CustomOverrideProvider,
+} from './insurance-custom.provider';
 
 @Injectable()
 export class PaymentProviderFactory {
@@ -32,7 +39,10 @@ export class PaymentProviderFactory {
     this.providers.set(PaymentMethod.CHEQUE, this.cashChequeProvider); // Share same provider
     this.providers.set(PaymentMethod.STRIPE, this.stripeProvider);
     this.providers.set(PaymentMethod.INSURANCE, this.insuranceProvider);
-    this.providers.set(PaymentMethod.CUSTOM_OVERRIDE, this.customOverrideProvider);
+    this.providers.set(
+      PaymentMethod.CUSTOM_OVERRIDE,
+      this.customOverrideProvider,
+    );
     this.providers.set(PaymentMethod.BANK_TRANSFER, this.cashChequeProvider); // Treat like offline
   }
 
@@ -52,18 +62,29 @@ export class PaymentProviderFactory {
   /**
    * Get all available providers for a region
    */
-  async getAvailableProviders(region?: 'INDIA' | 'INTERNATIONAL'): Promise<PaymentMethod[]> {
+  async getAvailableProviders(
+    region?: 'INDIA' | 'INTERNATIONAL',
+  ): Promise<PaymentMethod[]> {
     const available: PaymentMethod[] = [];
 
     for (const [method, provider] of this.providers) {
       if (await provider.isAvailable()) {
         // Filter by region if specified
         if (region === 'INDIA') {
-          if ([PaymentMethod.RAZORPAY, PaymentMethod.CASH, PaymentMethod.CHEQUE, PaymentMethod.INSURANCE].includes(method)) {
+          if (
+            [
+              PaymentMethod.RAZORPAY,
+              PaymentMethod.CASH,
+              PaymentMethod.CHEQUE,
+              PaymentMethod.INSURANCE,
+            ].includes(method)
+          ) {
             available.push(method);
           }
         } else if (region === 'INTERNATIONAL') {
-          if ([PaymentMethod.STRIPE, PaymentMethod.BANK_TRANSFER].includes(method)) {
+          if (
+            [PaymentMethod.STRIPE, PaymentMethod.BANK_TRANSFER].includes(method)
+          ) {
             available.push(method);
           }
         } else {
