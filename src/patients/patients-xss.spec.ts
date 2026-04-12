@@ -24,7 +24,7 @@ describe('Patients XSS Protection', () => {
       // firstName should have critical HTML characters escaped
       // Most important: < > " are escaped to prevent XSS
       expect(dto.firstName).toBe(
-        '&lt;img src=x onerror=&quot;alert(1)&quot;&gt;',
+        '&lt;img src&#x3D;x onerror&#x3D;&quot;alert(1)&quot;&gt;',
       );
       expect(dto.firstName).not.toContain('<');
       expect(dto.firstName).not.toContain('>');

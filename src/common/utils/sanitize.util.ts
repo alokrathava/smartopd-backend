@@ -17,9 +17,10 @@ export function escapeHtml(str: string | null | undefined): string {
     '"': '&quot;',
     "'": '&#39;',
     '/': '&#x2F;',
+    '=': '&#x3D;',
   };
 
-  return String(str).replace(/[&<>"'\/]/g, (char) => htmlEscapeMap[char]);
+  return String(str).replace(/[&<>"'\/=]/g, (char) => htmlEscapeMap[char]);
 }
 
 /**
