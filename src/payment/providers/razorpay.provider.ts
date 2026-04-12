@@ -5,7 +5,7 @@
 
 import { Injectable, BadRequestException, InternalServerErrorException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import * as Razorpay from 'razorpay';
+import Razorpay from 'razorpay';
 import { IPaymentProvider, PaymentInitRequest, PaymentInitResponse, PaymentVerifyRequest, PaymentVerifyResponse, PaymentRefundRequest, PaymentRefundResponse } from './payment-provider.interface';
 import { PaymentMethod, PaymentStatus } from '../enums/payment-method.enum';
 
@@ -159,8 +159,6 @@ export class RazorpayProvider implements IPaymentProvider {
           return PaymentStatus.FAILED;
         case 'refunded':
           return PaymentStatus.REFUNDED;
-        case 'disputed':
-          return PaymentStatus.DISPUTED;
         default:
           return PaymentStatus.PENDING;
       }

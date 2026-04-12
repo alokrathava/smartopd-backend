@@ -11,16 +11,14 @@ import { PaymentMethod, PaymentStatus } from '../enums/payment-method.enum';
 
 @Injectable()
 export class StripeProvider implements IPaymentProvider {
-  private stripe: Stripe;
+  private stripe: any;
   private isInitialized = false;
 
   constructor(private configService: ConfigService) {
     const apiKey = this.configService.get<string>('STRIPE_SECRET_KEY');
 
     if (apiKey) {
-      this.stripe = new Stripe(apiKey, {
-        apiVersion: '2023-10-16',
-      });
+      this.stripe = new Stripe(apiKey);
       this.isInitialized = true;
     }
   }
