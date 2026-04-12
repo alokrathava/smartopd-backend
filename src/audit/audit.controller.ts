@@ -1,4 +1,4 @@
-import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Query, UseGuards, BadRequestException } from '@nestjs/common';
 import {
   ApiTags,
   ApiBearerAuth,
@@ -11,7 +11,6 @@ import { Roles } from '../common/decorators/roles.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { Role } from '../common/enums/role.enum';
 import type { JwtPayload } from '../common/interfaces/jwt-payload.interface';
-import { PaginationDto } from '../common/dto/pagination.dto';
 import { AuditService } from './audit.service';
 
 @ApiTags('Audit')
@@ -36,10 +35,29 @@ export class AuditController {
     @Query('resource') resource?: string,
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
-    @Query() pagination?: PaginationDto,
+    @Query('page') pageStr?: string,
+    @Query('limit') limitStr?: string,
   ) {
-    const page = pagination?.page ?? 1;
-    const limit = pagination?.limit ?? 20;
+    // Manual validation for pagination parameters
+    let page = 1;
+    let limit = 20;
+
+    if (pageStr) {
+      const parsed = parseInt(pageStr, 10);
+      if (isNaN(parsed) || parsed < 1) {
+        throw new BadRequestException('page must be a positive integer');
+      }
+      page = parsed;
+    }
+
+    if (limitStr) {
+      const parsed = parseInt(limitStr, 10);
+      if (isNaN(parsed) || parsed < 1 || parsed > 100) {
+        throw new BadRequestException('limit must be between 1 and 100');
+      }
+      limit = parsed;
+    }
+
     return this.auditService.findAll(
       user.facilityId!,
       { userId, resource, startDate, endDate },
