@@ -15,6 +15,8 @@ import { Patient } from '../patients/entities/patient.entity';
 import { CreateBillDto } from './dto/create-bill.dto';
 import { AddBillItemDto } from './dto/add-bill-item.dto';
 import { RecordPaymentDto } from './dto/record-payment.dto';
+import { PaymentProviderFactory } from './providers/payment-provider.factory';
+import { PaymentMethod } from './enums/payment-method.enum';
 
 @Injectable()
 export class PaymentService {
@@ -27,6 +29,7 @@ export class PaymentService {
     private readonly transactionRepo: Repository<PaymentTransaction>,
     @InjectRepository(Patient)
     private readonly patientRepo: Repository<Patient>,
+    private readonly paymentProviderFactory: PaymentProviderFactory,
   ) {}
 
   private async generateBillNumber(facilityId: string): Promise<string> {
