@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { NotFoundException } from '@nestjs/common';
 import { PaymentService } from './payment.service';
+import { PaymentProviderFactory } from './providers/payment-provider.factory';
 import { Bill, BillStatus } from './entities/bill.entity';
 import { BillItem } from './entities/bill-item.entity';
 import {
@@ -60,6 +61,12 @@ const mockPatientRepo = {
   findOne: jest.fn(),
 };
 
+const mockPaymentProviderFactory = {
+  getProvider: jest.fn(),
+  getAvailableProviders: jest.fn(),
+  getRecommendedProvider: jest.fn(),
+};
+
 describe('PaymentService', () => {
   let service: PaymentService;
 
@@ -86,6 +93,7 @@ describe('PaymentService', () => {
           useValue: mockTransactionRepo,
         },
         { provide: getRepositoryToken(Patient), useValue: mockPatientRepo },
+        { provide: PaymentProviderFactory, useValue: mockPaymentProviderFactory },
       ],
     }).compile();
 
