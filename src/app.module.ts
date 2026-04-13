@@ -174,10 +174,16 @@ import { LabResult } from './lab/entities/lab-result.entity';
           LabOrder,
           LabResult,
         ],
-        synchronize: configService.get<string>('NODE_ENV') !== 'production',
+        // Disable synchronize and rely on migrations instead
+        // This prevents conflicts between entity decorators and migration files
+        synchronize: false,
         logging: configService.get<string>('NODE_ENV') === 'development',
-        migrations: ['dist/migrations/*.js'],
-        migrationsRun: configService.get<string>('NODE_ENV') === 'production',
+        migrations: [
+          configService.get<string>('NODE_ENV') === 'production'
+            ? 'dist/migrations/*.js'
+            : 'src/migrations/*.ts',
+        ],
+        migrationsRun: true,
       }),
     }),
 

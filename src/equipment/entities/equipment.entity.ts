@@ -4,7 +4,6 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
-  Index,
 } from 'typeorm';
 
 export enum EquipmentCategory {
@@ -93,7 +92,6 @@ export class Equipment {
   @Column({ type: 'date', nullable: true, name: 'warranty_expires_at' })
   warrantyExpiresAt: Date;
 
-  @Index()
   @Column({ type: 'date', nullable: true, name: 'next_maintenance_due' })
   nextMaintenanceDue: Date;
 
