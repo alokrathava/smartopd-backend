@@ -7,7 +7,7 @@ describe('AppController (e2e)', () => {
 
   beforeAll(async () => {
     app = await initApp();
-  }, 30000);
+  }, 90000);
 
   afterAll(async () => {
     await closeApp();

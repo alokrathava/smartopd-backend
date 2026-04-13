@@ -94,10 +94,12 @@ describe('CrmService', () => {
 
   describe('createFollowUp()', () => {
     it('creates and saves a follow-up with facilityId', async () => {
+      const futureDate = new Date();
+      futureDate.setDate(futureDate.getDate() + 7);
       const dto = {
         patientId: 'p1',
         reason: 'Post-op review',
-        scheduledDate: '2026-04-10',
+        scheduledDate: futureDate.toISOString().split('T')[0],
       };
       const saved = { id: 'fu-1', ...dto, facilityId };
       mockFollowUpRepo.create.mockReturnValue(saved);

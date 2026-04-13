@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, LessThanOrEqual } from 'typeorm';
 import { Equipment, EquipmentStatus } from './entities/equipment.entity';
@@ -8,6 +12,7 @@ import {
 } from './entities/equipment-lease.entity';
 import { MaintenanceLog } from './entities/maintenance-log.entity';
 import { CreateEquipmentDto } from './dto/create-equipment.dto';
+import { UpdateEquipmentDto } from './dto/update-equipment.dto';
 import { CreatePatientLeaseDto } from './dto/create-patient-lease.dto';
 import { ReturnEquipmentDto } from './dto/return-equipment.dto';
 import { CreateMaintenanceLogDto } from './dto/create-maintenance-log.dto';
@@ -27,6 +32,18 @@ export class EquipmentService {
     dto: CreateEquipmentDto,
     facilityId: string,
   ): Promise<Equipment> {
+    // Check for duplicate serialNumber within the facility
+    if (dto.serialNumber) {
+      const existing = await this.equipmentRepo.findOne({
+        where: { serialNumber: dto.serialNumber, facilityId },
+      });
+      if (existing) {
+        throw new ConflictException(
+          `Equipment with serial number ${dto.serialNumber} already exists in this facility`,
+        );
+      }
+    }
+
     const eq = this.equipmentRepo.create({
       ...dto,
       facilityId,
@@ -66,7 +83,7 @@ export class EquipmentService {
 
   async update(
     id: string,
-    dto: Partial<CreateEquipmentDto>,
+    dto: UpdateEquipmentDto,
     facilityId: string,
   ): Promise<Equipment> {
     const eq = await this.findOne(id, facilityId);
@@ -85,6 +102,18 @@ export class EquipmentService {
     userId: string,
   ): Promise<EquipmentLease> {
     const eq = await this.findOne(dto.equipmentId, facilityId);
+
+    // Check if equipment is already on an active lease
+    const activeLease = await this.leaseRepo.findOne({
+      where: {
+        equipmentId: dto.equipmentId,
+        status: PatientLeaseStatus.ACTIVE,
+      },
+    });
+    if (activeLease) {
+      throw new ConflictException(`Equipment is already on an active lease`);
+    }
+
     eq.status = EquipmentStatus.LEASED_OUT;
     await this.equipmentRepo.save(eq);
 
@@ -93,7 +122,7 @@ export class EquipmentService {
       facilityId,
       issuedById: userId,
       issuedAt: dto.issuedAt ? new Date(dto.issuedAt) : new Date(),
-      dueDate: dto.dueDate ? new Date(dto.dueDate) : new Date(),
+      dueDate: new Date(dto.dueDate),
     });
     return this.leaseRepo.save(lease);
   }
@@ -107,6 +136,11 @@ export class EquipmentService {
       where: { id: leaseId, facilityId },
     });
     if (!lease) throw new NotFoundException(`Lease ${leaseId} not found`);
+
+    // Check if lease is already returned
+    if (lease.status === PatientLeaseStatus.RETURNED) {
+      throw new ConflictException(`Lease ${leaseId} has already been returned`);
+    }
 
     lease.returnedAt = new Date();
     lease.returnedCondition = dto.returnedCondition;

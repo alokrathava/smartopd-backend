@@ -28,7 +28,7 @@ export class ReportsService {
     const start = new Date(from);
     const end = dayjs(to).endOf('day').toDate();
 
-    const total = await this.visitRepo.count({ where: { facilityId } });
+    const totalVisits = await this.visitRepo.count({ where: { facilityId } });
     const inRange = await this.visitRepo
       .createQueryBuilder('v')
       .where('v.facilityId = :facilityId', { facilityId })
@@ -53,7 +53,7 @@ export class ReportsService {
       .groupBy('v.visitType')
       .getRawMany();
 
-    return { total, inRange, byStatus, byType };
+    return { totalVisits, inRange, byStatus, byType };
   }
 
   async getRevenueSummary(facilityId: string, from: string, to: string) {

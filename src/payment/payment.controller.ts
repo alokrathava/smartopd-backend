@@ -22,16 +22,26 @@ import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { Role } from '../common/enums/role.enum';
 import type { JwtPayload } from '../common/interfaces/jwt-payload.interface';
 import { PaymentService } from './payment.service';
+import { PaymentProviderFactory } from './providers/payment-provider.factory';
 import { CreateBillDto } from './dto/create-bill.dto';
 import { AddBillItemDto } from './dto/add-bill-item.dto';
 import { RecordPaymentDto } from './dto/record-payment.dto';
+import {
+  InitiatePaymentDto,
+  VerifyPaymentDto,
+  RefundPaymentDto,
+  PaymentAvailabilityDto,
+} from './dto/payment-provider.dto';
 
 @ApiTags('Payment')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('payment')
 export class PaymentController {
-  constructor(private readonly paymentService: PaymentService) {}
+  constructor(
+    private readonly paymentService: PaymentService,
+    private readonly paymentProviderFactory: PaymentProviderFactory,
+  ) {}
 
   @Post('bills')
   @Roles(Role.RECEPTIONIST, Role.PHARMACIST, Role.FACILITY_ADMIN)
@@ -107,5 +117,74 @@ export class PaymentController {
       throw new BadRequestException('Invalid date format');
     }
     return this.paymentService.getDailyRevenue(user.facilityId!, resolvedDate);
+  }
+
+  // ─── Payment Provider Integration Endpoints ─────────────────────────────────
+
+  @Get('providers/available')
+  @Roles(Role.RECEPTIONIST, Role.PHARMACIST, Role.FACILITY_ADMIN)
+  @ApiOperation({
+    summary: 'Get available payment providers for region',
+  })
+  @ApiQuery({
+    name: 'region',
+    required: false,
+    enum: ['INDIA', 'INTERNATIONAL'],
+  })
+  async getAvailableProviders(@Query() query: PaymentAvailabilityDto) {
+    const available = await this.paymentProviderFactory.getAvailableProviders(
+      query.region,
+    );
+    const recommended = this.paymentProviderFactory.getRecommendedProvider(
+      query.region,
+    );
+    return { availableMethods: available, recommended };
+  }
+
+  @Post('bills/:id/initiate-payment')
+  @Roles(Role.RECEPTIONIST, Role.PHARMACIST, Role.FACILITY_ADMIN)
+  @ApiOperation({ summary: 'Initiate payment for a bill' })
+  async initiatePayment(
+    @Param('id', ParseUUIDPipe) billId: string,
+    @Body() dto: InitiatePaymentDto,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    return this.paymentService.initiatePayment(
+      billId,
+      dto,
+      user.facilityId!,
+      user.sub,
+    );
+  }
+
+  @Post('bills/:id/verify-payment')
+  @Roles(Role.RECEPTIONIST, Role.PHARMACIST, Role.FACILITY_ADMIN)
+  @ApiOperation({ summary: 'Verify payment callback from provider' })
+  async verifyPayment(
+    @Param('id', ParseUUIDPipe) billId: string,
+    @Body() dto: VerifyPaymentDto,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    return this.paymentService.verifyPayment(
+      billId,
+      dto,
+      user.facilityId!,
+      user.sub,
+    );
+  }
+
+  @Post('bills/:id/refund')
+  @Roles(Role.RECEPTIONIST, Role.PHARMACIST, Role.FACILITY_ADMIN)
+  @ApiOperation({ summary: 'Refund a payment' })
+  async refundPayment(
+    @Param('id', ParseUUIDPipe) transactionId: string,
+    @Body() dto: RefundPaymentDto,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    return this.paymentService.refundPayment(
+      transactionId,
+      dto,
+      user.facilityId!,
+    );
   }
 }

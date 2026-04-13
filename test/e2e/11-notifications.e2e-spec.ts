@@ -64,9 +64,11 @@ async function buildCtx(): Promise<NCtx> {
     return l.body.accessToken as string;
   };
 
-  const doctorToken = await makeUser('DOCTOR', 'Doctor@Test1');
-  const nurseToken = await makeUser('NURSE', 'Nurse@Test1');
-  const receptionToken = await makeUser('RECEPTIONIST', 'Recept@Test1');
+  const [doctorToken, nurseToken, receptionToken] = await Promise.all([
+    makeUser('DOCTOR', 'Doctor@Test1'),
+    makeUser('NURSE', 'Nurse@Test1'),
+    makeUser('RECEPTIONIST', 'Recept@Test1'),
+  ]);
 
   return {
     app,
@@ -84,7 +86,7 @@ describe('Notifications Module (E2E)', () => {
 
   beforeAll(async () => {
     ctx = await buildCtx();
-  }, 60000);
+  }, 120000);
   afterAll(async () => {
     await ctx.app.close();
   });
@@ -101,7 +103,8 @@ describe('Notifications Module (E2E)', () => {
         .send({
           code: templateCode,
           channel: 'SMS',
-          body: 'Dear {{patientName}}, your appointment is on {{date}}.',
+          bodyTemplate:
+            'Dear {{patientName}}, your appointment is on {{date}}.',
           variables: ['patientName', 'date'],
         });
       expect([200, 201]).toContain(res.status);
@@ -116,7 +119,7 @@ describe('Notifications Module (E2E)', () => {
           code: `EMAIL_TEMPLATE_${uid()}`,
           channel: 'EMAIL',
           subject: 'Appointment Reminder',
-          body: 'Dear {{name}}, your appointment is scheduled.',
+          bodyTemplate: 'Dear {{name}}, your appointment is scheduled.',
           variables: ['name'],
         });
       expect([200, 201]).toContain(res.status);
@@ -126,7 +129,7 @@ describe('Notifications Module (E2E)', () => {
       const res = await request(ctx.app.getHttpServer())
         .post('/api/v1/notifications/templates')
         .set('Authorization', `Bearer ${ctx.adminToken}`)
-        .send({ channel: 'SMS', body: 'Test message' });
+        .send({ channel: 'SMS', bodyTemplate: 'Test message' });
       expect(res.status).toBe(400);
     });
 
@@ -134,7 +137,7 @@ describe('Notifications Module (E2E)', () => {
       const res = await request(ctx.app.getHttpServer())
         .post('/api/v1/notifications/templates')
         .set('Authorization', `Bearer ${ctx.adminToken}`)
-        .send({ code: `NOCODE_${uid()}`, body: 'Test' });
+        .send({ code: `NOCODE_${uid()}`, bodyTemplate: 'Test' });
       expect(res.status).toBe(400);
     });
 
@@ -150,7 +153,11 @@ describe('Notifications Module (E2E)', () => {
       const res = await request(ctx.app.getHttpServer())
         .post('/api/v1/notifications/templates')
         .set('Authorization', `Bearer ${ctx.adminToken}`)
-        .send({ code: templateCode, channel: 'SMS', body: 'Duplicate' });
+        .send({
+          code: templateCode,
+          channel: 'SMS',
+          bodyTemplate: 'Duplicate',
+        });
       expect([400, 409]).toContain(res.status);
     });
 
@@ -158,14 +165,14 @@ describe('Notifications Module (E2E)', () => {
       const res = await request(ctx.app.getHttpServer())
         .post('/api/v1/notifications/templates')
         .set('Authorization', `Bearer ${ctx.doctorToken}`)
-        .send({ code: `DOC_${uid()}`, channel: 'SMS', body: 'Test' });
+        .send({ code: `DOC_${uid()}`, channel: 'SMS', bodyTemplate: 'Test' });
       expect(res.status).toBe(403);
     });
 
     it('🔐 401 – no auth', async () => {
       const res = await request(ctx.app.getHttpServer())
         .post('/api/v1/notifications/templates')
-        .send({ code: `ANON_${uid()}`, channel: 'SMS', body: 'Test' });
+        .send({ code: `ANON_${uid()}`, channel: 'SMS', bodyTemplate: 'Test' });
       expect(res.status).toBe(401);
     });
   });

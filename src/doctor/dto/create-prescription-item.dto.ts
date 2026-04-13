@@ -11,9 +11,10 @@ import { Type } from 'class-transformer';
 import { DrugForm, Frequency } from '../entities/prescription-item.entity';
 
 export class CreatePrescriptionItemDto {
-  @ApiProperty()
+  @ApiPropertyOptional()
+  @IsOptional()
   @IsUUID()
-  prescriptionId: string;
+  prescriptionId?: string;
 
   @ApiProperty()
   @IsString()

@@ -9,6 +9,7 @@ import {
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { FacilityType } from '../../users/entities/facility.entity';
+import { Sanitize } from '../../common/decorators/sanitize.decorator';
 
 export class RegisterFacilityDto {
   // Facility info
@@ -16,6 +17,7 @@ export class RegisterFacilityDto {
     example: 'City General Hospital',
     description: 'Hospital / clinic name',
   })
+  @Sanitize()
   @IsNotEmpty()
   @IsString()
   facilityName: string;
@@ -25,26 +27,43 @@ export class RegisterFacilityDto {
   facilityType: FacilityType;
 
   @ApiPropertyOptional({ example: 'Mumbai' })
+  @Sanitize()
   @IsOptional()
   @IsString()
   city?: string;
   @ApiPropertyOptional({ example: 'Maharashtra' })
+  @Sanitize()
   @IsOptional()
   @IsString()
   state?: string;
-  @ApiPropertyOptional() @IsOptional() @IsString() address?: string;
-  @ApiPropertyOptional() @IsOptional() @IsString() pincode?: string;
-  @ApiPropertyOptional() @IsOptional() @IsString() facilityPhone?: string;
+  @ApiPropertyOptional()
+  @Sanitize()
+  @IsOptional()
+  @IsString()
+  address?: string;
+  @ApiPropertyOptional()
+  @Sanitize()
+  @IsOptional()
+  @IsString()
+  pincode?: string;
+  @ApiPropertyOptional()
+  @Sanitize()
+  @IsOptional()
+  @IsString()
+  facilityPhone?: string;
 
   // Admin user info
   @ApiProperty({ example: 'admin@cityhospital.com' })
+  @Sanitize()
   @IsEmail()
   adminEmail: string;
   @ApiProperty({ example: 'Rajesh' })
+  @Sanitize()
   @IsNotEmpty()
   @IsString()
   adminFirstName: string;
   @ApiProperty({ example: 'Sharma' })
+  @Sanitize()
   @IsNotEmpty()
   @IsString()
   adminLastName: string;

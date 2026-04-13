@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  ConflictException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Like, IsNull } from 'typeorm';
@@ -44,6 +45,24 @@ export class PatientsService {
     facilityId: string,
     userId: string,
   ): Promise<Patient> {
+    // Check for duplicate patient by phone number within the facility
+    // Phone is the primary identifier for patient uniqueness
+    if (dto.phone) {
+      const existingPatient = await this.patientRepo.findOne({
+        where: {
+          phone: dto.phone,
+          facilityId,
+          deletedAt: IsNull(),
+        },
+      });
+
+      if (existingPatient) {
+        throw new ConflictException(
+          `A patient with phone number ${dto.phone} already exists in this facility`,
+        );
+      }
+    }
+
     const mrn = await this.generateMrn(facilityId);
     const patient = this.patientRepo.create({
       ...dto,

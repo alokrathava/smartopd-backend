@@ -103,7 +103,7 @@ describe('DoctorService', () => {
 
       await service.createConsultation(dto, facilityId, doctorId);
 
-      const created = consultationRepo.create.mock.calls[0][0] as any;
+      const created = consultationRepo.create.mock.calls[0][0];
       expect(typeof created.diagnoses).toBe('string');
       expect(JSON.parse(created.diagnoses)).toEqual(diagnoses);
     });
@@ -116,7 +116,7 @@ describe('DoctorService', () => {
 
       await service.createConsultation(dto, facilityId, doctorId);
 
-      const created = consultationRepo.create.mock.calls[0][0] as any;
+      const created = consultationRepo.create.mock.calls[0][0];
       expect(created.facilityId).toBe(facilityId);
       expect(created.doctorId).toBe(doctorId);
     });
@@ -133,7 +133,7 @@ describe('DoctorService', () => {
 
       await service.createConsultation(dto, facilityId, doctorId);
 
-      const created = consultationRepo.create.mock.calls[0][0] as any;
+      const created = consultationRepo.create.mock.calls[0][0];
       expect(created.followUpDate).toBeInstanceOf(Date);
     });
 
@@ -145,7 +145,7 @@ describe('DoctorService', () => {
 
       await service.createConsultation(dto, facilityId, doctorId);
 
-      const created = consultationRepo.create.mock.calls[0][0] as any;
+      const created = consultationRepo.create.mock.calls[0][0];
       expect(created.diagnoses).toBeUndefined();
     });
   });
@@ -280,7 +280,7 @@ describe('DoctorService', () => {
       const result = await service.getPrescription(visitId, facilityId);
 
       expect(result).not.toBeNull();
-      expect(result!.items).toHaveLength(2);
+      expect(result.items).toHaveLength(2);
       expect(prescriptionItemRepo.find).toHaveBeenCalledWith({
         where: { prescriptionId: 'presc-1', facilityId },
       });
@@ -293,7 +293,7 @@ describe('DoctorService', () => {
 
       const result = await service.getPrescription(visitId, facilityId);
 
-      expect(result!.items).toHaveLength(0);
+      expect(result.items).toHaveLength(0);
     });
   });
 
@@ -328,7 +328,7 @@ describe('DoctorService', () => {
 
       await service.searchIcd10('fever');
 
-      const callArgs = icd10Repo.find.mock.calls[0][0] as any;
+      const callArgs = icd10Repo.find.mock.calls[0][0];
       expect(callArgs.take).toBe(20);
     });
   });
@@ -371,7 +371,7 @@ describe('DoctorService', () => {
 
       await service.createPrescription(dto, facilityId, doctorId);
 
-      const created = prescriptionRepo.create.mock.calls[0][0] as any;
+      const created = prescriptionRepo.create.mock.calls[0][0];
       expect(created.prescribedById).toBe(doctorId);
       expect(created.prescriptionDate).toBeInstanceOf(Date);
     });

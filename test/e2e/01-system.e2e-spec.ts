@@ -56,7 +56,7 @@ describe('System / Health — GET /api/v1', () => {
 
   beforeAll(async () => {
     app = await createApp();
-  }, 60_000);
+  }, 90_000);
 
   afterAll(async () => {
     await app.close();

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import {
@@ -125,6 +125,16 @@ export class NotificationService {
     dto: CreateTemplateDto,
     facilityId: string,
   ): Promise<NotificationTemplate> {
+    // Check for duplicate template code within the facility
+    const existing = await this.templateRepo.findOne({
+      where: { code: dto.code, facilityId },
+    });
+    if (existing) {
+      throw new ConflictException(
+        `Notification template with code ${dto.code} already exists in this facility`,
+      );
+    }
+
     const template = this.templateRepo.create({ ...dto, facilityId });
     return this.templateRepo.save(template);
   }

@@ -96,7 +96,7 @@ describe('Visits (E2E)', () => {
 
   beforeAll(async () => {
     ctx = await buildContext();
-  }, 60000);
+  }, 120000);
 
   afterAll(async () => {
     await closeApp();

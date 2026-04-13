@@ -1,4 +1,4 @@
-import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Query, UseGuards, BadRequestException } from '@nestjs/common';
 import {
   ApiTags,
   ApiBearerAuth,
@@ -35,9 +35,29 @@ export class AuditController {
     @Query('resource') resource?: string,
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
-    @Query('page') page?: number,
-    @Query('limit') limit?: number,
+    @Query('page') pageStr?: string,
+    @Query('limit') limitStr?: string,
   ) {
+    // Manual validation for pagination parameters
+    let page = 1;
+    let limit = 20;
+
+    if (pageStr) {
+      const parsed = parseInt(pageStr, 10);
+      if (isNaN(parsed) || parsed < 1) {
+        throw new BadRequestException('page must be a positive integer');
+      }
+      page = parsed;
+    }
+
+    if (limitStr) {
+      const parsed = parseInt(limitStr, 10);
+      if (isNaN(parsed) || parsed < 1 || parsed > 100) {
+        throw new BadRequestException('limit must be between 1 and 100');
+      }
+      limit = parsed;
+    }
+
     return this.auditService.findAll(
       user.facilityId!,
       { userId, resource, startDate, endDate },

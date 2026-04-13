@@ -16,21 +16,9 @@
  *   GET    /api/v1/facilities/occupancy-dashboard
  */
 
-import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication, ValidationPipe } from '@nestjs/common';
+import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
-import { AppModule } from '../../src/app.module';
-
-async function createApp(): Promise<INestApplication> {
-  const moduleFixture: TestingModule = await Test.createTestingModule({
-    imports: [AppModule],
-  }).compile();
-  const app = moduleFixture.createNestApplication();
-  app.setGlobalPrefix('api/v1');
-  app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
-  await app.init();
-  return app;
-}
+import { initApp, closeApp } from '../helpers/app.setup';
 
 let counter = Date.now();
 const uid = () => (++counter).toString(36);
@@ -50,7 +38,7 @@ interface RoomCtx {
 }
 
 async function buildCtx(): Promise<RoomCtx> {
-  const app = await createApp();
+  const app = await initApp();
   const adminEmail = ue('admin');
   const regRes = await request(app.getHttpServer())
     .post('/api/v1/auth/register')
@@ -82,10 +70,13 @@ async function buildCtx(): Promise<RoomCtx> {
     return l.body.accessToken as string;
   };
 
-  const nurseToken = await makeUser('NURSE', 'Nurse@Test1');
-  const receptionToken = await makeUser('RECEPTIONIST', 'Recept@Test1');
-  const doctorToken = await makeUser('DOCTOR', 'Doctor@Test1');
-  const pharmacistToken = await makeUser('PHARMACIST', 'Pharma@Test1');
+  const [nurseToken, receptionToken, doctorToken, pharmacistToken] =
+    await Promise.all([
+      makeUser('NURSE', 'Nurse@Test1'),
+      makeUser('RECEPTIONIST', 'Recept@Test1'),
+      makeUser('DOCTOR', 'Doctor@Test1'),
+      makeUser('PHARMACIST', 'Pharma@Test1'),
+    ]);
 
   const ward = `ICU-${uid()}`;
 
@@ -128,9 +119,9 @@ describe('Rooms & Beds Module (E2E)', () => {
 
   beforeAll(async () => {
     ctx = await buildCtx();
-  }, 60000);
+  }, 180000);
   afterAll(async () => {
-    await ctx.app.close();
+    await closeApp();
   });
 
   // ── Rooms CRUD ────────────────────────────────────────────────────────────────

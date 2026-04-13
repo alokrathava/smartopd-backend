@@ -39,7 +39,7 @@ export class Visit {
   @Column({ type: 'varchar', name: 'facility_id' })
   facilityId: string;
 
-  @Column({ type: 'varchar', unique: true, name: 'visit_number' })
+  @Column({ type: 'varchar', unique: false, name: 'visit_number' })
   visitNumber: string;
 
   @Column({ type: 'varchar', name: 'patient_id' })

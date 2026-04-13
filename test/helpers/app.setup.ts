@@ -43,6 +43,9 @@ function applyTestEnv(): void {
   process.env.JWT_SECRET =
     process.env.JWT_SECRET || 'test-secret-key-for-testing-only';
 
+  // Extended token expiration for E2E tests (default 15m is too short for full suite)
+  process.env.JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '24h';
+
   process.env.REDIS_HOST = process.env.REDIS_HOST || 'localhost';
   process.env.REDIS_PORT = process.env.REDIS_PORT || '6379';
 
