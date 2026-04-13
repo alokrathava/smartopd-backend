@@ -4,12 +4,15 @@ import { Repository, IsNull } from 'typeorm';
 import { Visit, VisitStatus } from './entities/visit.entity';
 import { CreateVisitDto } from './dto/create-visit.dto';
 import { UpdateVisitStatusDto } from './dto/update-visit-status.dto';
+import { UsersService } from '../users/users.service';
+import { Role } from '../common/enums/role.enum';
 
 @Injectable()
 export class VisitsService {
   constructor(
     @InjectRepository(Visit)
     private readonly visitRepo: Repository<Visit>,
+    private readonly usersService: UsersService,
   ) {}
 
   private formatDate(d: Date): string {
@@ -219,6 +222,19 @@ export class VisitsService {
     facilityId: string,
   ): Promise<Visit> {
     const visit = await this.findOne(id, facilityId);
+
+    // Validate that the doctor exists and belongs to the same facility
+    const doctor = await this.usersService.findUserByIdOnly(doctorId);
+    if (!doctor) {
+      throw new NotFoundException(`Doctor with ID ${doctorId} not found`);
+    }
+    if (doctor.facilityId !== facilityId) {
+      throw new NotFoundException('Doctor does not belong to this facility');
+    }
+    if (doctor.role !== Role.DOCTOR) {
+      throw new NotFoundException('User is not a doctor');
+    }
+
     visit.doctorId = doctorId;
     if (
       visit.status === VisitStatus.REGISTERED ||

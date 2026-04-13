@@ -251,13 +251,13 @@ describe('Nurse Module (E2E)', () => {
   // ── Triage ──────────────────────────────────────────────────────────────────
 
   describe('POST /api/v1/nurse/triage', () => {
-    it('✅ NURSE records triage level MODERATE → 201', async () => {
+    it('✅ NURSE records triage level ORANGE → 201', async () => {
       const res = await request(ctx.app.getHttpServer())
         .post('/api/v1/nurse/triage')
         .set('Authorization', `Bearer ${ctx.nurseToken}`)
         .send({
           visitId: ctx.visitId,
-          triageCategory: 'MODERATE',
+          triageCategory: 'ORANGE',
           chiefComplaint: 'Fever and headache',
         });
       expect([200, 201]).toContain(res.status);
