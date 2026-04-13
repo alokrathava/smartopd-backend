@@ -107,6 +107,12 @@ export class PaymentService {
       if (!isNaN(lastSeq)) seq = lastSeq + 1;
     }
 
+    // Add a large random offset (0-999) to break ties in concurrent requests
+    // When multiple concurrent requests query at the same time, they'll get
+    // different sequence numbers, reducing collision probability significantly
+    const randomOffset = Math.floor(Math.random() * 1000);
+    seq = Math.min(seq + randomOffset, 99999);
+
     return `${prefix}${String(seq).padStart(5, '0')}`;
   }
 
@@ -124,7 +130,7 @@ export class PaymentService {
     // Retry loop for handling duplicate bill number race conditions
     // Multiple concurrent requests can generate the same bill number
     let lastError: any = null;
-    for (let attempt = 0; attempt < 3; attempt++) {
+    for (let attempt = 0; attempt < 5; attempt++) {
       try {
         const billNumber = await this.generateBillNumber(facilityId);
         const bill = this.billRepo.create({
@@ -138,13 +144,17 @@ export class PaymentService {
       } catch (error: any) {
         // Check if this is a duplicate constraint error
         if (
-          attempt < 2 &&
+          attempt < 4 &&
           error?.code === 'ER_DUP_ENTRY' &&
           error?.message?.includes('billNumber')
         ) {
           lastError = error;
-          // Wait a small amount before retry to allow other transactions to complete
-          await new Promise((resolve) => setTimeout(resolve, 10 * (attempt + 1)));
+          // Wait with exponential backoff + random jitter
+          // Attempt 0: 50-100ms, Attempt 1: 100-150ms, Attempt 2: 200-250ms, Attempt 3: 400-450ms
+          const baseDelay = 50 * Math.pow(2, attempt);
+          const jitter = Math.random() * 50;
+          const totalDelay = baseDelay + jitter;
+          await new Promise((resolve) => setTimeout(resolve, totalDelay));
           continue;
         }
         // For other errors, fail immediately
