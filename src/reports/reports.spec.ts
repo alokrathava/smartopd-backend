@@ -349,7 +349,7 @@ describe('ReportsService', () => {
         '2026-03-31',
       );
 
-      expect(result.total).toBe(250);
+      expect(result.totalVisits).toBe(250);
     });
 
     it('returns inRange count for the date window', async () => {

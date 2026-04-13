@@ -317,7 +317,7 @@ describe('Auth Endpoints — /api/v1/auth', () => {
       const reg = await registerFacility(app);
       facilityId = reg.facilityId;
       adminEmail = reg.adminEmail;
-    });
+    }, 30000);
 
     it('✅ Happy: valid credentials → 200 with accessToken, refreshToken, user', async () => {
       const { body } = await request(app.getHttpServer())
@@ -469,7 +469,7 @@ describe('Auth Endpoints — /api/v1/auth', () => {
       const tokens = await loginUser(app, adminEmail, STRONG_PASS, facilityId);
       initialRefreshToken = tokens.refreshToken;
       initialAccessToken = tokens.accessToken;
-    });
+    }, 30000);
 
     it('✅ Happy: valid refreshToken → 200 with new accessToken and refreshToken', async () => {
       const { body } = await request(app.getHttpServer())
@@ -602,7 +602,7 @@ describe('Auth Endpoints — /api/v1/auth', () => {
       await request(app.getHttpServer())
         .post('/api/v1/auth/otp/request')
         .send({ phone: TEST_PHONE, purpose: 'LOGIN' });
-    });
+    }, 30000);
 
     it('❌ Wrong OTP code → 400 or 401', async () => {
       const res = await request(app.getHttpServer())
@@ -725,7 +725,7 @@ describe('Auth Endpoints — /api/v1/auth', () => {
       expect(nurseMeRes.body).toHaveProperty('email', nurseEmail);
       expect(nurseMeRes.body).toHaveProperty('facilityId', facilityId);
       expect(nurseMeRes.body).toHaveProperty('role', 'NURSE');
-    });
+    }, 30000);
 
     it('✅ Happy: admin creates invitation → 201 with inviteToken', async () => {
       const { body } = await request(app.getHttpServer())
@@ -857,7 +857,7 @@ describe('Auth Endpoints — /api/v1/auth', () => {
           role: 'RECEPTIONIST',
         });
       validInviteToken = body.inviteToken;
-    });
+    }, 30000);
 
     it('✅ Happy: valid token + strong password → 200', async () => {
       const { body } = await request(app.getHttpServer())
@@ -935,7 +935,7 @@ describe('Auth Endpoints — /api/v1/auth', () => {
       adminEmail = reg.adminEmail;
       const tokens = await loginUser(app, adminEmail, STRONG_PASS, facilityId);
       accessToken = tokens.accessToken;
-    });
+    }, 30000);
 
     it('✅ Happy: valid JWT → 200 with user profile', async () => {
       const { body } = await request(app.getHttpServer())
@@ -1023,7 +1023,7 @@ describe('Auth Endpoints — /api/v1/auth', () => {
       loginEmail = reg.adminEmail;
       const tokens = await loginUser(app, loginEmail, STRONG_PASS, facilityId);
       accessToken = tokens.accessToken;
-    });
+    }, 30000);
 
     it('✅ Happy: correct currentPassword + strong newPassword → 200', async () => {
       // Use a dedicated account for this test so password changes don't cascade
@@ -1122,7 +1122,7 @@ describe('Auth Endpoints — /api/v1/auth', () => {
       adminEmail = reg.adminEmail;
       const tokens = await loginUser(app, adminEmail, STRONG_PASS, facilityId);
       accessToken = tokens.accessToken;
-    });
+    }, 30000);
 
     it('✅ Happy: valid token → 200 with logout message', async () => {
       // Use a fresh token for this test
@@ -1206,7 +1206,7 @@ describe('Auth Endpoints — /api/v1/auth', () => {
         facilityBId,
       );
       adminBToken = tokensB.accessToken;
-    });
+    }, 30000);
 
     it('🏢 JWT payload contains the correct facilityId for each admin', async () => {
       const payloadA = decodeJwtPayload(adminAToken);

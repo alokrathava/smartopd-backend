@@ -19,6 +19,7 @@ import { Role } from '../common/enums/role.enum';
 import type { JwtPayload } from '../common/interfaces/jwt-payload.interface';
 import { EquipmentService } from './equipment.service';
 import { CreateEquipmentDto } from './dto/create-equipment.dto';
+import { UpdateEquipmentDto } from './dto/update-equipment.dto';
 import { CreatePatientLeaseDto } from './dto/create-patient-lease.dto';
 import { ReturnEquipmentDto } from './dto/return-equipment.dto';
 import { CreateMaintenanceLogDto } from './dto/create-maintenance-log.dto';
@@ -129,7 +130,7 @@ export class EquipmentController {
   @ApiOperation({ summary: 'Update equipment' })
   update(
     @Param('id', ParseUUIDPipe) id: string,
-    @Body() dto: CreateEquipmentDto,
+    @Body() dto: UpdateEquipmentDto,
     @CurrentUser() user: JwtPayload,
   ) {
     return this.equipmentService.update(id, dto, user.facilityId!);

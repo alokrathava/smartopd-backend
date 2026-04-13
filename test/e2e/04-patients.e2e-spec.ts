@@ -14,15 +14,17 @@
 
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
+import { initApp, closeApp } from '../helpers/app.setup';
 import {
-  buildApp,
-  closeApp,
   getFacilityAContext,
   getFacilityBContext,
   inviteAndActivateUser,
   createPatient,
   minimalPatientPayload,
-} from '../helpers/app.helper.js';
+} from '../helpers/app.helper';
+
+// Alias for compatibility with test expectations
+const buildApp = initApp;
 
 // ─── shared state ─────────────────────────────────────────────────────────────
 
@@ -85,7 +87,7 @@ beforeAll(async () => {
     role: 'DOCTOR',
   });
   doctorTokenA = doctor.accessToken;
-});
+}, 120000);
 
 afterAll(async () => {
   await closeApp();
@@ -414,7 +416,7 @@ describe('GET /api/v1/patients', () => {
 
   beforeAll(async () => {
     sharedPatientPhone = nextPhone();
-    await createPatient(app, receptionistTokenA, {
+    await createPatient(receptionistTokenA, {
       phone: sharedPatientPhone,
       firstName: 'Kaveri',
       lastName: 'Iyer',
@@ -473,7 +475,7 @@ describe('GET /api/v1/patients', () => {
   it('IDOR: Facility A results never include Facility B patients', async () => {
     // Create a patient in Facility B
     const phoneFacilityB = nextPhone();
-    await createPatient(app, adminTokenB, {
+    await createPatient(adminTokenB, {
       phone: phoneFacilityB,
       firstName: 'FacilityBOnly',
       lastName: 'Patient',
@@ -528,14 +530,14 @@ describe('GET /api/v1/patients/:id', () => {
   let patientIdB: string;
 
   beforeAll(async () => {
-    const patA = await createPatient(app, receptionistTokenA, {
+    const patA = await createPatient(receptionistTokenA, {
       phone: nextPhone(),
       firstName: 'Rohit',
       lastName: 'Verma',
     });
     patientIdA = patA.id as string;
 
-    const patB = await createPatient(app, adminTokenB, {
+    const patB = await createPatient(adminTokenB, {
       phone: nextPhone(),
       firstName: 'FacilityBSingle',
       lastName: 'Check',
@@ -607,12 +609,12 @@ describe('PATCH /api/v1/patients/:id', () => {
   let patientIdB: string;
 
   beforeAll(async () => {
-    const patA = await createPatient(app, receptionistTokenA, {
+    const patA = await createPatient(receptionistTokenA, {
       phone: nextPhone(),
     });
     patientIdA = patA.id as string;
 
-    const patB = await createPatient(app, adminTokenB, {
+    const patB = await createPatient(adminTokenB, {
       phone: nextPhone(),
     });
     patientIdB = patB.id as string;
@@ -691,7 +693,7 @@ describe('DELETE /api/v1/patients/:id', () => {
   let patientToDeleteId: string;
 
   beforeAll(async () => {
-    const pat = await createPatient(app, receptionistTokenA, {
+    const pat = await createPatient(receptionistTokenA, {
       phone: nextPhone(),
     });
     patientToDeleteId = pat.id as string;
@@ -714,7 +716,7 @@ describe('DELETE /api/v1/patients/:id', () => {
   });
 
   it('DOCTOR trying to delete returns 403', async () => {
-    const pat = await createPatient(app, receptionistTokenA, {
+    const pat = await createPatient(receptionistTokenA, {
       phone: nextPhone(),
     });
 
@@ -726,7 +728,7 @@ describe('DELETE /api/v1/patients/:id', () => {
   });
 
   it('RECEPTIONIST trying to delete returns 403', async () => {
-    const pat = await createPatient(app, receptionistTokenA, {
+    const pat = await createPatient(receptionistTokenA, {
       phone: nextPhone(),
     });
 
@@ -738,7 +740,7 @@ describe('DELETE /api/v1/patients/:id', () => {
   });
 
   it('returns 401 without token', async () => {
-    const pat = await createPatient(app, receptionistTokenA, {
+    const pat = await createPatient(receptionistTokenA, {
       phone: nextPhone(),
     });
 
@@ -768,12 +770,12 @@ describe('POST /api/v1/patients/:id/consent', () => {
   let facilityBPatientId: string;
 
   beforeAll(async () => {
-    const pat = await createPatient(app, receptionistTokenA, {
+    const pat = await createPatient(receptionistTokenA, {
       phone: nextPhone(),
     });
     consentPatientId = pat.id as string;
 
-    const patB = await createPatient(app, adminTokenB, {
+    const patB = await createPatient(adminTokenB, {
       phone: nextPhone(),
     });
     facilityBPatientId = patB.id as string;
@@ -855,7 +857,7 @@ describe('GET /api/v1/patients/:id/consents', () => {
   let facilityBPatientForConsents: string;
 
   beforeAll(async () => {
-    const pat = await createPatient(app, receptionistTokenA, {
+    const pat = await createPatient(receptionistTokenA, {
       phone: nextPhone(),
     });
     consentListPatientId = pat.id as string;
@@ -871,7 +873,7 @@ describe('GET /api/v1/patients/:id/consents', () => {
       .set('Authorization', `Bearer ${nurseTokenA}`)
       .send({ consentType: 'ABHA_LINK' });
 
-    const patB = await createPatient(app, adminTokenB, {
+    const patB = await createPatient(adminTokenB, {
       phone: nextPhone(),
     });
     facilityBPatientForConsents = patB.id as string;
@@ -888,7 +890,7 @@ describe('GET /api/v1/patients/:id/consents', () => {
   });
 
   it('returns 200 with empty array for patient with no consents', async () => {
-    const freshPat = await createPatient(app, receptionistTokenA, {
+    const freshPat = await createPatient(receptionistTokenA, {
       phone: nextPhone(),
     });
 

@@ -7,6 +7,7 @@ import {
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { FollowUpPriority } from '../entities/follow-up.entity';
+import { Sanitize } from '../../common/decorators/sanitize.decorator';
 
 export class CreateFollowUpDto {
   @ApiProperty()
@@ -28,11 +29,13 @@ export class CreateFollowUpDto {
   scheduledDate: string;
 
   @ApiPropertyOptional()
+  @Sanitize()
   @IsOptional()
   @IsString()
   reason?: string;
 
   @ApiPropertyOptional()
+  @Sanitize()
   @IsOptional()
   @IsString()
   notes?: string;

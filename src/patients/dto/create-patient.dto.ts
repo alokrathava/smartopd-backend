@@ -11,14 +11,17 @@ import {
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Gender } from '../../common/enums/gender.enum';
+import { Sanitize } from '../../common/decorators/sanitize.decorator';
 
 export class CreatePatientDto {
   @ApiProperty({ example: 'John' })
+  @Sanitize()
   @IsString()
   @IsNotEmpty()
   firstName: string;
 
   @ApiProperty({ example: 'Doe' })
+  @Sanitize()
   @IsString()
   @IsNotEmpty()
   lastName: string;
@@ -47,61 +50,73 @@ export class CreatePatientDto {
   alternatePhone?: string;
 
   @ApiPropertyOptional({ example: 'john.doe@example.com' })
+  @Sanitize()
   @IsOptional()
   @IsEmail()
   email?: string;
 
   @ApiPropertyOptional({ example: '123 Main Street' })
+  @Sanitize()
   @IsOptional()
   @IsString()
   address?: string;
 
   @ApiPropertyOptional({ example: 'Mumbai' })
+  @Sanitize()
   @IsOptional()
   @IsString()
   city?: string;
 
   @ApiPropertyOptional({ example: 'Maharashtra' })
+  @Sanitize()
   @IsOptional()
   @IsString()
   state?: string;
 
   @ApiPropertyOptional({ example: '400001' })
+  @Sanitize()
   @IsOptional()
   @IsString()
   pincode?: string;
 
   @ApiPropertyOptional({ example: 'O+' })
+  @Sanitize()
   @IsOptional()
   @IsString()
   bloodGroup?: string;
 
   @ApiPropertyOptional({ example: '12345678901234' })
+  @Sanitize()
   @IsOptional()
   @IsString()
   abhaNumber?: string;
 
   @ApiPropertyOptional({ example: 'john.doe@abdm' })
+  @Sanitize()
   @IsOptional()
   @IsString()
   abhaAddress?: string;
 
   @ApiPropertyOptional({ example: 'Jane Doe' })
+  @Sanitize()
   @IsOptional()
   @IsString()
   emergencyContactName?: string;
 
   @ApiPropertyOptional({ example: '+919876543212' })
+  @Sanitize()
   @IsOptional()
   @IsString()
   emergencyContactPhone?: string;
 
   @ApiPropertyOptional({ example: '["Penicillin", "Sulfa"]' })
+  @Sanitize()
   @IsOptional()
   @IsString()
   allergies?: string;
 
   @ApiPropertyOptional({ example: '["Diabetes", "Hypertension"]' })
+  @Sanitize()
   @IsOptional()
   @IsString()
   chronicConditions?: string;
@@ -109,6 +124,7 @@ export class CreatePatientDto {
   @ApiPropertyOptional({
     example: '{"provider": "Star Health", "policyNumber": "POL123"}',
   })
+  @Sanitize()
   @IsOptional()
   @IsString()
   insuranceInfo?: string;

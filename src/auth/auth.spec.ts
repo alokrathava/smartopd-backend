@@ -308,7 +308,7 @@ describe('AuthService', () => {
         { used: true },
       );
       expect(otpRepo.save).toHaveBeenCalled();
-      const savedArg = otpRepo.save.mock.calls[0][0] as any;
+      const savedArg = otpRepo.save.mock.calls[0][0];
       // The saved OTP code must be a bcrypt hash (starts with $2)
       expect(savedArg.code).toMatch(/^\$2/);
       expect(queueService.enqueueSms).toHaveBeenCalledWith(
@@ -329,7 +329,7 @@ describe('AuthService', () => {
         purpose: OtpPurpose.LOGIN,
       });
 
-      const saved = otpRepo.save.mock.calls[0][0] as any;
+      const saved = otpRepo.save.mock.calls[0][0];
       const diffMinutes = dayjs(saved.expiresAt).diff(dayjs(), 'minute');
       expect(diffMinutes).toBeGreaterThanOrEqual(4);
       expect(diffMinutes).toBeLessThanOrEqual(5);

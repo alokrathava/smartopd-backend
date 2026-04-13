@@ -9,7 +9,7 @@
  * themselves.
  *
  * Usage:
- *   import { seedPatient, seedVisit, cleanupTestData } from '../helpers/seed.helper.js';
+ *   import { seedPatient, seedVisit, cleanupTestData } from '../helpers/seed.helper';
  *
  *   let patientId: string;
  *   beforeAll(async () => {
@@ -243,20 +243,44 @@ export async function seedPatient(
     consentGiven: true,
   };
 
-  const res = await agent()
-    .post('/api/v1/patients')
-    .set('Authorization', `Bearer ${token}`)
-    .send(payload)
-    .set('Content-Type', 'application/json');
+  // Retry loop for handling duplicate phone conflicts
+  // This handles both full suite runs (where multiple tests share facility)
+  // and isolated runs (where DB might have stale data)
+  let lastError: any = null;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const res = await agent()
+      .post('/api/v1/patients')
+      .set('Authorization', `Bearer ${token}`)
+      .send(payload)
+      .set('Content-Type', 'application/json');
 
-  if (res.status !== 201 && res.status !== 200) {
+    if (res.status === 201 || res.status === 200) {
+      return res.body as SeededPatient;
+    }
+
+    // If we get a 409 Conflict due to duplicate phone, retry with a new phone
+    if (res.status === 409 && attempt < 2) {
+      const msg = res.body?.message as string | undefined;
+      if (msg?.toLowerCase().includes('phone') || msg?.toLowerCase().includes('already')) {
+        // Generate a new phone and try again
+        payload.phone = randomIndianPhone();
+        lastError = res.body;
+        continue;
+      }
+    }
+
+    // For other errors, fail immediately
     throw new Error(
       `[seed.helper] seedPatient failed (HTTP ${res.status}): ` +
         JSON.stringify(res.body),
     );
   }
 
-  return res.body as SeededPatient;
+  // If all retries failed, throw the last error
+  throw new Error(
+    `[seed.helper] seedPatient failed after 3 attempts: ` +
+      JSON.stringify(lastError),
+  );
 }
 
 /**

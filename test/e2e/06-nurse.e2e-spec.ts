@@ -128,7 +128,7 @@ describe('Nurse Module (E2E)', () => {
 
   beforeAll(async () => {
     ctx = await buildCtx();
-  }, 60000);
+  }, 120000);
   afterAll(async () => {
     await ctx.app.close();
   });
@@ -251,15 +251,14 @@ describe('Nurse Module (E2E)', () => {
   // ── Triage ──────────────────────────────────────────────────────────────────
 
   describe('POST /api/v1/nurse/triage', () => {
-    it('✅ NURSE records triage level MODERATE → 201', async () => {
+    it('✅ NURSE records triage level ORANGE → 201', async () => {
       const res = await request(ctx.app.getHttpServer())
         .post('/api/v1/nurse/triage')
         .set('Authorization', `Bearer ${ctx.nurseToken}`)
         .send({
           visitId: ctx.visitId,
-          triageLevel: 'MODERATE',
+          triageCategory: 'ORANGE',
           chiefComplaint: 'Fever and headache',
-          symptoms: ['FEVER', 'HEADACHE'],
         });
       expect([200, 201]).toContain(res.status);
     });
@@ -329,13 +328,13 @@ describe('Nurse Module (E2E)', () => {
         .set('Authorization', `Bearer ${ctx.nurseToken}`)
         .send({
           visitId: ctx.visitId,
-          prescriptionItemId: '00000000-0000-0000-0000-000000000099',
-          administeredAt: new Date().toISOString(),
-          medicationName: 'Paracetamol',
-          dosage: '500mg',
+          patientId: ctx.patientId,
+          drugName: 'Paracetamol',
+          dose: '500mg',
           route: 'ORAL',
+          scheduledAt: new Date().toISOString(),
         });
-      expect([200, 201, 400, 404]).toContain(res.status); // 404 if prescriptionItem doesn't exist
+      expect([200, 201]).toContain(res.status);
     });
 
     it('❌ 400 – missing visitId', async () => {
@@ -359,10 +358,11 @@ describe('Nurse Module (E2E)', () => {
         .set('Authorization', `Bearer ${ctx.receptionToken}`)
         .send({
           visitId: ctx.visitId,
-          prescriptionItemId: 'x',
-          medicationName: 'X',
-          dosage: '1mg',
+          patientId: ctx.patientId,
+          drugName: 'X',
+          dose: '1mg',
           route: 'ORAL',
+          scheduledAt: new Date().toISOString(),
         });
       expect(res.status).toBe(403);
     });

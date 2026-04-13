@@ -2,7 +2,7 @@
  * Shared E2E test bootstrap helpers.
  *
  * Usage:
- *   import { buildApp, loginAs, registerFacilityAndAdmin } from '../helpers/app.helper.js';
+ *   import { buildApp, loginAs, registerFacilityAndAdmin } from '../helpers/app.helper';
  */
 
 import supertestLib from 'supertest';
@@ -216,7 +216,7 @@ async function createUserForRole(
 
   if (res.status !== 201 && res.status !== 200) {
     if (
-      res.status === 400 &&
+      (res.status === 400 || res.status === 409) &&
       (res.body?.message as string | undefined)
         ?.toLowerCase()
         .includes('already')
@@ -303,4 +303,346 @@ export function clearTokenCache(): void {
   for (const key of Object.keys(tokenCache) as Role[]) {
     delete tokenCache[key];
   }
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// New E2E Helper Functions (for tests expecting buildApp, closeApp, etc.)
+// ──────────────────────────────────────────────────────────────────────────────
+
+import {
+  initApp as setupInitApp,
+  closeApp as setupCloseApp,
+  getHttpServer as setupGetHttpServer,
+} from './app.setup';
+import { INestApplication } from '@nestjs/common';
+
+/**
+ * Alias for initApp() to match test expectations
+ */
+export async function buildApp(): Promise<INestApplication> {
+  return setupInitApp();
+}
+
+/**
+ * Alias for closeApp() to match test expectations
+ */
+export async function closeApp(): Promise<void> {
+  return setupCloseApp();
+}
+
+/**
+ * Get HTTP server instance
+ */
+export function getHttpServer() {
+  return setupGetHttpServer();
+}
+
+/**
+ * Minimal patient payload for testing
+ */
+export function minimalPatientPayload(overrides?: any): any {
+  const defaults = {
+    firstName: 'Test',
+    lastName: 'Patient',
+    dateOfBirth: '1990-01-01',
+    gender: 'MALE',
+    phone: '+916000000001',
+    email: 'test@patient.in',
+    consentGiven: true,
+  };
+  return { ...defaults, ...overrides };
+}
+
+/**
+ * Create a test patient
+ */
+export async function createPatient(
+  token: string,
+  payload?: any,
+): Promise<{ id: string; [key: string]: any }> {
+  const server = setupGetHttpServer();
+
+  const response = await supertestLib(server)
+    .post('/api/v1/patients')
+    .set('Authorization', `Bearer ${token}`)
+    .send(minimalPatientPayload(payload));
+
+  if (response.status !== 201 && response.status !== 200) {
+    throw new Error(
+      `Failed to create patient: ${response.status} - ${response.body.message || response.text}`,
+    );
+  }
+
+  return response.body;
+}
+
+/**
+ * Facility A test context
+ */
+export interface FacilityContext {
+  facilityId: string;
+  facilityName: string;
+  adminToken: string;
+  doctorToken: string;
+  nurseToken: string;
+  receptionistToken: string;
+}
+
+const facilityContexts: Map<string, FacilityContext> = new Map();
+
+/**
+ * Get or create Facility A context
+ */
+export async function getFacilityAContext(): Promise<FacilityContext> {
+  if (facilityContexts.has('A')) {
+    return facilityContexts.get('A')!;
+  }
+
+  // Register a new facility
+  const server = setupGetHttpServer();
+  const uniqueName = `TestFacility-A-${Date.now()}`;
+
+  const registerRes = await supertestLib(server)
+    .post('/api/v1/auth/register')
+    .send({
+      facilityName: uniqueName,
+      facilityType: 'HOSPITAL',
+      city: 'Bangalore',
+      state: 'Karnataka',
+      adminEmail: `admin-a-${Date.now()}@test.in`,
+      adminFirstName: 'Admin',
+      adminLastName: 'A',
+      adminPassword: 'Admin@Test1',
+    });
+
+  if (registerRes.status !== 200 && registerRes.status !== 201) {
+    throw new Error(
+      `Failed to register facility A: ${registerRes.body.message}`,
+    );
+  }
+
+  const facilityId = registerRes.body.facilityId;
+  const adminEmail = registerRes.body.adminEmail;
+
+  // Login as admin
+  const loginRes = await supertestLib(server).post('/api/v1/auth/login').send({
+    email: adminEmail,
+    password: 'Admin@Test1',
+  });
+
+  const adminToken = loginRes.body.accessToken;
+
+  // Create other user roles
+  const doctorToken = await createUserAndGetToken(
+    server,
+    adminToken,
+    Role.DOCTOR,
+    facilityId,
+  );
+  const nurseToken = await createUserAndGetToken(
+    server,
+    adminToken,
+    Role.NURSE,
+    facilityId,
+  );
+  const receptionistToken = await createUserAndGetToken(
+    server,
+    adminToken,
+    Role.RECEPTIONIST,
+    facilityId,
+  );
+
+  const context: FacilityContext = {
+    facilityId,
+    facilityName: uniqueName,
+    adminToken,
+    doctorToken,
+    nurseToken,
+    receptionistToken,
+  };
+
+  facilityContexts.set('A', context);
+  return context;
+}
+
+/**
+ * Get or create Facility B context
+ */
+export async function getFacilityBContext(): Promise<FacilityContext> {
+  if (facilityContexts.has('B')) {
+    return facilityContexts.get('B')!;
+  }
+
+  // Register a new facility
+  const server = setupGetHttpServer();
+  const uniqueName = `TestFacility-B-${Date.now()}`;
+
+  const registerRes = await supertestLib(server)
+    .post('/api/v1/auth/register')
+    .send({
+      facilityName: uniqueName,
+      facilityType: 'CLINIC',
+      city: 'Mumbai',
+      state: 'Maharashtra',
+      adminEmail: `admin-b-${Date.now()}@test.in`,
+      adminFirstName: 'Admin',
+      adminLastName: 'B',
+      adminPassword: 'Admin@Test1',
+    });
+
+  if (registerRes.status !== 200 && registerRes.status !== 201) {
+    throw new Error(
+      `Failed to register facility B: ${registerRes.body.message}`,
+    );
+  }
+
+  const facilityId = registerRes.body.facilityId;
+  const adminEmail = registerRes.body.adminEmail;
+
+  // Login as admin
+  const loginRes = await supertestLib(server).post('/api/v1/auth/login').send({
+    email: adminEmail,
+    password: 'Admin@Test1',
+  });
+
+  const adminToken = loginRes.body.accessToken;
+
+  // Create other user roles
+  const doctorToken = await createUserAndGetToken(
+    server,
+    adminToken,
+    Role.DOCTOR,
+    facilityId,
+  );
+  const nurseToken = await createUserAndGetToken(
+    server,
+    adminToken,
+    Role.NURSE,
+    facilityId,
+  );
+  const receptionistToken = await createUserAndGetToken(
+    server,
+    adminToken,
+    Role.RECEPTIONIST,
+    facilityId,
+  );
+
+  const context: FacilityContext = {
+    facilityId,
+    facilityName: uniqueName,
+    adminToken,
+    doctorToken,
+    nurseToken,
+    receptionistToken,
+  };
+
+  facilityContexts.set('B', context);
+  return context;
+}
+
+/**
+ * Helper to create a user and get their token
+ */
+async function createUserAndGetToken(
+  server: any,
+  adminToken: string,
+  role: Role,
+  facilityId: string,
+): Promise<string> {
+  const uniqueEmail = `user-${role}-${Date.now()}@test.in`;
+
+  // Create user
+  const createRes = await supertestLib(server)
+    .post('/api/v1/users')
+    .set('Authorization', `Bearer ${adminToken}`)
+    .send({
+      email: uniqueEmail,
+      firstName: role,
+      lastName: 'User',
+      password: 'User@Test1',
+      role,
+    });
+
+  if (createRes.status === 409) {
+    // Email already exists, try again with different timestamp
+    return createUserAndGetToken(server, adminToken, role, facilityId);
+  }
+
+  if (createRes.status !== 201 && createRes.status !== 200) {
+    throw new Error(`Failed to create user ${role}: ${createRes.body.message}`);
+  }
+
+  // Login as new user
+  const loginRes = await supertestLib(server).post('/api/v1/auth/login').send({
+    email: uniqueEmail,
+    password: 'User@Test1',
+  });
+
+  return loginRes.body.accessToken;
+}
+
+/**
+ * Invite and activate a user with custom email/name
+ */
+export async function inviteAndActivateUser(
+  app: INestApplication | any,
+  adminToken: string,
+  userPayload: {
+    email: string;
+    firstName: string;
+    lastName: string;
+    role: string;
+  },
+): Promise<{
+  accessToken: string;
+  refreshToken: string;
+  user: {
+    id: string;
+    email: string;
+    role: string;
+    facilityId: string;
+    firstName: string;
+    lastName: string;
+  };
+}> {
+  const server = setupGetHttpServer();
+
+  // Create user via API
+  const createRes = await supertestLib(server)
+    .post('/api/v1/users')
+    .set('Authorization', `Bearer ${adminToken}`)
+    .send({
+      email: userPayload.email,
+      firstName: userPayload.firstName,
+      lastName: userPayload.lastName,
+      password: 'User@Test1',
+      role: userPayload.role,
+    });
+
+  if (createRes.status === 409) {
+    throw new Error(
+      `User with email ${userPayload.email} already exists (409 Conflict)`,
+    );
+  }
+
+  if (createRes.status !== 201 && createRes.status !== 200) {
+    const errorMsg = createRes.body?.message || createRes.body?.error || createRes.text || JSON.stringify(createRes.body);
+    throw new Error(
+      `Failed to create user ${userPayload.role} (${createRes.status}): ${errorMsg}`,
+    );
+  }
+
+  // Login as new user
+  const loginRes = await supertestLib(server).post('/api/v1/auth/login').send({
+    email: userPayload.email,
+    password: 'User@Test1',
+  });
+
+  if (loginRes.status !== 200) {
+    throw new Error(
+      `Failed to login user ${userPayload.email}: ${loginRes.body?.message || loginRes.text}`,
+    );
+  }
+
+  return loginRes.body;
 }

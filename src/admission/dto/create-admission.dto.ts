@@ -1,6 +1,7 @@
 import { IsString, IsEnum, IsOptional, IsUUID } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { AdmissionType } from '../entities/admission.entity';
+import { Sanitize } from '../../common/decorators/sanitize.decorator';
 
 export class CreateAdmissionDto {
   @ApiProperty() @IsUUID() patientId: string;
@@ -9,7 +10,18 @@ export class CreateAdmissionDto {
   @ApiProperty({ enum: AdmissionType })
   @IsEnum(AdmissionType)
   admissionType: AdmissionType;
-  @ApiProperty() @IsString() admissionReason: string;
-  @ApiPropertyOptional() @IsOptional() @IsString() primaryDiagnosis?: string;
-  @ApiPropertyOptional() @IsOptional() @IsString() specialInstructions?: string;
+  @ApiProperty()
+  @Sanitize()
+  @IsString()
+  admissionReason: string;
+  @ApiPropertyOptional()
+  @Sanitize()
+  @IsOptional()
+  @IsString()
+  primaryDiagnosis?: string;
+  @ApiPropertyOptional()
+  @Sanitize()
+  @IsOptional()
+  @IsString()
+  specialInstructions?: string;
 }

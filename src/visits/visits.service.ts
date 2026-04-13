@@ -4,12 +4,15 @@ import { Repository, IsNull } from 'typeorm';
 import { Visit, VisitStatus } from './entities/visit.entity';
 import { CreateVisitDto } from './dto/create-visit.dto';
 import { UpdateVisitStatusDto } from './dto/update-visit-status.dto';
+import { UsersService } from '../users/users.service';
+import { Role } from '../common/enums/role.enum';
 
 @Injectable()
 export class VisitsService {
   constructor(
     @InjectRepository(Visit)
     private readonly visitRepo: Repository<Visit>,
+    private readonly usersService: UsersService,
   ) {}
 
   private formatDate(d: Date): string {
@@ -58,20 +61,46 @@ export class VisitsService {
     facilityId: string,
     userId: string,
   ): Promise<Visit> {
-    const visitNumber = await this.generateVisitNumber(facilityId);
-    const tokenNumber = await this.getDailyToken(facilityId);
+    let visitNumber: string | null = null;
+    let retries = 0;
+    const maxRetries = 5;
 
-    const visit = this.visitRepo.create({
-      ...dto,
-      facilityId,
-      registeredById: userId,
-      visitNumber,
-      tokenNumber,
-      checkedInAt: new Date(),
-      scheduledAt: dto.scheduledAt ? new Date(dto.scheduledAt) : undefined,
-    });
+    // Retry mechanism for handling concurrent visit number generation
+    while (!visitNumber && retries < maxRetries) {
+      try {
+        visitNumber = await this.generateVisitNumber(facilityId);
+        const tokenNumber = await this.getDailyToken(facilityId);
 
-    return this.visitRepo.save(visit);
+        const visit = this.visitRepo.create({
+          ...dto,
+          facilityId,
+          registeredById: userId,
+          visitNumber,
+          tokenNumber,
+          checkedInAt: new Date(),
+          scheduledAt: dto.scheduledAt ? new Date(dto.scheduledAt) : undefined,
+        });
+
+        return await this.visitRepo.save(visit);
+      } catch (error: any) {
+        if (
+          error?.code === 'ER_DUP_ENTRY' &&
+          error?.message?.includes('visit_number')
+        ) {
+          visitNumber = null;
+          retries++;
+          if (retries >= maxRetries) {
+            throw new Error(
+              'Failed to generate unique visit number after maximum retries',
+            );
+          }
+        } else {
+          throw error;
+        }
+      }
+    }
+
+    throw new Error('Failed to create visit: could not generate visit number');
   }
 
   async findAll(
@@ -193,6 +222,19 @@ export class VisitsService {
     facilityId: string,
   ): Promise<Visit> {
     const visit = await this.findOne(id, facilityId);
+
+    // Validate that the doctor exists and belongs to the same facility
+    const doctor = await this.usersService.findUserByIdOnly(doctorId);
+    if (!doctor) {
+      throw new NotFoundException(`Doctor with ID ${doctorId} not found`);
+    }
+    if (doctor.facilityId !== facilityId) {
+      throw new NotFoundException('Doctor does not belong to this facility');
+    }
+    if (doctor.role !== Role.DOCTOR) {
+      throw new NotFoundException('User is not a doctor');
+    }
+
     visit.doctorId = doctorId;
     if (
       visit.status === VisitStatus.REGISTERED ||

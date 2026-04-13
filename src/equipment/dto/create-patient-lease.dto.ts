@@ -27,10 +27,9 @@ export class CreatePatientLeaseDto {
   @IsDateString()
   issuedAt?: string;
 
-  @ApiPropertyOptional()
-  @IsOptional()
+  @ApiProperty()
   @IsDateString()
-  dueDate?: string;
+  dueDate: string;
 
   @ApiPropertyOptional()
   @IsOptional()

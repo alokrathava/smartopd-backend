@@ -16,13 +16,13 @@
  */
 
 import { INestApplication } from '@nestjs/common';
-import { initApp, closeApp, request } from '../helpers/app.setup.js';
+import { initApp, closeApp, request } from '../helpers/app.setup';
 import {
   seedTestUsers,
   getAuthHeader,
   TEST_FACILITY_ID,
-} from '../helpers/auth.helper.js';
-import { Role } from '../../src/common/enums/role.enum.js';
+} from '../helpers/auth.helper';
+import { Role } from '../../src/common/enums/role.enum';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Suite setup
