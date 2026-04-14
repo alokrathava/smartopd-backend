@@ -34,10 +34,10 @@ export class CrmCampaign {
   @Column({ type: 'varchar', nullable: true, name: 'template_code' })
   templateCode: string;
 
-  @Column({ type: 'datetime', nullable: true, name: 'scheduled_at' })
+  @Column({ type: 'timestamp', nullable: true, name: 'scheduled_at' })
   scheduledAt: Date;
 
-  @Column({ type: 'datetime', nullable: true, name: 'sent_at' })
+  @Column({ type: 'timestamp', nullable: true, name: 'sent_at' })
   sentAt: Date;
 
   @Column({ type: 'enum', enum: CampaignStatus, default: CampaignStatus.DRAFT })

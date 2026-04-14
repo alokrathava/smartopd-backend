@@ -97,7 +97,7 @@ export class Vitals {
   @Column({ type: 'text', nullable: true, name: 'critical_flags' })
   criticalFlags: string;
 
-  @Column({ type: 'datetime', name: 'recorded_at' })
+  @Column({ type: 'timestamp', name: 'recorded_at' })
   recordedAt: Date;
 
   @CreateDateColumn({ name: 'created_at' })

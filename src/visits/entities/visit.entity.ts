@@ -57,19 +57,19 @@ export class Visit {
   @Column({ type: 'enum', enum: VisitStatus, default: VisitStatus.REGISTERED })
   status: VisitStatus;
 
-  @Column({ type: 'datetime', nullable: true, name: 'scheduled_at' })
+  @Column({ type: 'timestamp', nullable: true, name: 'scheduled_at' })
   scheduledAt: Date;
 
-  @Column({ type: 'datetime', name: 'checked_in_at', nullable: true })
+  @Column({ type: 'timestamp', name: 'checked_in_at', nullable: true })
   checkedInAt: Date;
 
-  @Column({ type: 'datetime', nullable: true, name: 'nurse_seen_at' })
+  @Column({ type: 'timestamp', nullable: true, name: 'nurse_seen_at' })
   nurseSeenAt: Date;
 
-  @Column({ type: 'datetime', nullable: true, name: 'doctor_seen_at' })
+  @Column({ type: 'timestamp', nullable: true, name: 'doctor_seen_at' })
   doctorSeenAt: Date;
 
-  @Column({ type: 'datetime', nullable: true, name: 'completed_at' })
+  @Column({ type: 'timestamp', nullable: true, name: 'completed_at' })
   completedAt: Date;
 
   @Column({ type: 'int', name: 'token_number', default: 0 })
@@ -93,7 +93,7 @@ export class Visit {
   @Column({ type: 'varchar', nullable: true, name: 'tele_consult_link' })
   teleConsultLink: string;
 
-  @Column({ type: 'longtext', nullable: true, name: 'fhir_encounter_json' })
+  @Column({ type: 'text', nullable: true, name: 'fhir_encounter_json' })
   fhirEncounterJson: string;
 
   @Column({

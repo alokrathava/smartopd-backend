@@ -37,7 +37,7 @@ export class Triage {
   @Column({ type: 'text', nullable: true, name: 'triage_notes' })
   triageNotes: string;
 
-  @Column({ type: 'datetime', name: 'triage_at' })
+  @Column({ type: 'timestamp', name: 'triage_at' })
   triageAt: Date;
 
   @Column({ type: 'varchar', nullable: true, name: 'overridden_by' })

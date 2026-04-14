@@ -26,7 +26,7 @@ export class PatientSegment {
   @Column({ type: 'int', default: 0, name: 'patient_count' })
   patientCount: number;
 
-  @Column({ type: 'datetime', nullable: true, name: 'last_refreshed_at' })
+  @Column({ type: 'timestamp', nullable: true, name: 'last_refreshed_at' })
   lastRefreshedAt: Date;
 
   @Column({ type: 'boolean', default: true, name: 'is_active' })

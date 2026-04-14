@@ -25,7 +25,7 @@ export class AuditLog {
   @Column({ type: 'varchar', nullable: true, name: 'resource_id' })
   resourceId: string;
 
-  @Column({ type: 'longtext', nullable: true })
+  @Column({ type: 'text', nullable: true })
   payload: string;
 
   @Column({ type: 'varchar', nullable: true, name: 'ip_address' })
@@ -41,6 +41,6 @@ export class AuditLog {
   duration: number;
 
   @Index()
-  @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   timestamp: Date;
 }

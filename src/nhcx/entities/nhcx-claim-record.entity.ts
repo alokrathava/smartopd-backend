@@ -104,11 +104,11 @@ export class NhcxClaimRecord {
   approvedAmount: number | null;
 
   /** FHIR ClaimBundle JSON submitted to NHCX */
-  @Column({ type: 'longtext', nullable: true, name: 'fhir_bundle' })
+  @Column({ type: 'text', nullable: true, name: 'fhir_bundle' })
   fhirBundle: string | null;
 
   /** NHCX response payload */
-  @Column({ type: 'longtext', nullable: true, name: 'nhcx_response' })
+  @Column({ type: 'text', nullable: true, name: 'nhcx_response' })
   nhcxResponse: string | null;
 
   @Column({ type: 'text', nullable: true, name: 'denial_reason' })

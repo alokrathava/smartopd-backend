@@ -62,13 +62,13 @@ export class Consultation {
   @Column({ type: 'text', nullable: true, name: 'referral_notes' })
   referralNotes: string;
 
-  @Column({ type: 'longtext', nullable: true, name: 'fhir_composition_json' })
+  @Column({ type: 'text', nullable: true, name: 'fhir_composition_json' })
   fhirCompositionJson: string;
 
   @Column({ type: 'boolean', default: false, name: 'is_complete' })
   isComplete: boolean;
 
-  @Column({ type: 'datetime', nullable: true, name: 'completed_at' })
+  @Column({ type: 'timestamp', nullable: true, name: 'completed_at' })
   completedAt: Date;
 
   @CreateDateColumn({ name: 'created_at' })

@@ -76,7 +76,7 @@ export class LabOrder {
   externalOrderId: string | null;
 
   /** FHIR ServiceRequest JSON */
-  @Column({ type: 'longtext', nullable: true, name: 'fhir_service_request' })
+  @Column({ type: 'text', nullable: true, name: 'fhir_service_request' })
   fhirServiceRequest: string | null;
 
   /** Urgency */

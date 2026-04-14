@@ -66,7 +66,7 @@ export class PaymentTransaction {
   })
   status: TransactionStatus;
 
-  @Column({ type: 'datetime', nullable: true, name: 'paid_at' })
+  @Column({ type: 'timestamp', nullable: true, name: 'paid_at' })
   paidAt: Date;
 
   @Column({ type: 'text', nullable: true })

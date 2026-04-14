@@ -26,7 +26,7 @@ export class PatientConsent {
   @Column({ type: 'enum', enum: ConsentType, name: 'consent_type' })
   consentType: ConsentType;
 
-  @Column({ type: 'datetime', name: 'consent_given_at' })
+  @Column({ type: 'timestamp', name: 'consent_given_at' })
   consentGivenAt: Date;
 
   @Column({ type: 'varchar', nullable: true, name: 'consent_given_by' })
@@ -46,7 +46,7 @@ export class PatientConsent {
   @Column({ type: 'varchar', length: 50, nullable: true, name: 'ip_address' })
   ipAddress: string;
 
-  @Column({ type: 'datetime', nullable: true, name: 'revoked_at' })
+  @Column({ type: 'timestamp', nullable: true, name: 'revoked_at' })
   revokedAt: Date;
 
   @Column({

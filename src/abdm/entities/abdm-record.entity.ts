@@ -74,7 +74,7 @@ export class AbdmRecord {
   accessTokenEncrypted: string | null;
 
   /** Raw response from ABDM gateway (for debugging) */
-  @Column({ type: 'longtext', nullable: true, name: 'raw_response' })
+  @Column({ type: 'text', nullable: true, name: 'raw_response' })
   rawResponse: string | null;
 
   @Column({ type: 'varchar', length: 50, nullable: true, name: 'error_code' })

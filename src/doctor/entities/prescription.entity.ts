@@ -48,7 +48,7 @@ export class Prescription {
   notes: string;
 
   @Column({
-    type: 'longtext',
+    type: 'text',
     nullable: true,
     name: 'fhir_medication_request_json',
   })

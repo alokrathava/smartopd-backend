@@ -28,7 +28,7 @@ export class Otp {
   @Column({ type: 'enum', enum: OtpPurpose, default: OtpPurpose.LOGIN })
   purpose: OtpPurpose;
 
-  @Column({ type: 'datetime', name: 'expires_at' })
+  @Column({ type: 'timestamp', name: 'expires_at' })
   expiresAt: Date;
 
   @Column({ type: 'boolean', default: false })

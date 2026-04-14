@@ -39,14 +39,14 @@ export class EquipmentLease {
   @Column({ type: 'varchar', name: 'issued_by_id' })
   issuedById: string;
 
-  @Column({ type: 'datetime', name: 'issued_at' })
+  @Column({ type: 'timestamp', name: 'issued_at' })
   issuedAt: Date;
 
   @Index()
   @Column({ type: 'date', name: 'due_date' })
   dueDate: Date;
 
-  @Column({ type: 'datetime', nullable: true, name: 'returned_at' })
+  @Column({ type: 'timestamp', nullable: true, name: 'returned_at' })
   returnedAt: Date;
 
   @Column({

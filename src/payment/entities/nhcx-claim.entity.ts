@@ -60,10 +60,10 @@ export class NhcxClaim {
   })
   nhcxStatus: NhcxStatus;
 
-  @Column({ type: 'datetime', name: 'submitted_at' })
+  @Column({ type: 'timestamp', name: 'submitted_at' })
   submittedAt: Date;
 
-  @Column({ type: 'datetime', nullable: true, name: 'settled_at' })
+  @Column({ type: 'timestamp', nullable: true, name: 'settled_at' })
   settledAt: Date;
 
   @Column({ type: 'text', nullable: true, name: 'rejection_reason' })

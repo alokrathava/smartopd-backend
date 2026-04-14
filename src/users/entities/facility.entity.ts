@@ -119,7 +119,7 @@ export class Facility {
   })
   subscriptionPlan: SubscriptionPlan;
 
-  @Column({ type: 'datetime', nullable: true, name: 'subscription_expires_at' })
+  @Column({ type: 'timestamp', nullable: true, name: 'subscription_expires_at' })
   subscriptionExpiresAt: Date;
 
   @CreateDateColumn({ name: 'created_at' })

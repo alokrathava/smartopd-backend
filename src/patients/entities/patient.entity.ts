@@ -107,7 +107,7 @@ export class Patient {
   @Column({ type: 'text', nullable: true, name: 'insurance_info' })
   insuranceInfo: string;
 
-  @Column({ type: 'longtext', nullable: true, name: 'fhir_patient_json' })
+  @Column({ type: 'text', nullable: true, name: 'fhir_patient_json' })
   fhirPatientJson: string;
 
   @Column({ type: 'timestamp', nullable: true, name: 'abha_linked_at' })

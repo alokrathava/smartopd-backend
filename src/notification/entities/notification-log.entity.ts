@@ -55,7 +55,7 @@ export class NotificationLog {
   @Column({ type: 'text', nullable: true, name: 'error_message' })
   errorMessage: string;
 
-  @Column({ type: 'datetime', nullable: true, name: 'sent_at' })
+  @Column({ type: 'timestamp', nullable: true, name: 'sent_at' })
   sentAt: Date;
 
   @Column({ type: 'varchar', nullable: true, name: 'related_entity_type' })

@@ -37,7 +37,7 @@ export class User {
   @Column({ type: 'boolean', default: true, name: 'is_active' })
   isActive: boolean;
 
-  @Column({ type: 'datetime', nullable: true, name: 'last_login_at' })
+  @Column({ type: 'timestamp', nullable: true, name: 'last_login_at' })
   lastLoginAt: Date;
 
   @Column({
@@ -48,7 +48,7 @@ export class User {
   })
   inviteToken: string;
 
-  @Column({ type: 'datetime', nullable: true, name: 'invite_expires_at' })
+  @Column({ type: 'timestamp', nullable: true, name: 'invite_expires_at' })
   inviteExpiresAt: Date;
 
   @Column({

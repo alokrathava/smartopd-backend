@@ -42,10 +42,10 @@ export class Mar {
   @Column({ type: 'varchar' })
   route: string;
 
-  @Column({ type: 'datetime', name: 'scheduled_at' })
+  @Column({ type: 'timestamp', name: 'scheduled_at' })
   scheduledAt: Date;
 
-  @Column({ type: 'datetime', nullable: true, name: 'administered_at' })
+  @Column({ type: 'timestamp', nullable: true, name: 'administered_at' })
   administeredAt: Date;
 
   @Column({ type: 'enum', enum: MarStatus, default: MarStatus.SCHEDULED })

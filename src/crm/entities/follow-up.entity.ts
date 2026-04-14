@@ -54,7 +54,7 @@ export class FollowUp {
   })
   status: FollowUpStatus;
 
-  @Column({ type: 'datetime', nullable: true, name: 'completed_at' })
+  @Column({ type: 'timestamp', nullable: true, name: 'completed_at' })
   completedAt: Date;
 
   @Column({ type: 'varchar', nullable: true, name: 'completed_by' })
@@ -63,7 +63,7 @@ export class FollowUp {
   @Column({ type: 'boolean', default: false, name: 'notification_sent' })
   notificationSent: boolean;
 
-  @Column({ type: 'datetime', nullable: true, name: 'notification_sent_at' })
+  @Column({ type: 'timestamp', nullable: true, name: 'notification_sent_at' })
   notificationSentAt: Date;
 
   @Column({

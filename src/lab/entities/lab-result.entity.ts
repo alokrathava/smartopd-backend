@@ -56,7 +56,7 @@ export class LabResult {
   status: ResultStatus;
 
   /** FHIR Observation JSON */
-  @Column({ type: 'longtext', nullable: true, name: 'fhir_observation' })
+  @Column({ type: 'text', nullable: true, name: 'fhir_observation' })
   fhirObservation: string | null;
 
   @Column({

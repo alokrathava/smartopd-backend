@@ -58,13 +58,13 @@ export class DispenseRecord {
   })
   totalPrice: number;
 
-  @Column({ type: 'datetime', name: 'dispensed_at' })
+  @Column({ type: 'timestamp', name: 'dispensed_at' })
   dispensedAt: Date;
 
   @Column({ type: 'boolean', default: false, name: 'otp_verified' })
   otpVerified: boolean;
 
-  @Column({ type: 'datetime', nullable: true, name: 'otp_verified_at' })
+  @Column({ type: 'timestamp', nullable: true, name: 'otp_verified_at' })
   otpVerifiedAt: Date;
 
   @Column({ type: 'text', nullable: true })
