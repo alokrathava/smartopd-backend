@@ -81,14 +81,12 @@ export class AuditService {
       qb.andWhere('a.userId = :userId', { userId: filters.userId });
     if (filters.resource)
       qb.andWhere('a.resource = :resource', { resource: filters.resource });
-    if (filters.startDate)
-      qb.andWhere('a.timestamp >= :startDate', {
-        startDate: new Date(filters.startDate),
-      });
-    if (filters.endDate)
-      qb.andWhere('a.timestamp <= :endDate', {
-        endDate: new Date(filters.endDate),
-      });
+    const startDate = filters.startDate ? new Date(filters.startDate) : null;
+    const endDate = filters.endDate ? new Date(filters.endDate) : null;
+    if (startDate && !isNaN(startDate.getTime()))
+      qb.andWhere('a.timestamp >= :startDate', { startDate });
+    if (endDate && !isNaN(endDate.getTime()))
+      qb.andWhere('a.timestamp <= :endDate', { endDate });
 
     const [data, total] = await qb.getManyAndCount();
     return { data, total, page, limit };
