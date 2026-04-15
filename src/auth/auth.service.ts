@@ -299,8 +299,9 @@ export class AuthService {
     });
     if (existing) throw new ConflictException('Email already registered');
 
-    // In test mode, auto-activate so E2E tests can login immediately
-    const isTestMode = process.env['NODE_ENV'] === 'test';
+    // In non-production (dev/test), auto-activate so E2E tests can login immediately
+    // In production, facility requires SUPER_ADMIN approval before admin can login
+    const isNonProduction = process.env['NODE_ENV'] !== 'production';
 
     // Create facility
     const facility = this.facilityRepo.create({
@@ -312,7 +313,7 @@ export class AuthService {
       pincode: dto.pincode,
       phone: dto.facilityPhone,
       email: dto.adminEmail,
-      isActive: isTestMode, // Auto-activate in test; PENDING approval in production
+      isActive: isNonProduction, // Auto-activate in dev/test; requires SUPER_ADMIN approval in production
     });
     const savedFacility = await this.facilityRepo.save(facility);
 
@@ -329,7 +330,7 @@ export class AuthService {
       role: Role.FACILITY_ADMIN,
       facilityId: savedFacility.id,
       phone: dto.adminPhone,
-      isActive: isTestMode, // Auto-activate in test; activated on facility approval in production
+      isActive: isNonProduction, // Auto-activate in dev/test; activated on facility approval in production
     });
     const savedUser = await this.userRepo.save(user);
 

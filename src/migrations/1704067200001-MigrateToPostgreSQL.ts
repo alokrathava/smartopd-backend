@@ -21,6 +21,11 @@ export class MigrateToPostgreSQL1704067200001 implements MigrationInterface {
     // Create ENUM types (idempotent)
     await this.createEnumTypes(queryRunner);
 
+    // Enable uuid-ossp extension for UUID generation
+    await queryRunner.query(`
+      CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+    `);
+
     // Create all tables
     await queryRunner.query(`
       CREATE TABLE IF NOT EXISTS "facilities" (
