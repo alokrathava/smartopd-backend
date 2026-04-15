@@ -350,3 +350,85 @@ export function clearTokenCache(): void {
     delete tokenCache[key];
   }
 }
+
+/**
+ * Smoke test: Verify auth setup is working correctly.
+ * Call this in beforeAll() to catch setup failures early instead of deep in test suites.
+ *
+ * Checks:
+ * - Facility can be registered
+ * - Admin can login immediately after registration
+ * - Admin token can access protected endpoint (/auth/me)
+ * - Other roles can be created and logged in
+ *
+ * Throws on first failure with detailed error message.
+ */
+export async function validateAuthSetup(): Promise<void> {
+  console.log('[auth.helper] Starting auth setup validation...');
+
+  try {
+    // Ensure seed completed
+    if (!seedCompleted) {
+      console.log('[auth.helper] Running seedTestUsers...');
+      await seedTestUsers();
+    }
+
+    // Verify facility exists
+    if (!TEST_FACILITY_ID) {
+      throw new Error('[auth.helper] TEST_FACILITY_ID not set after seed');
+    }
+    console.log('[auth.helper] ✓ Facility registered:', TEST_FACILITY_ID);
+
+    // Verify admin token exists and works
+    const adminToken = await getToken(Role.FACILITY_ADMIN);
+    if (!adminToken || !adminToken.startsWith('eyJ')) {
+      throw new Error('[auth.helper] Admin token missing or invalid format');
+    }
+    console.log('[auth.helper] ✓ Admin token acquired');
+
+    // Verify admin token can access protected endpoint
+    const meRes = await agent()
+      .get('/api/v1/auth/me')
+      .set('Authorization', `Bearer ${adminToken}`);
+
+    if (meRes.status !== 200) {
+      throw new Error(
+        `[auth.helper] Admin /auth/me failed (HTTP ${meRes.status}): ` +
+          JSON.stringify(meRes.body)
+      );
+    }
+
+    const profile = meRes.body;
+    if (profile.role !== Role.FACILITY_ADMIN) {
+      throw new Error(
+        `[auth.helper] Admin profile has wrong role: ${profile.role} (expected FACILITY_ADMIN)`
+      );
+    }
+    console.log('[auth.helper] ✓ Admin profile verified:', {
+      email: profile.email,
+      role: profile.role,
+      facilityId: profile.facilityId,
+      isActive: profile.isActive,
+    });
+
+    // Spot-check another role
+    const doctorToken = await getToken(Role.DOCTOR);
+    const doctorMeRes = await agent()
+      .get('/api/v1/auth/me')
+      .set('Authorization', `Bearer ${doctorToken}`);
+
+    if (doctorMeRes.status !== 200) {
+      throw new Error(
+        `[auth.helper] Doctor /auth/me failed (HTTP ${doctorMeRes.status}): ` +
+          JSON.stringify(doctorMeRes.body)
+      );
+    }
+    console.log('[auth.helper] ✓ Doctor auth verified:', doctorMeRes.body.email);
+
+    console.log('[auth.helper] Auth setup validation PASSED ✓');
+  } catch (error) {
+    console.error('[auth.helper] Auth setup validation FAILED ✗');
+    console.error(error);
+    throw error;
+  }
+}
